@@ -1,7 +1,7 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert, DedotError, waitFor } from '@dedot/utils';
+import { assert, DedotError } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
-import { MaxRetryAttemptedError } from '../error.js';
+import { MaxRetryAttemptedError, NetworkDisconnectedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
 import { pickRandomItem, validateEndpoint } from '../utils.js';
 
@@ -296,6 +296,32 @@ export class WsProvider extends SubscriptionProvider {
         Object.assign(subscription, newsub);
       });
     });
+
+    // retry pending requests that were queued during disconnection
+    const pendingHandlers = Object.entries(this._handlers);
+    if (pendingHandlers.length > 0) {
+      for (const [oldIdStr, { defer, request }] of pendingHandlers) {
+        const oldId = Number(oldIdStr);
+
+        // Skip non-retryable requests - reject them with NetworkDisconnectedError
+        if (NO_RESUBSCRIBE_PREFIXES.some((prefix) => request.method.startsWith(prefix))) {
+          defer.reject(new NetworkDisconnectedError(`disconnected from ${this.#currentEndpoint}, request rejected`));
+          delete this._handlers[oldId];
+          continue;
+        }
+
+        // Retry retryable requests - call send() which creates a new handler entry
+        this.send(request.method, request.params)
+          .then((result) => defer.resolve(result))
+          .catch((e) => defer.reject(e));
+
+        // Remove old handler entry
+        delete this._handlers[oldId];
+      }
+    }
+
+    // Restart timeout handler for pending requests
+    this.#setupRequestTimeoutHandler();
   };
 
   #clearWs() {
@@ -341,15 +367,11 @@ export class WsProvider extends SubscriptionProvider {
 
   #onSocketClose = (event: CloseEvent) => {
     this.#clearWs();
+    this.#clearTimeoutHandler();
 
     const error = new DedotError(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
 
-    // Reject all pending requests
-    Object.values(this._handlers).forEach(({ defer }) => {
-      defer.reject(error);
-    });
-
-    this._handlers = {};
+    // Keep _handlers intact for retry on reconnect, they will be processed in #onSocketOpen
     this._pendingNotifications = {};
 
     this._setStatus('disconnected');
@@ -402,13 +424,24 @@ export class WsProvider extends SubscriptionProvider {
     return normalizedOptions as Required<WsProviderOptions>;
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect(switchEndpoint?: boolean): Promise<void> {
     try {
       assert(this.#ws, 'Websocket connection does not exist');
-      // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
-      this.#ws.close(1000); // Normal closure
-      this._setStatus('disconnected');
-      this._cleanUp();
+
+      if (!!switchEndpoint) {
+        this.#ws.close();
+      } else {
+        // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
+        this.#ws.close(1000); // Normal closure
+        this._setStatus('disconnected');
+
+        // Reject all pending requests on normal disconnect
+        Object.values(this._handlers).forEach(({ defer }) => {
+          defer.reject(new DedotError('disconnected'));
+        });
+
+        this._cleanUp();
+      }
     } catch (error: any) {
       console.error('Error disconnecting from websocket', error);
       this.emit('error', error);

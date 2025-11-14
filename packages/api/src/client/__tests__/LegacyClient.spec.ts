@@ -944,4 +944,105 @@ describe('LegacyClient', () => {
       expect(api.tx.notFound.notFound).toBeUndefined();
     });
   });
+
+  describe('reconnection behavior', () => {
+    let provider: MockProvider;
+
+    beforeEach(() => {
+      provider = new MockProvider();
+    });
+
+    afterEach(async () => {
+      vi.restoreAllMocks();
+    });
+
+    it('should fetch all required data on first initialization', async () => {
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      const api = await LegacyClient.new({ provider });
+
+      // Verify that all required RPC methods were called for first initialization
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getBlockHash', [0]);
+
+      // state_getRuntimeVersion is called with undefined as the block hash parameter
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter(
+        (call) => call[0] === 'state_getRuntimeVersion',
+      );
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify genesis hash, runtime version, and metadata were initialized
+      expect(api.genesisHash).toBeDefined();
+      expect(api.runtimeVersion).toBeDefined();
+      expect(api.metadata).toBeDefined();
+      expect(api.metadata.version).toEqual('V15');
+
+      await api.disconnect();
+    });
+
+    it('should skip metadata fetch on second client with cached data and same spec version', async () => {
+      // First client - this will cache the metadata
+      const api1 = await LegacyClient.new({ provider, cacheMetadata: true });
+      const specVersion1 = api1.runtimeVersion.specVersion;
+
+      await api1.disconnect();
+
+      // Create spy for second client
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      // Second client with same spec version - should use cached metadata
+      const api2 = await LegacyClient.new({ provider, cacheMetadata: true });
+
+      // Verify genesis hash and runtime version were still fetched
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getBlockHash', [0]);
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter(
+        (call) => call[0] === 'state_getRuntimeVersion',
+      );
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify metadata was NOT re-fetched (loaded from cache)
+      expect(providerSendSpy).not.toHaveBeenCalledWith('state_getMetadata', []);
+
+      // Verify spec version is the same
+      expect(api2.runtimeVersion.specVersion).toBe(specVersion1);
+
+      await api2.clearCache();
+      await api2.disconnect();
+    });
+
+    it('should refetch metadata when spec version changes', async () => {
+      // First client with initial spec version
+      const api1 = await LegacyClient.new({ provider, cacheMetadata: true });
+      const initialSpecVersion = api1.runtimeVersion.specVersion;
+
+      await api1.disconnect();
+
+      // Mock provider to return new spec version
+      const newSpecVersion = initialSpecVersion + 1;
+      provider.setRpcRequest('state_getRuntimeVersion', () => ({
+        ...MockedRuntimeVersion,
+        specVersion: newSpecVersion,
+      }) as RuntimeVersion);
+
+      // Create spy for second client
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      // Second client with different spec version - should fetch new metadata
+      const api2 = await LegacyClient.new({ provider, cacheMetadata: true });
+
+      // Verify runtime version was fetched
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter(
+        (call) => call[0] === 'state_getRuntimeVersion',
+      );
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify metadata was re-fetched because spec version changed
+      expect(providerSendSpy).toHaveBeenCalledWith('state_getMetadata', []);
+
+      // Verify the new spec version is set
+      expect(api2.runtimeVersion.specVersion).toBe(newSpecVersion);
+
+      await api2.clearCache();
+      await api2.disconnect();
+    });
+  });
 });

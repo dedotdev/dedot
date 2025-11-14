@@ -1,5 +1,5 @@
 import { $Header, BlockHash, Header, Option } from '@dedot/codecs';
-import type { JsonRpcSubscription } from '@dedot/providers';
+import { type JsonRpcSubscription, NetworkDisconnectedError } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
   ArchiveStorageResult,
@@ -46,6 +46,12 @@ export type OperationHandler<T = any> = {
   hash: BlockHash; // block hash at which the operation is called
 };
 
+export type PendingRequest<T = any> = {
+  method: string;
+  params: any[];
+  defer: Deferred<T>;
+};
+
 export type PinnedBlock = {
   hash: BlockHash;
   number: number;
@@ -70,6 +76,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   #handlers: Record<OperationId, OperationHandler>;
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
+
+  #pendingRequests: Map<string, PendingRequest> = new Map();
+  #requestIdCounter: number = 0;
 
   #finalizedQueue: Array<BlockHash>;
   #pinnedBlocks: Record<BlockHash, PinnedBlock>;
@@ -125,6 +134,37 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this;
   }
 
+  /**
+   * Override send() to track pending requests for retry on network disconnection
+   */
+  override async send<T = any>(method: string, ...params: any[]): Promise<T> {
+    const requestId = `req_${++this.#requestIdCounter}`;
+    const defer = deferred<T>();
+
+    this.#pendingRequests.set(requestId, {
+      method,
+      params,
+      defer,
+    });
+
+    try {
+      const result = await super.send<T>(method, ...params);
+      this.#pendingRequests.delete(requestId);
+      defer.resolve(result);
+      return result;
+    } catch (error: any) {
+      if (error instanceof NetworkDisconnectedError) {
+        // Keep in pending for retry on re-follow - don't delete
+        // Return the deferred promise that will be resolved on retry
+        return defer.promise;
+      }
+
+      // Other errors: clean up and throw
+      this.#pendingRequests.delete(requestId);
+      throw error;
+    }
+  }
+
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
     await this.#ensureFollowed();
 
@@ -176,6 +216,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     await this.#ensureFollowed();
 
     this.#unsub && (await this.#unsub());
+
+    // Reject all pending requests since we're explicitly unfollowing
+    for (const request of this.#pendingRequests.values()) {
+      request.defer.reject(new Error('ChainHead unfollowed'));
+    }
+    this.#pendingRequests.clear();
+
     this.#cleanUp();
   }
 
@@ -221,7 +268,40 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       defer.reject(e);
     }
 
-    return defer.promise;
+    // Wait for follow to complete, then retry pending requests
+    await defer.promise;
+
+    // Retry pending requests if any (from previous disconnection)
+    if (this.#pendingRequests.size > 0) {
+      this.#retryPendingRequests();
+    }
+  }
+
+  /**
+   * Retry pending requests that were queued during network disconnection
+   */
+  #retryPendingRequests() {
+    const pending = Array.from(this.#pendingRequests.entries());
+
+    for (const [requestId, request] of pending) {
+      const { method, params, defer } = request;
+
+      // Retry the request with new subscriptionId
+      super
+        .send(method, ...params)
+        .then((result) => {
+          defer.resolve(result);
+          this.#pendingRequests.delete(requestId);
+        })
+        .catch((error) => {
+          if (!(error instanceof NetworkDisconnectedError)) {
+            // Real error, reject and clean up
+            defer.reject(error);
+            this.#pendingRequests.delete(requestId);
+          }
+          // If NetworkDisconnectedError again, keep in pending for next retry
+        });
+    }
   }
 
   #onFollowEvent = async (result: FollowEvent, subscription?: JsonRpcSubscription) => {
@@ -769,6 +849,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#unsub = undefined;
     this.#handlers = {};
     this.#pendingOperations = {};
+    this.#pendingRequests.clear();
 
     this.#pinnedBlocks = {};
     this.#bestHash = undefined;
