@@ -75,6 +75,12 @@ describe('V2Client', () => {
       );
     });
 
+    afterEach(async () => {
+      if (simulator) {
+        await simulator.cleanup();
+      }
+    });
+
     describe('cache disabled', () => {
       let api: V2Client;
       beforeEach(async () => {
@@ -1414,156 +1420,156 @@ describe('V2Client', () => {
       });
     });
 
-    // describe('cache enabled', () => {
-    //   let api: V2Client;
-    //   beforeEach(async () => {
-    //     api = await V2Client.new({ provider, cacheMetadata: true });
-    //   });
-    //
-    //   afterEach(async () => {
-    //     if (api) {
-    //       await api.clearCache();
-    //       await api.disconnect();
-    //     }
-    //
-    //     await simulator.cleanup();
-    //   });
-    //
-    //   it('should load metadata from cache', async () => {
-    //     await simulator.cleanup();
-    //
-    //     const newProvider = new MockProvider();
-    //     const newProviderSend = vi.spyOn(newProvider, 'send');
-    //     const newSimulator = newChainHeadSimulator({ provider: newProvider });
-    //     newSimulator.notify(newSimulator.initializedEvent);
-    //     newSimulator.notify(newSimulator.nextNewBlock());
-    //     newSimulator.notify(newSimulator.nextNewBlock());
-    //
-    //     const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
-    //
-    //     expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
-    //       simulator.subscriptionId,
-    //       await newApi.chainHead.bestHash(),
-    //       'Metadata_metadata_at_version',
-    //       '0x10000000',
-    //     ]);
-    //     expect(newApi.metadata).toBeDefined();
-    //     expect(newApi.metadata).toEqual(api.metadata);
-    //
-    //     await newSimulator.cleanup();
-    //   });
-    //
-    //   describe("refetch metadata if it's outdated", async () => {
-    //     it('should look for metadata options first', async () => {
-    //       await simulator.cleanup();
-    //
-    //       const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
-    //       const newProvider = new MockProvider();
-    //       const newProviderSend = vi.spyOn(newProvider, 'send');
-    //       const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
-    //       newSimulator.notify(newSimulator.initializedEvent);
-    //       newSimulator.notify(newSimulator.nextNewBlock());
-    //
-    //       const newApi = await V2Client.new({
-    //         provider: newProvider,
-    //         cacheMetadata: true,
-    //         metadata: {
-    //           'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2': rawMetadataV15,
-    //         },
-    //       });
-    //
-    //       expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
-    //         simulator.subscriptionId,
-    //         await newApi.chainHead.bestHash(),
-    //         'Metadata_metadata_versions',
-    //         '0x',
-    //       ]);
-    //
-    //       expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
-    //         newSimulator.subscriptionId,
-    //         await newApi.chainHead.bestHash(),
-    //         'Metadata_metadata_at_version',
-    //         '0x10000000',
-    //       ]);
-    //
-    //       expect(newApi.metadata).toBeDefined();
-    //       expect(newApi.currentMetadataKey).toEqual(
-    //         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
-    //       );
-    //
-    //       await newSimulator.cleanup();
-    //     });
-    //
-    //     it('should re-fetch from on-chain', async () => {
-    //       await simulator.cleanup();
-    //
-    //       const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
-    //       const newProvider = new MockProvider();
-    //       const newProviderSend = vi.spyOn(newProvider, 'send');
-    //       const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
-    //       newSimulator.notify(newSimulator.initializedEvent);
-    //
-    //       let counter = 0;
-    //       newProvider.setRpcRequests({
-    //         chainHead_v1_call: () => {
-    //           counter += 1;
-    //           return { result: 'started', operationId: `callMetadata0${counter}` } as MethodResponse;
-    //         },
-    //       });
-    //
-    //       newSimulator.notify(
-    //         {
-    //           operationId: 'callMetadata01',
-    //           event: 'operationCallDone',
-    //           output: '0x0c100000000f0000000e000000',
-    //         } as OperationCallDone,
-    //         5,
-    //       );
-    //
-    //       newSimulator.notify(
-    //         {
-    //           operationId: 'callMetadata02',
-    //           event: 'operationCallDone',
-    //           output: prefixedMetadataV15,
-    //         } as OperationCallDone,
-    //         20,
-    //       );
-    //
-    //       const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
-    //
-    //       expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
-    //         simulator.subscriptionId,
-    //         await newApi.chainHead.bestHash(),
-    //         'Metadata_metadata_versions',
-    //         '0x',
-    //       ]);
-    //
-    //       expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
-    //         newSimulator.subscriptionId,
-    //         await newApi.chainHead.bestHash(),
-    //         'Metadata_metadata_at_version',
-    //         '0x10000000',
-    //       ]);
-    //
-    //       expect(newProviderSend).toBeCalledWith('chainHead_v1_stopOperation', [
-    //         newSimulator.subscriptionId,
-    //         'callMetadata01',
-    //       ]);
-    //
-    //       expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
-    //         newSimulator.subscriptionId,
-    //         'callMetadata02',
-    //       ]);
-    //
-    //       expect(newApi.metadata).toBeDefined();
-    //       expect(newApi.currentMetadataKey).toEqual(
-    //         `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
-    //       );
-    //
-    //       await newSimulator.cleanup();
-    //     });
-    //   });
-    // });
+    describe('cache enabled', () => {
+      let api: V2Client;
+      beforeEach(async () => {
+        api = await V2Client.new({ provider, cacheMetadata: true });
+      });
+
+      afterEach(async () => {
+        if (api) {
+          await api.clearCache();
+          await api.disconnect();
+        }
+
+        await simulator.cleanup();
+      });
+
+      it('should load metadata from cache', async () => {
+        await simulator.cleanup();
+
+        const newProvider = new MockProvider();
+        const newProviderSend = vi.spyOn(newProvider, 'send');
+        const newSimulator = newChainHeadSimulator({ provider: newProvider });
+        newSimulator.notify(newSimulator.initializedEvent);
+        newSimulator.notify(newSimulator.nextNewBlock());
+        newSimulator.notify(newSimulator.nextNewBlock());
+
+        const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
+
+        expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
+          simulator.subscriptionId,
+          await newApi.chainHead.bestHash(),
+          'Metadata_metadata_at_version',
+          '0x10000000',
+        ]);
+        expect(newApi.metadata).toBeDefined();
+        expect(newApi.metadata).toEqual(api.metadata);
+
+        await newSimulator.cleanup();
+      });
+
+      describe("refetch metadata if it's outdated", async () => {
+        it('should look for metadata options first', async () => {
+          await simulator.cleanup();
+
+          const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
+          const newProvider = new MockProvider();
+          const newProviderSend = vi.spyOn(newProvider, 'send');
+          const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
+          newSimulator.notify(newSimulator.initializedEvent);
+          newSimulator.notify(newSimulator.nextNewBlock());
+
+          const newApi = await V2Client.new({
+            provider: newProvider,
+            cacheMetadata: true,
+            metadata: {
+              'RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2': rawMetadataV15,
+            },
+          });
+
+          expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            await newApi.chainHead.bestHash(),
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
+            newSimulator.subscriptionId,
+            await newApi.chainHead.bestHash(),
+            'Metadata_metadata_at_version',
+            '0x10000000',
+          ]);
+
+          expect(newApi.metadata).toBeDefined();
+          expect(newApi.currentMetadataKey).toEqual(
+            `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
+          );
+
+          await newSimulator.cleanup();
+        });
+
+        it('should re-fetch from on-chain', async () => {
+          await simulator.cleanup();
+
+          const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
+          const newProvider = new MockProvider();
+          const newProviderSend = vi.spyOn(newProvider, 'send');
+          const newSimulator = newChainHeadSimulator({ provider: newProvider, initialRuntime: nextMockedRuntime });
+          newSimulator.notify(newSimulator.initializedEvent);
+
+          let counter = 0;
+          newProvider.setRpcRequests({
+            chainHead_v1_call: () => {
+              counter += 1;
+              return { result: 'started', operationId: `callMetadata0${counter}` } as MethodResponse;
+            },
+          });
+
+          newSimulator.notify(
+            {
+              operationId: 'callMetadata01',
+              event: 'operationCallDone',
+              output: '0x0c100000000f0000000e000000',
+            } as OperationCallDone,
+            5,
+          );
+
+          newSimulator.notify(
+            {
+              operationId: 'callMetadata02',
+              event: 'operationCallDone',
+              output: prefixedMetadataV15,
+            } as OperationCallDone,
+            20,
+          );
+
+          const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
+
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
+            simulator.subscriptionId,
+            await newApi.chainHead.bestHash(),
+            'Metadata_metadata_versions',
+            '0x',
+          ]);
+
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_call', [
+            newSimulator.subscriptionId,
+            await newApi.chainHead.bestHash(),
+            'Metadata_metadata_at_version',
+            '0x10000000',
+          ]);
+
+          expect(newProviderSend).toBeCalledWith('chainHead_v1_stopOperation', [
+            newSimulator.subscriptionId,
+            'callMetadata01',
+          ]);
+
+          expect(newProviderSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [
+            newSimulator.subscriptionId,
+            'callMetadata02',
+          ]);
+
+          expect(newApi.metadata).toBeDefined();
+          expect(newApi.currentMetadataKey).toEqual(
+            `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
+          );
+
+          await newSimulator.cleanup();
+        });
+      });
+    });
 
     describe('not throwOnUnknownApi', () => {
       let api: V2Client;
