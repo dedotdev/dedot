@@ -78,9 +78,7 @@ describe(
       });
 
       afterEach(async () => {
-        if (simulator) {
-          await simulator.cleanup();
-        }
+        simulator && (await simulator.cleanup());
       });
 
       describe('cache disabled', () => {
@@ -91,7 +89,6 @@ describe(
 
         afterEach(async () => {
           api && api.status !== 'disconnected' && (await api.disconnect());
-          await simulator.cleanup();
         });
 
         // TODO fallback to chainHead_storage of chainSpec does not support
@@ -1439,13 +1436,9 @@ describe(
             await api.clearCache();
             await api.disconnect();
           }
-
-          await simulator.cleanup();
         });
 
         it('should load metadata from cache', async () => {
-          await simulator.cleanup();
-
           const newProvider = new MockProvider();
           const newProviderSend = vi.spyOn(newProvider, 'send');
           const newSimulator = newChainHeadSimulator({ provider: newProvider });
@@ -1456,21 +1449,17 @@ describe(
           const newApi = await V2Client.new({ provider: newProvider, cacheMetadata: true });
 
           expect(newProviderSend).not.toBeCalledWith('chainHead_v1_call', [
-            simulator.subscriptionId,
+            newSimulator.subscriptionId,
             await newApi.chainHead.bestHash(),
             'Metadata_metadata_at_version',
             '0x10000000',
           ]);
           expect(newApi.metadata).toBeDefined();
           expect(newApi.metadata).toEqual(api.metadata);
-
-          await newSimulator.cleanup();
         });
 
         describe("refetch metadata if it's outdated", async () => {
           it('should look for metadata options first', async () => {
-            await simulator.cleanup();
-
             const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
             const newProvider = new MockProvider();
             const newProviderSend = vi.spyOn(newProvider, 'send');
@@ -1504,13 +1493,9 @@ describe(
             expect(newApi.currentMetadataKey).toEqual(
               `RAW_META/0x0000000000000000000000000000000000000000000000000000000000000000/2`,
             );
-
-            await newSimulator.cleanup();
           });
 
           it('should re-fetch from on-chain', async () => {
-            await simulator.cleanup();
-
             const nextMockedRuntime = { ...mockedRuntime, specVersion: mockedRuntime.specVersion + 1 };
             const newProvider = new MockProvider();
             const newProviderSend = vi.spyOn(newProvider, 'send');
@@ -1587,7 +1572,6 @@ describe(
 
         afterEach(async () => {
           api && (await api.disconnect());
-          await simulator.cleanup();
         });
 
         it('should return undefined for unknown constants', () => {
