@@ -186,12 +186,28 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     };
   };
 
+  const timeouts: NodeJS.Timeout[] = [];
+  let maxTimeout = 0;
+
   const notify = (data: Error | any, timeout = 0) => {
-    setTimeout(() => {
+    maxTimeout = Math.max(maxTimeout, timeout);
+    const timeoutId = setTimeout(() => {
       provider.notify(subscriptionId, data);
     }, timeout);
+    timeouts.push(timeoutId);
 
     return data;
+  };
+
+  const cleanup = async () => {
+    // Wait for the longest scheduled timeout plus a small buffer
+    const waitTime = maxTimeout + 100;
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+    // Clear all pending timeouts
+    timeouts.forEach(clearTimeout);
+    timeouts.length = 0;
+    maxTimeout = 0;
   };
 
   let stopCounter = 0;
@@ -239,5 +255,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     rpcMethods,
     stop,
     blockDb,
+    cleanup,
   };
 };
