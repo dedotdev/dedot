@@ -20,6 +20,7 @@ import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
   ApiOptions,
   BlockExplorer,
+  BlockInfo,
   DedotClientEvent,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
@@ -191,7 +192,14 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
     await this.setupMetadata(newMetadata);
 
-    this.emit('runtimeUpgraded', this._runtimeVersion);
+    const blockInfo: BlockInfo = {
+      hash: block.hash,
+      number: block.number,
+      parent: block.parent,
+      runtimeUpgraded: block.runtimeUpgraded === true,
+    };
+
+    this.emit('runtimeUpgraded', this._runtimeVersion, blockInfo);
 
     this.doneRuntimeUpgrade();
   };

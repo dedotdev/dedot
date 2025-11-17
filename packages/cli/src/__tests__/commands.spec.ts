@@ -33,7 +33,7 @@ describe('chaintypes', () => {
   });
 
   it('should throw error for not-metadata file', async () => {
-    expect(parseMetadataFromRaw(RUNTIME_FILE)).rejects.toThrowError();
+    await expect(parseMetadataFromRaw(RUNTIME_FILE)).rejects.toThrowError();
   });
 
   it('should parse runtime wasm file properly', async () => {
@@ -47,6 +47,6 @@ describe('chaintypes', () => {
   });
 
   it('should throw error for not-wasm file', async () => {
-    expect(parseMetadataFromWasm(METADATA_FILE)).rejects.toThrowError();
+    await expect(parseMetadataFromWasm(METADATA_FILE)).rejects.toThrowError();
   });
 });

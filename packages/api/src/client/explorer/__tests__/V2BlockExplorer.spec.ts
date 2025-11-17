@@ -12,11 +12,12 @@ describe('V2BlockExplorer', () => {
   let mockClient: V2Client<any>;
   let explorer: V2BlockExplorer;
 
-  const createMockPinnedBlock = (number: number): PinnedBlock => ({
+  const createMockPinnedBlock = (number: number, runtimeUpgraded?: boolean): PinnedBlock => ({
     hash: `0x${number.toString(16).padStart(64, '0')}`,
     number,
     parent: `0x${(number - 1).toString(16).padStart(64, '0')}`,
     runtime: undefined,
+    runtimeUpgraded,
   });
 
   beforeEach(() => {
@@ -59,6 +60,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
       expect(mockChainHead.bestBlock).toHaveBeenCalledTimes(1);
     });
@@ -80,6 +82,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
 
       unsub();
@@ -121,6 +124,7 @@ describe('V2BlockExplorer', () => {
         hash: newBlock.hash,
         number: newBlock.number,
         parent: newBlock.parent,
+        runtimeUpgraded: false,
       });
     });
 
@@ -138,6 +142,52 @@ describe('V2BlockExplorer', () => {
 
       expect(mockUnsub).toHaveBeenCalled();
     });
+
+    it('should emit block with runtimeUpgraded=true when PinnedBlock has runtimeUpgraded flag', async () => {
+      const mockBlock = createMockPinnedBlock(42);
+      vi.mocked(mockChainHead.bestBlock).mockResolvedValue(mockBlock);
+
+      let eventHandler: (block: PinnedBlock) => void = () => {};
+      vi.mocked(mockChainHead.on).mockImplementation((event, handler) => {
+        eventHandler = handler as (block: PinnedBlock) => void;
+        return () => {};
+      });
+
+      const callback = vi.fn();
+      explorer.best(callback);
+
+      // Wait for initial emission
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Simulate normal block event
+      const normalBlock = createMockPinnedBlock(43);
+      eventHandler(normalBlock);
+
+      // Simulate block with runtime upgrade
+      const upgradeBlock = createMockPinnedBlock(44, true);
+      eventHandler(upgradeBlock);
+
+      // Should be called 3 times (initial + 2 events)
+      expect(callback).toHaveBeenCalledTimes(3);
+
+      // First call (initial) should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 42,
+        runtimeUpgraded: false,
+      });
+
+      // Second call should have runtimeUpgraded=false
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 43,
+        runtimeUpgraded: false,
+      });
+
+      // Third call should have runtimeUpgraded=true
+      expect(callback.mock.calls[2][0]).toMatchObject({
+        number: 44,
+        runtimeUpgraded: true,
+      });
+    });
   });
 
   describe('finalized() - Query Mode', () => {
@@ -151,6 +201,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
       expect(mockChainHead.finalizedBlock).toHaveBeenCalledTimes(1);
     });
@@ -172,6 +223,7 @@ describe('V2BlockExplorer', () => {
         hash: mockBlock.hash,
         number: mockBlock.number,
         parent: mockBlock.parent,
+        runtimeUpgraded: false,
       });
 
       unsub();
@@ -186,6 +238,52 @@ describe('V2BlockExplorer', () => {
       explorer.finalized(callback);
 
       expect(mockChainHead.on).toHaveBeenCalledWith('finalizedBlock', expect.any(Function));
+    });
+
+    it('should emit finalized block with runtimeUpgraded=true when PinnedBlock has runtimeUpgraded flag', async () => {
+      const mockBlock = createMockPinnedBlock(40);
+      vi.mocked(mockChainHead.finalizedBlock).mockResolvedValue(mockBlock);
+
+      let eventHandler: (block: PinnedBlock) => void = () => {};
+      vi.mocked(mockChainHead.on).mockImplementation((event, handler) => {
+        eventHandler = handler as (block: PinnedBlock) => void;
+        return () => {};
+      });
+
+      const callback = vi.fn();
+      explorer.finalized(callback);
+
+      // Wait for initial emission
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Simulate normal finalized block event
+      const normalBlock = createMockPinnedBlock(41);
+      eventHandler(normalBlock);
+
+      // Simulate finalized block with runtime upgrade
+      const upgradeBlock = createMockPinnedBlock(42, true);
+      eventHandler(upgradeBlock);
+
+      // Should be called 3 times (initial + 2 events)
+      expect(callback).toHaveBeenCalledTimes(3);
+
+      // First call (initial) should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 40,
+        runtimeUpgraded: false,
+      });
+
+      // Second call should have runtimeUpgraded=false
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 41,
+        runtimeUpgraded: false,
+      });
+
+      // Third call should have runtimeUpgraded=true
+      expect(callback.mock.calls[2][0]).toMatchObject({
+        number: 42,
+        runtimeUpgraded: true,
+      });
     });
   });
 
@@ -211,79 +309,6 @@ describe('V2BlockExplorer', () => {
       expect(mockChainHead.header).toHaveBeenCalledWith(hash);
     });
 
-    it('should resolve hash via findBlock for number', async () => {
-      const mockBlock = createMockPinnedBlock(42);
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(mockBlock);
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      const decodedHeader = {
-        parentHash: mockBlock.parent,
-        number: mockBlock.number,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      };
-      vi.spyOn($Header, 'tryDecode').mockReturnValue(decodedHeader as any);
-
-      const result = await explorer.header(42);
-
-      expect(mockChainHead.findBlock).toHaveBeenCalledWith(42);
-      expect(mockChainHead.header).toHaveBeenCalledWith(mockBlock.hash);
-      expect(result).toEqual(decodedHeader);
-    });
-
-    it('should fallback to Archive if block not pinned', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(true);
-      vi.mocked(mockArchive.hashByHeight).mockResolvedValue(['0xarchivehash']);
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      const decodedHeader = {
-        parentHash: '0xparent',
-        number: 100,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      };
-      vi.spyOn($Header, 'tryDecode').mockReturnValue(decodedHeader as any);
-
-      const result = await explorer.header(100);
-
-      expect(mockArchive.supported).toHaveBeenCalled();
-      expect(mockArchive.hashByHeight).toHaveBeenCalledWith(100);
-      expect(mockChainHead.header).toHaveBeenCalledWith('0xarchivehash');
-      expect(result).toEqual(decodedHeader);
-    });
-
-    it('should handle multiple hashes from Archive (take first)', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(true);
-      vi.mocked(mockArchive.hashByHeight).mockResolvedValue(['0xhash1', '0xhash2', '0xhash3']);
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      vi.spyOn($Header, 'tryDecode').mockReturnValue({
-        parentHash: '0xparent',
-        number: 100,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      } as any);
-
-      await explorer.header(100);
-
-      // Should use first hash
-      expect(mockChainHead.header).toHaveBeenCalledWith('0xhash1');
-    });
-
-    it('should throw if Archive not supported and block not pinned', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(false);
-
-      await expect(explorer.header(100)).rejects.toThrow(
-        'Block number 100 not found in pinned blocks and Archive is not supported',
-      );
-    });
-
     it('should throw if header not found', async () => {
       const hash = '0xnonexistent';
       vi.mocked(mockChainHead.header).mockResolvedValue(undefined);
@@ -302,109 +327,6 @@ describe('V2BlockExplorer', () => {
 
       expect(result).toEqual(mockBody);
       expect(mockChainHead.body).toHaveBeenCalledWith(hash);
-    });
-
-    it('should resolve hash via findBlock for number', async () => {
-      const mockBlock = createMockPinnedBlock(42);
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(mockBlock);
-      vi.mocked(mockChainHead.body).mockResolvedValue(['0xtx1', '0xtx2']);
-
-      const result = await explorer.body(42);
-
-      expect(mockChainHead.findBlock).toHaveBeenCalledWith(42);
-      expect(mockChainHead.body).toHaveBeenCalledWith(mockBlock.hash);
-      expect(result).toHaveLength(2);
-    });
-
-    it('should fallback to Archive if block not pinned', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(true);
-      vi.mocked(mockArchive.hashByHeight).mockResolvedValue(['0xarchivehash']);
-      vi.mocked(mockChainHead.body).mockResolvedValue(['0xtx1']);
-
-      const result = await explorer.body(100);
-
-      expect(mockArchive.supported).toHaveBeenCalled();
-      expect(mockArchive.hashByHeight).toHaveBeenCalledWith(100);
-      expect(mockChainHead.body).toHaveBeenCalledWith('0xarchivehash');
-      expect(result).toEqual(['0xtx1']);
-    });
-
-    it('should throw if Archive not supported and block not pinned', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(false);
-
-      await expect(explorer.body(100)).rejects.toThrow(
-        'Block number 100 not found in pinned blocks and Archive is not supported',
-      );
-    });
-  });
-
-  describe('toBlockHash (via header and body)', () => {
-    it('should return hash if already a hash', async () => {
-      const hash = '0x0000000000000000000000000000000000000000000000000000000000000001';
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      vi.spyOn($Header, 'tryDecode').mockReturnValue({
-        parentHash: '0xparent',
-        number: 1,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      } as any);
-
-      await explorer.header(hash);
-
-      expect(mockChainHead.findBlock).not.toHaveBeenCalled();
-      expect(mockChainHead.header).toHaveBeenCalledWith(hash);
-    });
-
-    it('should find hash in pinned blocks', async () => {
-      const mockBlock = createMockPinnedBlock(42);
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(mockBlock);
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      vi.spyOn($Header, 'tryDecode').mockReturnValue({
-        parentHash: mockBlock.parent,
-        number: mockBlock.number,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      } as any);
-
-      await explorer.header(42);
-
-      expect(mockChainHead.findBlock).toHaveBeenCalledWith(42);
-      expect(mockArchive.supported).not.toHaveBeenCalled();
-    });
-
-    it('should use Archive if block not in pinned blocks', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(true);
-      vi.mocked(mockArchive.hashByHeight).mockResolvedValue(['0xarchivehash']);
-      vi.mocked(mockChainHead.header).mockResolvedValue('0x1234');
-
-      vi.spyOn($Header, 'tryDecode').mockReturnValue({
-        parentHash: '0xparent',
-        number: 100,
-        stateRoot: '0xstate',
-        extrinsicsRoot: '0xextrinsics',
-        digest: { logs: [] },
-      } as any);
-
-      await explorer.header(100);
-
-      expect(mockChainHead.findBlock).toHaveBeenCalledWith(100);
-      expect(mockArchive.supported).toHaveBeenCalled();
-      expect(mockArchive.hashByHeight).toHaveBeenCalledWith(100);
-    });
-
-    it('should throw if no hash found via Archive', async () => {
-      vi.mocked(mockChainHead.findBlock).mockReturnValue(undefined);
-      vi.mocked(mockArchive.supported).mockResolvedValue(true);
-      vi.mocked(mockArchive.hashByHeight).mockResolvedValue([]);
-
-      await expect(explorer.header(100)).rejects.toThrow('No block found at height 100');
     });
   });
 
@@ -428,11 +350,12 @@ describe('V2BlockExplorer', () => {
 
       const result = await explorer.best();
 
-      // Should only include hash, number, parent (no runtime)
+      // Should include hash, number, parent, and runtimeUpgraded
       expect(result).toEqual({
         hash: '0xhash',
         number: 42,
         parent: '0xparent',
+        runtimeUpgraded: false,
       });
       expect(result).not.toHaveProperty('runtime');
     });

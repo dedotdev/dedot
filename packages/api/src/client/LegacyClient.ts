@@ -1,8 +1,8 @@
-import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { Callback, GenericSubstrateApi, TxUnsub, Unsub } from '@dedot/types';
+import { Callback, GenericSubstrateApi, TxUnsub } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
-import { assert, HexString } from '@dedot/utils';
+import { assert, HexString, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -63,7 +63,7 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
   extends BaseSubstrateClient<ChainApi>
 {
-  #runtimeSubscriptionUnsub?: Unsub;
+  #runtimeSubscriptionUnsub?: () => void;
   #healthTimer?: ReturnType<typeof setInterval>;
   protected _blockExplorer?: BlockExplorer;
 
@@ -97,10 +97,6 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
   ): Promise<LegacyClient<ChainApi>> {
     return LegacyClient.create(options);
   }
-
-  protected override onDisconnected = async () => {
-    await this.#unsubscribeUpdates();
-  };
 
   protected override async beforeDisconnect() {
     await this.#unsubscribeUpdates();
@@ -137,24 +133,28 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
   #subscribeRuntimeUpgrades() {
     if (this.#runtimeSubscriptionUnsub) return;
 
-    this.rpc
-      .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
-        if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
-          this.startRuntimeUpgrade();
+    this.#runtimeSubscriptionUnsub = this.block.best(async (block) => {
+      if (!block.runtimeUpgraded) return;
 
-          this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
+      const { hash } = block;
 
-          const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
-          await this.setupMetadata(newMetadata);
+      // Fetch the runtime version at this block
+      const runtimeVersion: SubstrateRuntimeVersion = await this.#getRuntimeVersion(hash);
 
-          this.emit('runtimeUpgraded', this._runtimeVersion);
+      // Check if the spec version has actually changed
+      if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
+        this.startRuntimeUpgrade();
 
-          this.doneRuntimeUpgrade();
-        }
-      })
-      .then((unsub) => {
-        this.#runtimeSubscriptionUnsub = unsub;
-      });
+        this._runtimeVersion = runtimeVersion;
+
+        const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
+        await this.setupMetadata(newMetadata);
+
+        this.emit('runtimeUpgraded', this._runtimeVersion, block);
+
+        this.doneRuntimeUpgrade();
+      }
+    });
   }
 
   async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {
@@ -165,7 +165,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.rpc.system_health().catch(console.error);
+      this.rpc.system_health().catch(noop);
     }, KEEP_ALIVE_INTERVAL);
   }
 
@@ -184,7 +184,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     }
 
     try {
-      await this.#runtimeSubscriptionUnsub();
+      this.#runtimeSubscriptionUnsub();
       this.#runtimeSubscriptionUnsub = undefined;
     } catch {
       // ignore

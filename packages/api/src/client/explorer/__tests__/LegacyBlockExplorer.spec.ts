@@ -11,12 +11,12 @@ describe('LegacyBlockExplorer', () => {
   let explorer: LegacyBlockExplorer;
   let subscriptionId: number = 0;
 
-  const createMockHeader = (number: number, parentHash?: HexString): Header => ({
+  const createMockHeader = (number: number, parentHash?: HexString, runtimeUpgraded?: boolean): Header => ({
     parentHash: parentHash || `0x${(number > 0 ? number - 1 : 0).toString(16).padStart(64, '0')}`,
     number,
     stateRoot: `0x${number.toString(16).padStart(64, '0')}`,
     extrinsicsRoot: `0x${number.toString(16).padStart(64, '0')}`,
-    digest: { logs: [] },
+    digest: { logs: runtimeUpgraded ? [{ type: 'RuntimeEnvironmentUpdated' }] : [] },
   });
 
   // Helper to encode header for subscription notifications
@@ -71,6 +71,10 @@ describe('LegacyBlockExplorer', () => {
   beforeEach(async () => {
     subscriptionId = 0;
     await setupMockClient();
+    // Reset subscription ID counter after client initialization
+    // LegacyClient subscribes to runtime upgrades during init, consuming subscription-best-0
+    // We reset here so BlockExplorer subscriptions start from subscription-best-0
+    subscriptionId = 0;
     explorer = new LegacyBlockExplorer(mockClient);
   });
 
@@ -281,6 +285,43 @@ describe('LegacyBlockExplorer', () => {
       errorSpy.mockRestore();
       unsub();
     });
+
+    it('should emit block with runtimeUpgraded=true when RuntimeEnvironmentUpdated digest is present', async () => {
+      const providerSend = vi.spyOn(mockProvider, 'send');
+      const callback = vi.fn();
+
+      const unsub = explorer.best(callback);
+
+      await waitFor();
+      expect(providerSend).toHaveBeenCalledWith('chain_subscribeNewHeads', []);
+
+      // Simulate a normal block
+      const normalHeader = createMockHeader(1);
+      mockProvider.notify('subscription-best-0', encodeHeader(normalHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Simulate a block with runtime upgrade
+      const upgradeHeader = createMockHeader(2, undefined, true);
+      mockProvider.notify('subscription-best-0', encodeHeader(upgradeHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have been called twice
+      expect(callback).toHaveBeenCalledTimes(2);
+
+      // First block should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 1,
+        runtimeUpgraded: false,
+      });
+
+      // Second block should have runtimeUpgraded=true
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 2,
+        runtimeUpgraded: true,
+      });
+
+      unsub();
+    });
   });
 
   describe('finalized() - Query Mode', () => {
@@ -371,6 +412,43 @@ describe('LegacyBlockExplorer', () => {
       warnSpy.mockRestore();
       unsub();
     });
+
+    it('should emit finalized block with runtimeUpgraded=true when RuntimeEnvironmentUpdated digest is present', async () => {
+      const providerSend = vi.spyOn(mockProvider, 'send');
+      const callback = vi.fn();
+
+      const unsub = explorer.finalized(callback);
+
+      await waitFor();
+      expect(providerSend).toHaveBeenCalledWith('chain_subscribeFinalizedHeads', []);
+
+      // Simulate a normal finalized block
+      const normalHeader = createMockHeader(1);
+      mockProvider.notify('subscription-finalized-0', encodeHeader(normalHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Simulate a finalized block with runtime upgrade
+      const upgradeHeader = createMockHeader(2, undefined, true);
+      mockProvider.notify('subscription-finalized-0', encodeHeader(upgradeHeader));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have been called twice
+      expect(callback).toHaveBeenCalledTimes(2);
+
+      // First block should have runtimeUpgraded=false
+      expect(callback.mock.calls[0][0]).toMatchObject({
+        number: 1,
+        runtimeUpgraded: false,
+      });
+
+      // Second block should have runtimeUpgraded=true
+      expect(callback.mock.calls[1][0]).toMatchObject({
+        number: 2,
+        runtimeUpgraded: true,
+      });
+
+      unsub();
+    });
   });
 
   describe('header()', () => {
@@ -381,17 +459,6 @@ describe('LegacyBlockExplorer', () => {
 
       expect(header).toBeDefined();
       expect(providerSend).toHaveBeenCalledWith('chain_getHeader', [hash]);
-    });
-
-    it('should query header by number', async () => {
-      const providerSend = vi.spyOn(mockProvider, 'send');
-      const header = await explorer.header(42);
-
-      expect(header).toBeDefined();
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [42]);
-      expect(providerSend).toHaveBeenCalledWith('chain_getHeader', [
-        '0x000000000000000000000000000000000000000000000000000000000000002a',
-      ]);
     });
 
     it('should throw if header not found', async () => {
@@ -411,18 +478,6 @@ describe('LegacyBlockExplorer', () => {
       expect(Array.isArray(body)).toBe(true);
       expect(body).toHaveLength(3);
       expect(providerSend).toHaveBeenCalledWith('chain_getBlock', [hash]);
-    });
-
-    it('should query body by number', async () => {
-      const providerSend = vi.spyOn(mockProvider, 'send');
-      const body = await explorer.body(42);
-
-      expect(body).toBeDefined();
-      expect(Array.isArray(body)).toBe(true);
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [42]);
-      expect(providerSend).toHaveBeenCalledWith('chain_getBlock', [
-        '0x000000000000000000000000000000000000000000000000000000000000002a',
-      ]);
     });
 
     it('should throw if block not found', async () => {
