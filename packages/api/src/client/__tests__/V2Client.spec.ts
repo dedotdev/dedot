@@ -1940,5 +1940,5 @@ describe(
       });
     });
   },
-  { retry: 3 },
+  { retry: 3, concurrent: false },
 );
