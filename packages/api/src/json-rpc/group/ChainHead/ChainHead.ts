@@ -286,9 +286,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     for (const [requestId, request] of pending) {
       const { method, params, defer } = request;
 
+      // Update subscription ID with the new one (first param for all ChainHead RPC methods)
+      const updatedParams = [...params];
+      if (updatedParams.length > 0) {
+        updatedParams[0] = this.#subscriptionId;
+      }
+
       // Retry the request with new subscriptionId
       super
-        .send(method, ...params)
+        .send(method, ...updatedParams)
         .then((result) => {
           defer.resolve(result);
           this.#pendingRequests.delete(requestId);

@@ -106,7 +106,7 @@ async function runTests() {
     await runTestWithBothClients(
       'Test 1: Quick Query (account + collection)',
       testQuickQuery,
-      100, // Disconnect after 1.5 seconds
+      50, // Disconnect after 1.5 seconds
     );
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -115,7 +115,7 @@ async function runTests() {
     await runTestWithBothClients(
       'Test 2: Medium Query (account only)',
       testMediumQuery,
-      500, // Disconnect after 5 seconds
+      100, // Disconnect after 5 seconds
     );
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
