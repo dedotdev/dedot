@@ -1,5 +1,5 @@
 import { WebSocket } from '@polkadot/x-ws';
-import { assert, DedotError } from '@dedot/utils';
+import { assert, DedotError, deferred, Deferred } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { MaxRetryAttemptedError, NetworkDisconnectedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
@@ -134,6 +134,9 @@ export class WsProvider extends SubscriptionProvider {
   #currentEndpoint?: string;
   #initialized: boolean = false;
 
+  // Recovering promise for request queueing during reconnection
+  #recovering?: Deferred<void>;
+
   constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
 
@@ -267,6 +270,12 @@ export class WsProvider extends SubscriptionProvider {
         `Cannot reconnect to network after ${this.#options.maxRetryAttempts} retry attempts`,
       );
 
+      // Reject the recovering promise, which will reject all queued requests
+      if (this.#recovering) {
+        this.#recovering.reject(error);
+        this.#recovering = undefined;
+      }
+
       this.emit('error', error);
       this._setStatus('disconnected');
     }
@@ -277,6 +286,12 @@ export class WsProvider extends SubscriptionProvider {
     this.#attempt = 0;
 
     this._setStatus('connected', this.#currentEndpoint);
+
+    // Resolve the recovering promise FIRST to allow queued requests to proceed
+    if (this.#recovering) {
+      this.#recovering.resolve();
+      this.#recovering = undefined;
+    }
 
     // re-subscribe to previous subscriptions if this is a reconnect
     Object.keys(this._subscriptions).forEach((subkey) => {
@@ -369,8 +384,6 @@ export class WsProvider extends SubscriptionProvider {
     this.#clearWs();
     this.#clearTimeoutHandler();
 
-    const error = new DedotError(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
-
     // Keep _handlers intact for retry on reconnect, they will be processed in #onSocketOpen
     this._pendingNotifications = {};
 
@@ -379,7 +392,10 @@ export class WsProvider extends SubscriptionProvider {
     // attempt to reconnect if the connection was not closed manually (via .disconnect())
     const normalClosure = event.code === 1000;
     if (!normalClosure) {
-      console.error(error.message);
+      // Initialize recovering promise to queue incoming requests during reconnection
+      this.#recovering = deferred<void>();
+
+      console.error(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
       this.#retry();
     }
   };
@@ -435,6 +451,12 @@ export class WsProvider extends SubscriptionProvider {
         this.#ws.close(1000); // Normal closure
         this._setStatus('disconnected');
 
+        // Reject the recovering promise if it exists
+        if (this.#recovering) {
+          this.#recovering.reject(new DedotError('disconnected'));
+          this.#recovering = undefined;
+        }
+
         // Reject all pending requests on normal disconnect
         Object.values(this._handlers).forEach(({ defer }) => {
           defer.reject(new DedotError('disconnected'));
@@ -451,6 +473,11 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   protected override async doSend(request: JsonRpcRequest): Promise<void> {
+    // Wait for recovery if reconnection is in progress
+    if (this.#recovering) {
+      await this.#recovering.promise;
+    }
+
     assert(this.#ws && this.status === 'connected', 'Websocket connection is not connected');
     this.#ws.send(JSON.stringify(request));
   }
