@@ -217,12 +217,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
     this.#unsub && (await this.#unsub());
 
-    // Reject all pending requests since we're explicitly unfollowing
-    // for (const request of this.#pendingRequests.values()) {
-    //   request.defer.reject(new Error(`ChainHead unfollowed ${request.method} ${JSON.stringify(request.params)}`));
-    // }
-    this.#pendingRequests.clear();
-
     this.#cleanUp();
   }
 
