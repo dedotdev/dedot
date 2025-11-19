@@ -106,21 +106,40 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
    * Initialize APIs before usage
    */
   protected override async doInitialize() {
-    let [genesisHash, runtimeVersion, metadata] = await Promise.all([
-      this.rpc.chain_getBlockHash(0),
-      this.#getRuntimeVersion(),
-      (await this.shouldPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
-    ]);
+    // Determine if this is the first initialization
+    const shouldInitialize = !this._genesisHash;
 
-    this._genesisHash = genesisHash;
-    this._runtimeVersion = runtimeVersion;
+    if (shouldInitialize) {
+      // First load: Run all requests in parallel for speed
+      let [genesisHash, runtimeVersion, metadata] = await Promise.all([
+        this.rpc.chain_getBlockHash(0),
+        this.#getRuntimeVersion(),
+        (await this.shouldPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
+      ]);
 
-    await this.setupMetadata(metadata);
+      this._genesisHash = genesisHash;
+      this._runtimeVersion = runtimeVersion;
 
-    // Initialize block explorer
-    this._blockExplorer = new LegacyBlockExplorer(this);
+      await this.setupMetadata(metadata);
 
-    this.#subscribeUpdates();
+      // Initialize block explorer
+      this._blockExplorer = new LegacyBlockExplorer(this);
+
+      // Subscribe to updates
+      this.#subscribeUpdates();
+    } else {
+      // Reconnect: Only fetch runtime version to check for changes
+      const newRuntimeVersion = await this.#getRuntimeVersion();
+
+      // Only fetch metadata if spec version has changed
+      if (newRuntimeVersion.specVersion !== this._runtimeVersion?.specVersion) {
+        this._runtimeVersion = newRuntimeVersion;
+
+        const metadata = await this.fetchMetadata();
+
+        await this.setupMetadata(metadata);
+      }
+    }
   }
 
   protected override cleanUp() {

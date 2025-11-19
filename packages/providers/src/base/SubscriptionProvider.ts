@@ -90,7 +90,6 @@ export abstract class SubscriptionProvider extends EventEmitter<ProviderEvent> i
     const { id, error, result } = response;
     const handler = this._handlers[id];
     if (!handler) {
-      console.error(`Received response with unknown id: ${id}`);
       return;
     }
 

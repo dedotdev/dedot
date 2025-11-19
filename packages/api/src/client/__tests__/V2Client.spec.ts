@@ -1924,5 +1924,5 @@ describe(
       });
     });
   },
-  { retry: 3, concurrent: false },
+  { retry: 3, concurrent: false, sequential: true },
 );
