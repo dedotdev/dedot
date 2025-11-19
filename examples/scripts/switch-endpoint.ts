@@ -106,7 +106,7 @@ async function runTests() {
     await runTestWithBothClients(
       'Test 1: Quick Query (account + collection)',
       testQuickQuery,
-      50, // Disconnect after 1.5 seconds
+      10, // --
     );
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -115,7 +115,7 @@ async function runTests() {
     await runTestWithBothClients(
       'Test 2: Medium Query (account only)',
       testMediumQuery,
-      100, // Disconnect after 5 seconds
+      50, // --
     );
 
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -124,7 +124,7 @@ async function runTests() {
     await runTestWithBothClients(
       'Test 3: Multiple Concurrent Queries',
       testConcurrentQueries,
-      50, // Disconnect after 1 second
+      10, // --
     );
 
     // Test 4: Long query (optional, commented out by default due to 1min duration)
@@ -132,7 +132,7 @@ async function runTests() {
     // await runTestWithBothClients(
     //   'Test 4: Long Query (all entries)',
     //   testLongQuery,
-    //   10000 // Disconnect after 10 seconds
+    //   10000
     // );
 
     console.log('\n🎉 All tests passed! Both V1 and V2 clients show identical retry behavior.');
