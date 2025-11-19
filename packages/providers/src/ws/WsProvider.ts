@@ -257,14 +257,17 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  #retry() {
-    if (!this.#retryEnabled) return;
+  #retry(immediate?: boolean) {
+    if (immediate !== true && !this.#retryEnabled) return;
 
     if (this.#canRetry) {
-      setTimeout(() => {
-        this._setStatus('reconnecting');
-        this.#connectAndRetry().catch(console.error);
-      }, this.#options.retryDelayMs);
+      setTimeout(
+        () => {
+          this._setStatus('reconnecting');
+          this.#connectAndRetry().catch(console.error);
+        },
+        immediate ? 0 : this.#options.retryDelayMs,
+      );
     } else {
       const error = new MaxRetryAttemptedError(
         `Cannot reconnect to network after ${this.#options.maxRetryAttempts} retry attempts`,
@@ -395,8 +398,10 @@ export class WsProvider extends SubscriptionProvider {
       // Initialize recovering promise to queue incoming requests during reconnection
       this.#recovering = deferred<void>();
 
-      console.error(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}`);
-      this.#retry();
+      console.warn(`disconnected from ${this.#currentEndpoint}: ${event.code} - ${event.reason}, reconnecting...`);
+
+      const shouldRetryImmediate = !event.code || event.code === 1005; // no code available or no status received
+      this.#retry(shouldRetryImmediate);
     }
   };
 
