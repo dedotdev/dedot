@@ -241,10 +241,12 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  async #connectAndRetry() {
+  async #connectAndRetry(skipTrackAttempts?: boolean) {
     assert(!this.#ws, 'Websocket connection already exists');
 
-    this.#attempt += 1;
+    if (!skipTrackAttempts) {
+      this.#attempt += 1;
+    }
 
     try {
       await this.#doConnect();
@@ -264,7 +266,7 @@ export class WsProvider extends SubscriptionProvider {
       setTimeout(
         () => {
           this._setStatus('reconnecting');
-          this.#connectAndRetry().catch(console.error);
+          this.#connectAndRetry(immediate).catch(console.error);
         },
         immediate ? 0 : this.#options.retryDelayMs,
       );
