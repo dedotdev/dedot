@@ -277,7 +277,7 @@ export class WsProvider extends SubscriptionProvider {
 
       // Reject the recovering promise, which will reject all queued requests
       if (this.#recovering) {
-        this.#recovering.reject(error);
+        this.#recovering.resolve();
         this.#recovering = undefined;
       }
 
