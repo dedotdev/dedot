@@ -374,7 +374,7 @@ __metadata:
     "@dedot/codecs": "workspace:*"
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
-    viem: "npm:^2.37.7"
+    viem: "npm:^2.39.3"
   languageName: unknown
   linkType: soft
 
@@ -9064,9 +9064,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.37.7":
-  version: 2.37.7
-  resolution: "viem@npm:2.37.7"
+"viem@npm:^2.39.3":
+  version: 2.39.3
+  resolution: "viem@npm:2.39.3"
   dependencies:
     "@noble/curves": "npm:1.9.1"
     "@noble/hashes": "npm:1.8.0"
@@ -9081,7 +9081,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/07535f60c4bd77e9c85be2674dfbe7568fd32bbb79c572f9c806745372edf7ee457094355e9c8ae6ad1e4c7a3312ac161e6737480ab2b5d479ce3230862680dc
+  checksum: 10c0/4fe197e74ff14553998c8f833711a10ec5df218f6d78ed2cf8849cfd6a1ac5a54d43dc89d3d4f13f84394d1c14f22c8c3f3e04e668c015e62962359ad54f7028
   languageName: node
   linkType: hard
 
