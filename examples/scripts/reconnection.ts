@@ -11,7 +11,7 @@ const provider = new WsProvider({
 });
 
 console.log('Connecting...');
-const client = new DedotClient({ provider, rpcVersion: 'legacy' });
+const client = new DedotClient({ provider, rpcVersion: 'v2' });
 
 client.on('connected', (connectedUrl) => {
   console.log('Connected Endpoint:', connectedUrl);
@@ -26,7 +26,7 @@ for (let i = 0; i < 50; i++) {
   });
 
   if (i === 20) {
-    await waitFor(500);
+    // await waitFor(500);
     await provider.disconnect(true);
     await waitFor(500);
   }

@@ -472,12 +472,16 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  protected override async doSend(request: JsonRpcRequest): Promise<void> {
+  override async send<T = any>(method: string, params: any[]): Promise<T> {
     // Wait for recovery if reconnection is in progress
     if (this.#recovering) {
       await this.#recovering.promise;
     }
 
+    return super.send(method, params);
+  }
+
+  protected override async doSend(request: JsonRpcRequest): Promise<void> {
     assert(this.#ws && this.status === 'connected', 'Websocket connection is not connected');
     this.#ws.send(JSON.stringify(request));
   }

@@ -547,4 +547,208 @@ describe('WsProvider', () => {
       });
     });
   });
+
+  describe('Request Queueing During Reconnection', () => {
+    const getWs = (provider: WsProvider) => (provider as any).__unsafeWs();
+
+    describe('Requests queued during disconnection', () => {
+      it('queues requests when provider is reconnecting and resolves after reconnection', async () => {
+        const provider = new WsProvider({
+          endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+          expect(provider.status).toBe('connected');
+
+          // Simulate disconnection (non-normal closure triggers reconnect)
+          getWs(provider).close(3000);
+
+          // Wait for status to change to disconnected/reconnecting
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          expect(provider.status).not.toBe('connected');
+
+          // Send request during reconnection - should queue and wait
+          const requestPromise = provider.send('test_method', []);
+
+          // Wait for reconnection to complete
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Request should resolve after reconnection
+          await expect(requestPromise).resolves.toBe('ok');
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('queues multiple requests during reconnection and all resolve', async () => {
+        const provider = new WsProvider({
+          endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+
+          // Simulate disconnection
+          getWs(provider).close(3000);
+
+          // Wait for disconnection
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          // Queue multiple requests during reconnection
+          const requests = [provider.send('method1', []), provider.send('method2', []), provider.send('method3', [])];
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // All requests should resolve
+          const results = await Promise.all(requests);
+          expect(results).toEqual(['ok', 'ok', 'ok']);
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+    });
+
+    describe('Queued requests rejected on normal disconnect', () => {
+      it('rejects queued requests when disconnect() called without switchEndpoint', async () => {
+        const provider = new WsProvider({
+          endpoint: FAKE_WS_URL,
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        await provider.connect();
+
+        // Simulate disconnection to create recovering promise
+        getWs(provider).close(3000);
+
+        // Wait for disconnection
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // Queue a request during reconnection (use delayed_method so it's still pending after reconnection)
+        const requestPromise = provider.send('delayed_method', []);
+
+        // Wait for reconnection to complete so #ws exists
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        // Disconnect normally (should reject pending handlers including the queued request)
+        await provider.disconnect();
+
+        // Request should be rejected
+        await expect(requestPromise).rejects.toThrow('disconnected');
+      });
+
+      it('rejects pending requests in handlers on normal disconnect', async () => {
+        const provider = new WsProvider(FAKE_WS_URL);
+
+        await provider.connect();
+
+        // Start a request that will be pending (delayed response)
+        const requestPromise = provider.send('delayed_method', []);
+
+        // Disconnect normally while request is pending
+        await provider.disconnect();
+
+        // Request should be rejected
+        await expect(requestPromise).rejects.toThrow('disconnected');
+      });
+    });
+
+    describe('Endpoint switching with disconnect(true)', () => {
+      it('queues requests during reconnection after endpoint switch', async () => {
+        const provider = new WsProvider({
+          endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+          expect(provider.status).toBe('connected');
+
+          // Initiate endpoint switch
+          provider.disconnect(true).catch(() => {});
+
+          // Wait for disconnection
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          // Queue requests during reconnection
+          const requests = [provider.send('method1', []), provider.send('method2', [])];
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Requests should resolve after reconnection
+          const results = await Promise.all(requests);
+          expect(results).toEqual(['ok', 'ok']);
+          expect(provider.status).toBe('connected');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+
+      it('pending requests during endpoint switch are resolved', async () => {
+        const provider = new WsProvider({
+          endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        await provider.connect();
+
+        // Start requests with delayed response so they're still pending during endpoint switch
+        const requests = [provider.send('delayed_method', []), provider.send('delayed_method', [])];
+
+        // Immediately switch endpoints while requests are pending
+        provider.disconnect(true).catch(() => {});
+
+        // Wait for reconnection
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        // Verify provider reconnected
+        expect(provider.status).toBe('connected');
+
+        // Disconnect to reject the pending delayed requests
+        await provider.disconnect();
+
+        // Requests should be rejected since we disconnected
+        await expect(Promise.all(requests)).rejects.toThrow('disconnected');
+      });
+
+      it('does not reject recovering promise on endpoint switch', async () => {
+        const provider = new WsProvider({
+          endpoint: [FAKE_WS_URL, FAKE_WS_URL_2],
+          retryDelayMs: 100,
+        });
+        provider.on('error', () => {});
+
+        try {
+          await provider.connect();
+
+          // Simulate disconnection to create recovering promise
+          getWs(provider).close(3000);
+
+          // Wait for disconnection
+          await new Promise((resolve) => setTimeout(resolve, 50));
+
+          // Queue a request
+          const requestPromise = provider.send('test_method', []);
+
+          // Wait for reconnection
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
+          // Request should resolve (not be rejected)
+          await expect(requestPromise).resolves.toBe('ok');
+        } finally {
+          await provider.disconnect().catch(() => {});
+        }
+      });
+    });
+  });
 });

@@ -235,7 +235,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const defer = deferred<void>();
 
     try {
-      this.#subscriptionId = undefined;
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
       const SIGNAL_THRESHOLD = this.#__unsafe__isSmoldot() ? 2 : 1;
