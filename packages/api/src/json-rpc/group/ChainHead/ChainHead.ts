@@ -12,6 +12,7 @@ import type {
   StorageQuery,
   StorageResult,
 } from '@dedot/types/json-rpc';
+import { HashFn } from '@dedot/utils';
 import {
   assert,
   AsyncQueue,
@@ -24,6 +25,7 @@ import {
   waitFor,
   LRUCache,
 } from '@dedot/utils';
+import { detectHasherFromBlockHeader } from '../../../client/hasherDetection.js';
 import type { IJsonRpcClient } from '../../../types.js';
 import { Archive } from '../Archive.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
@@ -87,6 +89,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #lastBestBlockNumber?: number; // Track last emitted best block number for gap detection
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
+  #hasher?: HashFn; // detected hasher from block header
   #followResponseQueue: AsyncQueue;
   #retryQueue: AsyncQueue;
   #recovering?: Deferred<void>;
@@ -195,6 +198,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   async finalizedBlock(): Promise<PinnedBlock> {
     return this.findBlock(await this.finalizedHash())!;
+  }
+
+  /**
+   * Returns the detected hasher for the chain
+   * Returns undefined if detection failed (client should use default)
+   */
+  async hasher(): Promise<HashFn | undefined> {
+    await this.#ensureFollowed();
+    return this.#hasher;
   }
 
   findBlock(hash: BlockHash): PinnedBlock | undefined {
@@ -639,6 +651,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       prevPinnedBlocks,
     );
 
+    // Detect hasher using the finalized header we just fetched
+    this.#hasher = detectHasherFromBlockHeader(finalizedHeader, this.#finalizedHash!);
+
     Object.values(this.#pinnedBlocks).forEach((b, idx) => {
       b.number += startingHeader.number;
       if (idx === 0) {
@@ -860,6 +875,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#blockUsage.clear();
     this.clearCache();
     this.#operationQueue.cancel();
+    this.#hasher = undefined;
   }
 
   async #ensureFollowed(): Promise<void> {

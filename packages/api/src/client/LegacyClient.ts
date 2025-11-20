@@ -1,8 +1,8 @@
-import { BlockHash, type Extrinsic, Hash, Header, PortableRegistry } from '@dedot/codecs';
+import { BlockHash, type Extrinsic, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { Callback, GenericSubstrateApi, TxUnsub } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
-import { assert, HexString, noop } from '@dedot/utils';
+import { assert, HashFn, HexString, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -19,6 +19,7 @@ import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
 import type { ApiOptions, BlockExplorer, IChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { LegacyBlockExplorer } from './explorer/index.js';
+import { detectHasherFromBlockHeader, detectHasherFromMetadata } from './hasherDetection.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
@@ -65,6 +66,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
 {
   #runtimeSubscriptionUnsub?: () => void;
   #healthTimer?: ReturnType<typeof setInterval>;
+  #hasher?: HashFn;
   protected _blockExplorer?: BlockExplorer;
 
   /**
@@ -178,6 +180,31 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
 
   async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {
     return this.toSubstrateRuntimeVersion(await this.rpc.state_getRuntimeVersion(at));
+  }
+
+  protected override async setMetadata(metadata: Metadata) {
+    this._metadata = metadata;
+
+    // Detect hasher if not provided by user
+    if (!this.options.hasher) {
+      // Try metadata first
+      this.#hasher = detectHasherFromMetadata(metadata);
+
+      // Fallback to block header detection
+      if (!this.#hasher) {
+        try {
+          const hash: BlockHash = await this.rpc.chain_getFinalizedHead();
+          const header: Header = await this.rpc.chain_getHeader(hash);
+          if (header) {
+            this.#hasher = detectHasherFromBlockHeader(header, hash);
+          }
+        } catch {
+          // Ignore errors in fallback detection
+        }
+      }
+    }
+
+    this._registry = new PortableRegistry<ChainApi['types']>(metadata.latest, this.#hasher || this.options.hasher);
   }
 
   #subscribeHealth() {
@@ -338,7 +365,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, targetVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.#hasher || this.options.hasher);
       }
     }
 

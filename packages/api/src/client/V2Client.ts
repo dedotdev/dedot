@@ -1,8 +1,17 @@
-import { $H256, $Header, $RuntimeVersion, BlockHash, type Extrinsic, Hash, PortableRegistry } from '@dedot/codecs';
+import {
+  $H256,
+  $Header,
+  $RuntimeVersion,
+  BlockHash,
+  type Extrinsic,
+  Hash,
+  Metadata,
+  PortableRegistry,
+} from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import { Callback, GenericStorageQuery, GenericSubstrateApi, TxUnsub } from '@dedot/types';
-import { assert, concatU8a, DedotError, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { assert, concatU8a, DedotError, HashFn, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -43,6 +52,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
   protected _blockExplorer?: BlockExplorer;
+  #hasher?: HashFn;
 
   /**
    * Use factory methods (`create`, `new`) to create `V2Client` instances.
@@ -204,6 +214,20 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this.doneRuntimeUpgrade();
   };
 
+  protected override async setMetadata(metadata: Metadata) {
+    this._metadata = metadata;
+
+    // Detect hasher from ChainHead if not provided by user
+    if (!this.options.hasher) {
+      this.#hasher = await this.chainHead.hasher();
+    }
+
+    this._registry = new PortableRegistry<ChainApi['types']>(
+      metadata.latest, // --
+      this.#hasher || this.options.hasher,
+    );
+  }
+
   protected override async beforeDisconnect(): Promise<void> {
     await this.chainHead.unfollow();
   }
@@ -321,7 +345,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, parentVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.#hasher || this.options.hasher);
       }
     }
 
