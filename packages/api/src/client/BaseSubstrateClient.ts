@@ -158,7 +158,7 @@ export abstract class BaseSubstrateClient<
       throw new Error('Cannot load metadata');
     }
 
-    this.setMetadata(metadata);
+    await this.setMetadata(metadata);
   }
 
   /**
@@ -194,7 +194,7 @@ export abstract class BaseSubstrateClient<
     }
   }
 
-  protected setMetadata(metadata: Metadata) {
+  protected async setMetadata(metadata: Metadata) {
     this._metadata = metadata;
     this._registry = new PortableRegistry<ChainApi['types']>(metadata.latest, this.options.hasher);
   }
