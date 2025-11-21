@@ -86,6 +86,7 @@ export async function generateTypesFromEndpoint(options: GenerateTypesFromEndpoi
       outDir,
       extension,
       useSubPaths,
+      appendSpecVersion: !!blockHash,
     });
   } finally {
     if (shouldDisconnect) {
@@ -102,6 +103,7 @@ export interface GenerateTypesOptions {
   outDir?: string;
   extension?: string;
   useSubPaths?: boolean;
+  appendSpecVersion?: boolean;
 }
 
 export async function generateTypes(options: GenerateTypesOptions): Promise<GeneratedResult> {
@@ -113,9 +115,12 @@ export async function generateTypes(options: GenerateTypesOptions): Promise<Gene
     outDir = '.',
     extension = 'd.ts',
     useSubPaths = false,
+    appendSpecVersion = false,
   } = options;
 
-  const dirPath = path.resolve(outDir, stringDashCase(chain));
+  // Build folder suffix with spec version if requested
+  const folderSuffix = appendSpecVersion ? `-${runtimeVersion.specVersion}` : '';
+  const dirPath = path.resolve(outDir, stringDashCase(chain) + folderSuffix);
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
   const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
@@ -131,7 +136,9 @@ export async function generateTypes(options: GenerateTypesOptions): Promise<Gene
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
-  const interfaceName = `${stringPascalCase(chain)}Api`;
+  // Build interface suffix with spec version if requested
+  const interfaceSuffix = appendSpecVersion ? runtimeVersion.specVersion : '';
+  const interfaceName = `${stringPascalCase(chain)}Api${interfaceSuffix}`;
 
   const typesGen = new TypesGen(metadata);
   const constsGen = new ConstsGen(typesGen);
