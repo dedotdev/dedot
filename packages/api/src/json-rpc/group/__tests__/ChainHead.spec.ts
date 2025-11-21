@@ -1,3 +1,4 @@
+import { $Header, type Header } from '@dedot/codecs';
 import {
   ChainHeadRuntimeVersion,
   MethodResponse,
@@ -9,7 +10,7 @@ import {
   OperationStorageItems,
   StorageQuery,
 } from '@dedot/types/json-rpc';
-import { waitFor } from '@dedot/utils';
+import { blake2_256, type HashFn, HexString, keccak_256, u8aToHex, waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
@@ -1923,6 +1924,174 @@ describe('ChainHead', () => {
       // Should NOT try to fill gap from before stop (tracking was reset)
       // Just emits new blocks
       expect(emittedBlocks.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('hasher detection', () => {
+    let providerSend: MockInstance;
+    let providerSubscribe: MockInstance;
+    let simulator: ReturnType<typeof newChainHeadSimulator>;
+    let initialRuntime: ChainHeadRuntimeVersion;
+
+    beforeEach(() => {
+      provider = new MockProvider();
+      client = new JsonRpcClient({ provider });
+      chainHead = new ChainHead(client);
+      simulator = newChainHeadSimulator({ provider });
+      initialRuntime = simulator.runtime;
+
+      providerSend = vi.spyOn(provider, 'send');
+      providerSubscribe = vi.spyOn(provider, 'subscribe');
+    });
+
+    /**
+     * Helper function to create a header with proper hash for a given hasher
+     */
+    function createTestHeader(
+      hasher: HashFn,
+      blockNumber: number,
+      parentHash: HexString = '0x0000000000000000000000000000000000000000000000000000000000000000',
+    ) {
+      const header: Header = {
+        parentHash,
+        number: blockNumber, // Use decimal number for encoding
+        stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        digest: { logs: [] },
+      };
+
+      const encoded = $Header.encode(header);
+      const hash = u8aToHex(hasher(encoded));
+
+      return {
+        header,
+        hash,
+        encodedHex: u8aToHex(encoded),
+      };
+    }
+
+    it('should detect blake2_256 hasher from finalized block header', async () => {
+      // Create a test header with proper blake2_256 hash
+      // Use block number 1 to keep encoding simple
+      const { hash: finalizedHash, encodedHex } = createTestHeader(blake2_256, 1);
+
+      // Mock chainHead_v1_header to return the encoded header
+      const headerMock = vi.fn((params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+      provider.setRpcRequest('chainHead_v1_header', headerMock);
+
+      // Create custom initialized event with the real hash
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify header was requested
+      expect(headerMock).toHaveBeenCalledWith([simulator.subscriptionId, finalizedHash]);
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(blake2_256);
+    });
+
+    it('should detect keccak_256 hasher from finalized block header', async () => {
+      // Create a test header with proper keccak_256 hash
+      // Use block number 1 to keep encoding simple
+      const { hash: finalizedHash, encodedHex } = createTestHeader(keccak_256, 1);
+
+      // Mock chainHead_v1_header to return the encoded header
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+
+      // Create custom initialized event with the real hash
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(keccak_256);
+    });
+
+    it('should return undefined when hasher cannot be detected', async () => {
+      const { hash: claimedHash } = createTestHeader(blake2_256, 1);
+      // Create a different header with different data (block 2 header for block 1 hash)
+      const { encodedHex: wrongEncodedHex } = createTestHeader(blake2_256, 2);
+
+      // Return wrong header for the claimed hash
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === claimedHash) {
+          // Return wrong header data
+          return wrongEncodedHex;
+        }
+        return '0x';
+      });
+
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [claimedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Hasher should not be detected (header doesn't match hash)
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBeUndefined();
+    });
+
+    it('should correctly detect hasher using block number 2', async () => {
+      // Test with a different block number to ensure it works for various blocks
+      const { hash: finalizedHash, encodedHex } = createTestHeader(blake2_256, 2);
+
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        if (params[1] === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(blake2_256);
     });
   });
 });
