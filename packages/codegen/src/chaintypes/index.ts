@@ -1,11 +1,12 @@
-import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
-import { MetadataLatest } from '@dedot/codecs';
+import { DedotClient, SubstrateRuntimeVersion } from '@dedot/api';
+import { Metadata, MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
-import { stringDashCase, stringPascalCase } from '@dedot/utils';
+import { assert, HexString, stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GeneratedResult } from '../types.js';
+import { resolveBlockHash } from '../utils.js';
 import {
   ConstsGen,
   ErrorsGen,
@@ -19,44 +20,107 @@ import {
   TypesGen,
 } from './generator/index.js';
 
-export async function generateTypesFromEndpoint(
-  chain: string,
-  endpoint: string,
-  outDir?: string,
-  extension: string = 'd.ts',
-  useSubPaths: boolean = false,
-): Promise<GeneratedResult> {
-  // Immediately throw error if cannot connect to provider for the first time.
-  const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
-  const { methods }: RpcMethods = await client.rpc.rpc_methods();
-
-  chain = chain || client.runtimeVersion.specName || 'local';
-
-  const result = await generateTypes(
-    chain,
-    client.metadata.latest,
-    methods,
-    client.runtimeVersion,
-    outDir,
-    extension,
-    useSubPaths,
-  );
-
-  await client.disconnect();
-
-  return result;
+export interface GenerateTypesFromEndpointOptions {
+  chain: string;
+  endpoint?: string;
+  client?: DedotClient;
+  outDir?: string;
+  extension?: string;
+  useSubPaths?: boolean;
+  at?: string;
 }
 
-export async function generateTypes(
-  chain: string,
-  metadata: MetadataLatest,
-  rpcMethods: string[],
-  runtimeVersion: SubstrateRuntimeVersion,
-  outDir: string = '.',
-  extension: string = 'd.ts',
-  useSubPaths: boolean = false,
-): Promise<GeneratedResult> {
-  const dirPath = path.resolve(outDir, stringDashCase(chain));
+export async function generateTypesFromEndpoint(options: GenerateTypesFromEndpointOptions): Promise<GeneratedResult> {
+  const { chain, endpoint, client: providedClient, outDir, extension = 'd.ts', useSubPaths = false, at } = options;
+
+  // Validate that either endpoint or client is provided
+  if (!endpoint && !providedClient) {
+    throw new Error('Either "endpoint" or "client" must be provided');
+  }
+
+  if (endpoint && providedClient) {
+    throw new Error('Cannot provide both "endpoint" and "client"');
+  }
+
+  // Create client if not provided
+  const client =
+    providedClient || (await DedotClient.legacy(new WsProvider({ endpoint: endpoint!, retryDelayMs: 0, timeout: 0 })));
+  const shouldDisconnect = !providedClient;
+
+  try {
+    const { methods }: RpcMethods = await client.rpc.rpc_methods();
+
+    // Resolve block hash if `at` is provided
+    let blockHash: HexString | undefined;
+
+    if (at) {
+      blockHash = await resolveBlockHash(client, at);
+    }
+
+    // Get runtime version and metadata at the specified block
+    let runtimeVersion: SubstrateRuntimeVersion;
+    let metadata: Metadata;
+
+    if (blockHash) {
+      // Get the header of the target block
+      const header = await client.block.header(blockHash);
+      assert(`Header not found for block hash: ${blockHash}`);
+
+      const childBlockHash = await client.rpc.chain_getBlockHash(header.number + 1);
+      const clientAt = await client.at(childBlockHash!);
+
+      runtimeVersion = clientAt.runtimeVersion;
+      metadata = clientAt.metadata;
+    } else {
+      runtimeVersion = client.runtimeVersion;
+      metadata = client.metadata;
+    }
+
+    const resolvedChain = chain || runtimeVersion.specName || 'local';
+
+    return await generateTypes({
+      chain: resolvedChain,
+      metadata: metadata.latest,
+      rpcMethods: methods,
+      runtimeVersion,
+      outDir,
+      extension,
+      useSubPaths,
+      appendSpecVersion: !!blockHash,
+    });
+  } finally {
+    if (shouldDisconnect) {
+      await client.disconnect();
+    }
+  }
+}
+
+export interface GenerateTypesOptions {
+  chain: string;
+  metadata: MetadataLatest;
+  rpcMethods: string[];
+  runtimeVersion: SubstrateRuntimeVersion;
+  outDir?: string;
+  extension?: string;
+  useSubPaths?: boolean;
+  appendSpecVersion?: boolean;
+}
+
+export async function generateTypes(options: GenerateTypesOptions): Promise<GeneratedResult> {
+  const {
+    chain,
+    metadata,
+    rpcMethods,
+    runtimeVersion,
+    outDir = '.',
+    extension = 'd.ts',
+    useSubPaths = false,
+    appendSpecVersion = false,
+  } = options;
+
+  // Build folder suffix with spec version if requested
+  const folderSuffix = appendSpecVersion ? `-${runtimeVersion.specVersion}` : '';
+  const dirPath = path.resolve(outDir, stringDashCase(chain) + folderSuffix);
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
   const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
   const queryTypesFileName = path.join(dirPath, `query.${extension}`);
@@ -72,7 +136,9 @@ export async function generateTypes(
     fs.mkdirSync(dirPath, { recursive: true });
   }
 
-  const interfaceName = `${stringPascalCase(chain)}Api`;
+  // Build interface suffix with spec version if requested
+  const interfaceSuffix = appendSpecVersion ? runtimeVersion.specVersion : '';
+  const interfaceName = `${stringPascalCase(chain)}Api${interfaceSuffix}`;
 
   const typesGen = new TypesGen(metadata);
   const constsGen = new ConstsGen(typesGen);

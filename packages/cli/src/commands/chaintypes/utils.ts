@@ -1,9 +1,8 @@
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { ConstantExecutor } from '@dedot/api';
+import { ConstantExecutor, DedotClient } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
-import * as $ from '@dedot/shape';
-import { HexString, hexToU8a, isHex } from '@dedot/utils';
+import { assert, HexString, hexToU8a, isHex } from '@dedot/utils';
 import { getMetadataFromWasmRuntime } from '@dedot/wasm';
 import * as fs from 'fs';
 import { DecodedMetadataInfo, ParsedResult } from './types.js';
@@ -75,4 +74,44 @@ export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
     runtimeVersion,
     rpcMethods: rpc.methods,
   };
+};
+
+export const findBlockFromSpecVersion = async (
+  client: DedotClient,
+  specVersion: number,
+): Promise<{ blockHash: HexString; blockNumber: number }> => {
+  const upperBound = client.runtimeVersion.specVersion;
+  const lowerBound = (await client.rpc.state_getRuntimeVersion(await client.rpc.chain_getBlockHash(0))).specVersion;
+
+  assert(
+    specVersion >= lowerBound,
+    `Specified specVersion ${specVersion} is lower than the earliest specVersion ${lowerBound} of the chain.`,
+  );
+
+  assert(
+    specVersion <= upperBound,
+    `Specified specVersion ${specVersion} is higher than the latest specVersion ${upperBound} of the chain at the current block.`,
+  );
+
+  let high = (await client.block.best()).number;
+  let low = 0;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const midBlockHash = await client.rpc.chain_getBlockHash(mid);
+    assert(midBlockHash, `Failed to get block hash at block number ${mid}`);
+
+    const midRuntimeVersion = await client.rpc.state_getRuntimeVersion(midBlockHash);
+    const midSpecVersion = midRuntimeVersion.specVersion;
+
+    if (midSpecVersion === specVersion) {
+      return { blockHash: midBlockHash, blockNumber: mid };
+    } else if (midSpecVersion < specVersion) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  assert(false, `Could not find a block with specVersion ${specVersion}.`);
 };

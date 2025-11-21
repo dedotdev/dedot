@@ -1,4 +1,6 @@
+import { DedotClient } from '@dedot/api';
 import { ItemDeprecationInfoDefV16, EnumDeprecationInfoDefV16 } from '@dedot/codecs';
+import { DedotError, HexString, isHex } from '@dedot/utils';
 import * as fs from 'fs';
 import handlebars from 'handlebars';
 import * as path from 'path';
@@ -122,3 +124,30 @@ export const getVariantDeprecationComment = (
       return [];
   }
 };
+
+/**
+ * Resolve block hash from either a block hash or block number
+ * @param client - The API client
+ * @param at - Block hash (0x...) or block number (number)
+ * @returns The resolved block hash
+ */
+export async function resolveBlockHash(client: DedotClient, at: string): Promise<HexString> {
+  // Check if it's a hex string (block hash)
+  if (isHex(at)) {
+    return at as HexString;
+  }
+
+  // Try to parse as a number (block height)
+  const blockNumber = parseInt(at, 10);
+  if (isNaN(blockNumber) || blockNumber < 0) {
+    throw new DedotError(`Invalid block specifier: ${at}. Must be a block hash (0x...) or block number.`);
+  }
+
+  // Resolve block number to block hash
+  const blockHash = await client.rpc.chain_getBlockHash(blockNumber);
+  if (!blockHash) {
+    throw new DedotError(`Block not found at height: ${blockNumber}`);
+  }
+
+  return blockHash;
+}
