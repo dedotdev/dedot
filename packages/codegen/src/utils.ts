@@ -1,4 +1,4 @@
-import { LegacyClient } from '@dedot/api';
+import { DedotClient } from '@dedot/api';
 import { ItemDeprecationInfoDefV16, EnumDeprecationInfoDefV16 } from '@dedot/codecs';
 import { DedotError, HexString, isHex } from '@dedot/utils';
 import * as fs from 'fs';
@@ -131,7 +131,7 @@ export const getVariantDeprecationComment = (
  * @param at - Block hash (0x...) or block number (number)
  * @returns The resolved block hash
  */
-export async function resolveBlockHash(client: LegacyClient, at: string): Promise<HexString> {
+export async function resolveBlockHash(client: DedotClient, at: string): Promise<HexString> {
   // Check if it's a hex string (block hash)
   if (isHex(at.startsWith)) {
     return at as HexString;

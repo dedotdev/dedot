@@ -1,4 +1,6 @@
+import { DedotClient } from '@dedot/api';
 import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import { WsProvider } from '@dedot/providers';
 import { stringCamelCase, stringPascalCase } from '@dedot/utils';
 import ora from 'ora';
 import * as path from 'path';
@@ -72,18 +74,32 @@ export const chaintypes: CommandModule<Args, Args> = {
 
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {
-        if (spec) {
-          spinner.text = `Resolving block hash for specVersion ${spec}...`;
-          at = await resolveSpecVersionBlockHash(wsUrl!, spec);
-          spinner.succeed(`Resolved block hash ${at} for specVersion ${spec}`);
+        // Create client once and reuse for both operations
+        const client = await DedotClient.legacy(new WsProvider({ endpoint: wsUrl! }));
+
+        try {
+          if (spec) {
+            spinner.text = `Resolving block hash for specVersion ${spec}...`;
+            at = await resolveSpecVersionBlockHash(client, spec);
+            spinner.succeed(`Resolved block hash ${at} for specVersion ${spec}`);
+          }
+
+          spinner.start();
+
+          const atText = at ? ` at ${at}` : '';
+          spinner.text = `Generating chaintypes via endpoint: ${wsUrl}${atText}`;
+          generatedResult = await generateTypesFromEndpoint({
+            chain,
+            client,
+            outDir,
+            extension,
+            useSubPaths: subpath,
+            at,
+          });
+          spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}${atText}`);
+        } finally {
+          await client.disconnect();
         }
-
-        spinner.start();
-
-        const atText = at ? ` at ${at}` : '';
-        spinner.text = `Generating chaintypes via endpoint: ${wsUrl}${atText}`;
-        generatedResult = await generateTypesFromEndpoint(chain, wsUrl!, outDir, extension, subpath, at);
-        spinner.succeed(`Generated chaintypes via endpoint: ${wsUrl}${atText}`);
       }
 
       const { interfaceName, outputFolder } = generatedResult;

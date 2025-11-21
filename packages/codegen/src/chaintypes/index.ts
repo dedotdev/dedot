@@ -1,4 +1,4 @@
-import { LegacyClient, SubstrateRuntimeVersion } from '@dedot/api';
+import { DedotClient, SubstrateRuntimeVersion } from '@dedot/api';
 import { Metadata, MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
@@ -20,54 +20,76 @@ import {
   TypesGen,
 } from './generator/index.js';
 
+export interface GenerateTypesFromEndpointOptions {
+  chain: string;
+  endpoint?: string;
+  client?: DedotClient;
+  outDir?: string;
+  extension?: string;
+  useSubPaths?: boolean;
+  at?: string;
+}
+
 export async function generateTypesFromEndpoint(
-  chain: string,
-  endpoint: string,
-  outDir?: string,
-  extension: string = 'd.ts',
-  useSubPaths: boolean = false,
-  at?: string, // blockHash or blockHeight
+  options: GenerateTypesFromEndpointOptions,
 ): Promise<GeneratedResult> {
-  // Immediately throw error if cannot connect to provider for the first time.
-  const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
-  const { methods }: RpcMethods = await client.rpc.rpc_methods();
+  const { chain, endpoint, client: providedClient, outDir, extension = 'd.ts', useSubPaths = false, at } = options;
 
-  // Resolve block hash if `at` or `spec` is provided
-  let blockHash: HexString | undefined;
-
-  if (at) {
-    blockHash = await resolveBlockHash(client, at);
+  // Validate that either endpoint or client is provided
+  if (!endpoint && !providedClient) {
+    throw new Error('Either "endpoint" or "client" must be provided');
   }
 
-  // Get runtime version and metadata at the specified block
-  let runtimeVersion: SubstrateRuntimeVersion;
-  let metadata: Metadata;
-
-  if (blockHash) {
-    const clientAt = await client.at(blockHash);
-
-    runtimeVersion = clientAt.runtimeVersion;
-    metadata = clientAt.metadata;
-  } else {
-    runtimeVersion = client.runtimeVersion;
-    metadata = client.metadata;
+  if (endpoint && providedClient) {
+    throw new Error('Cannot provide both "endpoint" and "client"');
   }
 
-  chain = chain || runtimeVersion.specName || 'local';
+  // Create client if not provided
+  const client = providedClient || (await DedotClient.legacy(new WsProvider({ endpoint: endpoint!, retryDelayMs: 0, timeout: 0 })));
+  const shouldDisconnect = !providedClient;
 
-  const result = await generateTypes(
-    chain, // --
-    metadata.latest,
-    methods,
-    runtimeVersion,
-    outDir,
-    extension,
-    useSubPaths,
-  );
+  try {
+    const { methods }: RpcMethods = await client.rpc.rpc_methods();
 
-  await client.disconnect();
+    // Resolve block hash if `at` is provided
+    let blockHash: HexString | undefined;
 
-  return result;
+    if (at) {
+      blockHash = await resolveBlockHash(client, at);
+    }
+
+    // Get runtime version and metadata at the specified block
+    let runtimeVersion: SubstrateRuntimeVersion;
+    let metadata: Metadata;
+
+    if (blockHash) {
+      const clientAt = await client.at(blockHash);
+
+      runtimeVersion = clientAt.runtimeVersion;
+      metadata = clientAt.metadata;
+    } else {
+      runtimeVersion = client.runtimeVersion;
+      metadata = client.metadata;
+    }
+
+    const resolvedChain = chain || runtimeVersion.specName || 'local';
+
+    const result = await generateTypes(
+      resolvedChain,
+      metadata.latest,
+      methods,
+      runtimeVersion,
+      outDir,
+      extension,
+      useSubPaths,
+    );
+
+    return result;
+  } finally {
+    if (shouldDisconnect) {
+      await client.disconnect();
+    }
+  }
 }
 
 export async function generateTypes(

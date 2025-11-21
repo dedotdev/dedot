@@ -1,6 +1,6 @@
 import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
-import { ConstantExecutor, LegacyClient } from '@dedot/api';
+import { ConstantExecutor, DedotClient } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import * as $ from '@dedot/shape';
@@ -80,9 +80,7 @@ export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
   };
 };
 
-export const resolveSpecVersionBlockHash = async (endpoint: string, specVersion: number): Promise<HexString> => {
-  const client = await LegacyClient.new(new WsProvider({ endpoint, retryDelayMs: 0, timeout: 0 }));
-
+export const resolveSpecVersionBlockHash = async (client: DedotClient, specVersion: number): Promise<HexString> => {
   const upperBound = client.runtimeVersion.specVersion;
   const lowerBound = (await client.rpc.state_getRuntimeVersion(await client.rpc.chain_getBlockHash(0))).specVersion;
 
@@ -108,7 +106,6 @@ export const resolveSpecVersionBlockHash = async (endpoint: string, specVersion:
     const midSpecVersion = midRuntimeVersion.specVersion;
 
     if (midSpecVersion === specVersion) {
-      await client.disconnect();
       return midBlockHash!;
     } else if (midSpecVersion < specVersion) {
       low = mid + 1;
@@ -116,8 +113,6 @@ export const resolveSpecVersionBlockHash = async (endpoint: string, specVersion:
       high = mid - 1;
     }
   }
-
-  await client.disconnect();
 
   throw new Error(`Could not find a block with specVersion ${specVersion}.`);
 };
