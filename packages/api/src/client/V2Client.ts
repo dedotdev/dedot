@@ -217,8 +217,9 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   protected override async setMetadata(metadata: Metadata) {
     this._metadata = metadata;
 
-    // Detect hasher from ChainHead if not provided by user
-    if (!this.options.hasher) {
+    // Here we assume that hasher method of a chain is less likely to change via runtime upgrades
+    // So for now, we only need to detect it in initial connection and reuse it later
+    if (!this.#hasher && !this.options.hasher) {
       this.#hasher = await this.chainHead.hasher();
     }
 

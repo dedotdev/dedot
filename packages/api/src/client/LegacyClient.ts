@@ -186,7 +186,9 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     this._metadata = metadata;
 
     // Detect hasher if not provided by user
-    if (!this.options.hasher) {
+    // Here we assume that hasher method of a chain is less likely to be changed via runtime upgrades
+    // So for now, we only need to detect it in initial connection and reuse it later
+    if (!this.#hasher && !this.options.hasher) {
       // Try metadata first
       this.#hasher = detectHasherFromMetadata(metadata);
 

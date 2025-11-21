@@ -7,6 +7,7 @@ const NETWORKS = [
   { name: 'Polkadot', endpoint: 'wss://polkadot.api.onfinality.io/public-ws' },
   { name: 'Hyperbridge', endpoint: 'wss://nexus.ibp.network' },
   { name: 'Polkadot Asset Hub', endpoint: 'wss://statemint.api.onfinality.io/public-ws' },
+  { name: 'Aleph', endpoint: 'wss://ws.azero.dev' },
 ];
 
 // Logging utilities
@@ -26,7 +27,9 @@ async function testHasherDetection(networkName: string, endpoint: string, rpcVer
   // Create provider with increased timeout for Legacy client
   const provider = new WsProvider(endpoint);
 
+  console.time('Client initialization took:');
   const client = await DedotClient.new({ provider, rpcVersion });
+  console.timeEnd('Client initialization took:');
 
   // Get finalized block info
   const finalizedBlock = await client.block.finalized();
