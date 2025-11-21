@@ -76,7 +76,10 @@ export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
   };
 };
 
-export const resolveBlockHashFromSpecVersion = async (client: DedotClient, specVersion: number): Promise<HexString> => {
+export const findBlockFromSpecVersion = async (
+  client: DedotClient,
+  specVersion: number,
+): Promise<{ blockHash: HexString; blockNumber: number }> => {
   const upperBound = client.runtimeVersion.specVersion;
   const lowerBound = (await client.rpc.state_getRuntimeVersion(await client.rpc.chain_getBlockHash(0))).specVersion;
 
@@ -102,7 +105,7 @@ export const resolveBlockHashFromSpecVersion = async (client: DedotClient, specV
     const midSpecVersion = midRuntimeVersion.specVersion;
 
     if (midSpecVersion === specVersion) {
-      return midBlockHash;
+      return { blockHash: midBlockHash, blockNumber: mid };
     } else if (midSpecVersion < specVersion) {
       low = mid + 1;
     } else {

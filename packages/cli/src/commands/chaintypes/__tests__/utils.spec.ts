@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { resolveBlockHashFromSpecVersion } from '../utils.js';
+import { findBlockFromSpecVersion } from '../utils.js';
 
 // Helper function to create a mock DedotClient
 const createMockClient = (config: {
@@ -35,7 +35,7 @@ const createMockClient = (config: {
   } as any;
 };
 
-describe('resolveBlockHashFromSpecVersion', () => {
+describe('findBlockFromSpecVersion', () => {
   describe('Happy path tests', () => {
     it('should find specVersion in the middle of the chain', async () => {
       // Setup: Chain with 100 blocks, specVersion progresses linearly
@@ -52,9 +52,10 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Search for specVersion 1050 (should be at block 50)
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1050);
+      const result = await findBlockFromSpecVersion(mockClient, 1050);
 
-      expect(result).toBe(`0x${(50).toString(16).padStart(64, '0')}`);
+      expect(result.blockHash).toBe(`0x${(50).toString(16).padStart(64, '0')}`);
+      expect(result.blockNumber).toBe(50);
     });
 
     it('should find specVersion at genesis block', async () => {
@@ -72,14 +73,13 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Search for genesis specVersion - binary search will find a block with this specVersion
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1000);
+      const result = await findBlockFromSpecVersion(mockClient, 1000);
 
       // Binary search finds *a* block with the specVersion, verify it's a valid block hash
-      expect(result).toMatch(/^0x[0-9a-f]{64}$/);
+      expect(result.blockHash).toMatch(/^0x[0-9a-f]{64}$/);
 
       // Verify the found block has the correct specVersion
-      const foundBlock = parseInt(result.slice(2), 16);
-      expect(blockToSpecMap[foundBlock] || 1000).toBe(1000);
+      expect(blockToSpecMap[result.blockNumber] || 1000).toBe(1000);
     });
 
     it('should find specVersion at latest block', async () => {
@@ -97,9 +97,10 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Search for latest specVersion
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1100);
+      const result = await findBlockFromSpecVersion(mockClient, 1100);
 
-      expect(result).toBe(`0x${(100).toString(16).padStart(64, '0')}`);
+      expect(result.blockHash).toBe(`0x${(100).toString(16).padStart(64, '0')}`);
+      expect(result.blockNumber).toBe(100);
     });
 
     it('should handle chain with single block', async () => {
@@ -114,9 +115,10 @@ describe('resolveBlockHashFromSpecVersion', () => {
         blockToSpecMap,
       });
 
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1000);
+      const result = await findBlockFromSpecVersion(mockClient, 1000);
 
-      expect(result).toBe(`0x${(0).toString(16).padStart(64, '0')}`);
+      expect(result.blockHash).toBe(`0x${(0).toString(16).padStart(64, '0')}`);
+      expect(result.blockNumber).toBe(0);
     });
 
     it('should find correct block when runtime upgrades happen at specific blocks', async () => {
@@ -143,17 +145,16 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Should find a block with specVersion 1001 (binary search finds any match, not necessarily first)
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1001);
+      const result = await findBlockFromSpecVersion(mockClient, 1001);
 
       // Verify it's a valid block hash
-      expect(result).toMatch(/^0x[0-9a-f]{64}$/);
+      expect(result.blockHash).toMatch(/^0x[0-9a-f]{64}$/);
 
       // Verify the found block has the correct specVersion
-      const foundBlock = parseInt(result.slice(2), 16);
-      expect(blockToSpecMap[foundBlock]).toBe(1001);
+      expect(blockToSpecMap[result.blockNumber]).toBe(1001);
 
       // Should be one of blocks 3, 4, or 5
-      expect([3, 4, 5]).toContain(foundBlock);
+      expect([3, 4, 5]).toContain(result.blockNumber);
     });
   });
 
@@ -173,7 +174,7 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Try to find specVersion below genesis
-      await expect(resolveBlockHashFromSpecVersion(mockClient, 500)).rejects.toThrowError(
+      await expect(findBlockFromSpecVersion(mockClient, 500)).rejects.toThrowError(
         /lower than the earliest specVersion/,
       );
     });
@@ -193,7 +194,7 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Try to find specVersion above latest
-      await expect(resolveBlockHashFromSpecVersion(mockClient, 2000)).rejects.toThrowError(
+      await expect(findBlockFromSpecVersion(mockClient, 2000)).rejects.toThrowError(
         /higher than the latest specVersion/,
       );
     });
@@ -216,7 +217,7 @@ describe('resolveBlockHashFromSpecVersion', () => {
       });
 
       // Try to find a skipped specVersion
-      await expect(resolveBlockHashFromSpecVersion(mockClient, 1020)).rejects.toThrowError(
+      await expect(findBlockFromSpecVersion(mockClient, 1020)).rejects.toThrowError(
         /Could not find a block with specVersion/,
       );
     });
@@ -237,14 +238,13 @@ describe('resolveBlockHashFromSpecVersion', () => {
         blockToSpecMap,
       });
 
-      const result = await resolveBlockHashFromSpecVersion(mockClient, 1050);
+      const result = await findBlockFromSpecVersion(mockClient, 1050);
 
       // Should find a valid block
-      expect(result).toMatch(/^0x[0-9a-f]{64}$/);
+      expect(result.blockHash).toMatch(/^0x[0-9a-f]{64}$/);
 
       // Verify the found block has the correct specVersion
-      const foundBlock = parseInt(result.slice(2), 16);
-      expect(blockToSpecMap[foundBlock]).toBe(1050);
+      expect(blockToSpecMap[result.blockNumber]).toBe(1050);
     });
   });
 });

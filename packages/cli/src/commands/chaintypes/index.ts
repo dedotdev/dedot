@@ -1,7 +1,7 @@
 import { DedotClient } from '@dedot/api';
-import { GeneratedResult, generateTypes, generateTypesFromEndpoint } from '@dedot/codegen';
+import { GeneratedResult, generateTypes, generateTypesFromEndpoint, resolveBlockHash } from '@dedot/codegen';
 import { WsProvider } from '@dedot/providers';
-import { stringCamelCase, stringPascalCase } from '@dedot/utils';
+import { HexString, stringCamelCase, stringPascalCase } from '@dedot/utils';
 import ora from 'ora';
 import * as path from 'path';
 import { CommandModule } from 'yargs';
@@ -10,7 +10,7 @@ import {
   parseMetadataFromRaw,
   parseMetadataFromWasm,
   parseStaticSubstrate,
-  resolveBlockHashFromSpecVersion,
+  findBlockFromSpecVersion,
 } from './utils.js';
 
 type Args = {
@@ -23,6 +23,11 @@ type Args = {
   metadata?: string;
   at?: string;
   spec?: number;
+};
+
+const shortenHash = (hash: string, prefixLen = 6, suffixLen = 6): string => {
+  if (hash.length <= prefixLen + suffixLen + 2) return hash;
+  return `${hash.slice(0, prefixLen + 2)}...${hash.slice(-suffixLen)}`;
 };
 
 export const chaintypes: CommandModule<Args, Args> = {
@@ -75,18 +80,42 @@ export const chaintypes: CommandModule<Args, Args> = {
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {
         // Create client once and reuse for both operations
+        spinner.text = `Connecting to network: ${wsUrl} ...`;
         const client = await DedotClient.legacy(new WsProvider({ endpoint: wsUrl! }));
+        spinner.succeed(`Connected to network: ${wsUrl}`);
 
         try {
+          let blockNumber: number | undefined;
+
           if (spec) {
-            spinner.text = `Resolving block hash for specVersion ${spec}...`;
-            at = await resolveBlockHashFromSpecVersion(client, spec);
-            spinner.succeed(`Resolved block hash ${at} for specVersion ${spec}`);
+            spinner.start();
+            spinner.text = `Resolving block hash for spec version ${spec}...`;
+            const result = await findBlockFromSpecVersion(client, spec);
+            at = result.blockHash;
+            blockNumber = result.blockNumber;
+
+            spinner.succeed(`Resolved block hash ${shortenHash(at)} (#${blockNumber}) for spec version ${spec}`);
           }
 
           spinner.start();
 
-          const atText = at ? ` at ${at}` : '';
+          let atText = '';
+          if (at) {
+            let blockHash: HexString;
+
+            if (blockNumber === undefined) {
+              // at was provided directly by user, resolve it to block hash
+              blockHash = await resolveBlockHash(client, at);
+              const header = await client.block.header(blockHash);
+              blockNumber = header?.number;
+            } else {
+              // blockNumber is already set from spec resolution, at is the block hash
+              blockHash = at as HexString;
+            }
+
+            atText = ` at ${shortenHash(blockHash)} (#${blockNumber ?? 'unknown'})`;
+          }
+
           spinner.text = `Generating chaintypes via endpoint: ${wsUrl}${atText}`;
           generatedResult = await generateTypesFromEndpoint({
             chain,
