@@ -10,7 +10,7 @@ import {
   parseMetadataFromRaw,
   parseMetadataFromWasm,
   parseStaticSubstrate,
-  resolveSpecVersionBlockHash,
+  resolveBlockHashFromSpecVersion,
 } from './utils.js';
 
 type Args = {
@@ -80,7 +80,7 @@ export const chaintypes: CommandModule<Args, Args> = {
         try {
           if (spec) {
             spinner.text = `Resolving block hash for specVersion ${spec}...`;
-            at = await resolveSpecVersionBlockHash(client, spec);
+            at = await resolveBlockHashFromSpecVersion(client, spec);
             spinner.succeed(`Resolved block hash ${at} for specVersion ${spec}`);
           }
 

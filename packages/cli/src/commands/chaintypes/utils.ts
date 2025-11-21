@@ -2,13 +2,9 @@ import { rpc } from '@polkadot/types-support/metadata/static-substrate';
 import staticSubstrate from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { ConstantExecutor, DedotClient } from '@dedot/api';
 import { $Metadata, Metadata, PortableRegistry, RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
-import { WsProvider } from '@dedot/providers';
-import * as $ from '@dedot/shape';
-import { HexString, hexToU8a, isHex } from '@dedot/utils';
+import { assert, HexString, hexToU8a, isHex } from '@dedot/utils';
 import { getMetadataFromWasmRuntime } from '@dedot/wasm';
 import * as fs from 'fs';
-import ora from 'ora';
-import { setPriority } from 'os';
 import { DecodedMetadataInfo, ParsedResult } from './types.js';
 
 export const getRuntimeVersion = (metadata: Metadata): RuntimeVersion => {
@@ -80,21 +76,19 @@ export const parseStaticSubstrate = async (): Promise<ParsedResult> => {
   };
 };
 
-export const resolveSpecVersionBlockHash = async (client: DedotClient, specVersion: number): Promise<HexString> => {
+export const resolveBlockHashFromSpecVersion = async (client: DedotClient, specVersion: number): Promise<HexString> => {
   const upperBound = client.runtimeVersion.specVersion;
   const lowerBound = (await client.rpc.state_getRuntimeVersion(await client.rpc.chain_getBlockHash(0))).specVersion;
 
-  if (specVersion < lowerBound) {
-    throw new Error(
-      `Specified specVersion ${specVersion} is lower than the earliest specVersion ${lowerBound} of the chain.`,
-    );
-  }
+  assert(
+    specVersion >= lowerBound,
+    `Specified specVersion ${specVersion} is lower than the earliest specVersion ${lowerBound} of the chain.`,
+  );
 
-  if (specVersion > upperBound) {
-    throw new Error(
-      `Specified specVersion ${specVersion} is higher than the latest specVersion ${upperBound} of the chain at the current block.`,
-    );
-  }
+  assert(
+    specVersion <= upperBound,
+    `Specified specVersion ${specVersion} is higher than the latest specVersion ${upperBound} of the chain at the current block.`,
+  );
 
   let high = (await client.block.best()).number;
   let low = 0;
@@ -102,11 +96,13 @@ export const resolveSpecVersionBlockHash = async (client: DedotClient, specVersi
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     const midBlockHash = await client.rpc.chain_getBlockHash(mid);
-    const midRuntimeVersion = await client.rpc.state_getRuntimeVersion(midBlockHash!);
+    assert(midBlockHash, `Failed to get block hash at block number ${mid}`);
+
+    const midRuntimeVersion = await client.rpc.state_getRuntimeVersion(midBlockHash);
     const midSpecVersion = midRuntimeVersion.specVersion;
 
     if (midSpecVersion === specVersion) {
-      return midBlockHash!;
+      return midBlockHash;
     } else if (midSpecVersion < specVersion) {
       low = mid + 1;
     } else {
@@ -114,5 +110,5 @@ export const resolveSpecVersionBlockHash = async (client: DedotClient, specVersi
     }
   }
 
-  throw new Error(`Could not find a block with specVersion ${specVersion}.`);
+  assert(false, `Could not find a block with specVersion ${specVersion}.`);
 };
