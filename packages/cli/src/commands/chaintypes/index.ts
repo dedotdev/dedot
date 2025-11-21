@@ -62,15 +62,15 @@ export const chaintypes: CommandModule<Args, Args> = {
           chain || stringCamelCase(runtimeVersion.specName) || (shouldGenerateGenericTypes ? 'substrate' : 'local');
 
         spinner.text = `Generating ${stringPascalCase(chainName)} generic chaintypes`;
-        generatedResult = await generateTypes(
-          chainName,
-          metadata.latest,
+        generatedResult = await generateTypes({
+          chain: chainName,
+          metadata: metadata.latest,
           rpcMethods,
           runtimeVersion,
           outDir,
           extension,
-          subpath,
-        );
+          useSubPaths: subpath,
+        });
 
         spinner.succeed(`Generated ${stringPascalCase(chainName)} generic chaintypes`);
       } else {

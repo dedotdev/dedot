@@ -30,9 +30,7 @@ export interface GenerateTypesFromEndpointOptions {
   at?: string;
 }
 
-export async function generateTypesFromEndpoint(
-  options: GenerateTypesFromEndpointOptions,
-): Promise<GeneratedResult> {
+export async function generateTypesFromEndpoint(options: GenerateTypesFromEndpointOptions): Promise<GeneratedResult> {
   const { chain, endpoint, client: providedClient, outDir, extension = 'd.ts', useSubPaths = false, at } = options;
 
   // Validate that either endpoint or client is provided
@@ -45,7 +43,8 @@ export async function generateTypesFromEndpoint(
   }
 
   // Create client if not provided
-  const client = providedClient || (await DedotClient.legacy(new WsProvider({ endpoint: endpoint!, retryDelayMs: 0, timeout: 0 })));
+  const client =
+    providedClient || (await DedotClient.legacy(new WsProvider({ endpoint: endpoint!, retryDelayMs: 0, timeout: 0 })));
   const shouldDisconnect = !providedClient;
 
   try {
@@ -74,17 +73,15 @@ export async function generateTypesFromEndpoint(
 
     const resolvedChain = chain || runtimeVersion.specName || 'local';
 
-    const result = await generateTypes(
-      resolvedChain,
-      metadata.latest,
-      methods,
+    return await generateTypes({
+      chain: resolvedChain,
+      metadata: metadata.latest,
+      rpcMethods: methods,
       runtimeVersion,
       outDir,
       extension,
       useSubPaths,
-    );
-
-    return result;
+    });
   } finally {
     if (shouldDisconnect) {
       await client.disconnect();
@@ -92,15 +89,27 @@ export async function generateTypesFromEndpoint(
   }
 }
 
-export async function generateTypes(
-  chain: string,
-  metadata: MetadataLatest,
-  rpcMethods: string[],
-  runtimeVersion: SubstrateRuntimeVersion,
-  outDir: string = '.',
-  extension: string = 'd.ts',
-  useSubPaths: boolean = false,
-): Promise<GeneratedResult> {
+export interface GenerateTypesOptions {
+  chain: string;
+  metadata: MetadataLatest;
+  rpcMethods: string[];
+  runtimeVersion: SubstrateRuntimeVersion;
+  outDir?: string;
+  extension?: string;
+  useSubPaths?: boolean;
+}
+
+export async function generateTypes(options: GenerateTypesOptions): Promise<GeneratedResult> {
+  const {
+    chain,
+    metadata,
+    rpcMethods,
+    runtimeVersion,
+    outDir = '.',
+    extension = 'd.ts',
+    useSubPaths = false,
+  } = options;
+
   const dirPath = path.resolve(outDir, stringDashCase(chain));
   const defTypesFileName = path.join(dirPath, `types.${extension}`);
   const constsTypesFileName = path.join(dirPath, `consts.${extension}`);
