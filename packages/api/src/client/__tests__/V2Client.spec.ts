@@ -1,7 +1,7 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { SubstrateRuntimeVersion } from '@dedot/api';
 import { fakeSigner } from '@dedot/api/extrinsic/submittable/fakeSigner';
-import { $RuntimeVersion, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
+import { $Header, $RuntimeVersion, type Header, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
@@ -13,7 +13,16 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { assert, deferred, stringCamelCase, stringPascalCase, u8aToHex, waitFor } from '@dedot/utils';
+import {
+  assert,
+  blake2_256,
+  deferred,
+  keccak_256,
+  stringCamelCase,
+  stringPascalCase,
+  u8aToHex,
+  waitFor,
+} from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
@@ -1757,6 +1766,165 @@ describe(
             resolve();
           }, 10);
         });
+      });
+    });
+
+    describe('hasher detection', () => {
+      let provider: MockProvider;
+      let simulator: ReturnType<typeof newChainHeadSimulator>;
+
+      beforeEach(() => {
+        provider = new MockProvider();
+        simulator = newChainHeadSimulator({ provider });
+        simulator.notify(simulator.initializedEvent);
+        simulator.notify(simulator.nextNewBlock());
+
+        let counter = 0;
+        provider.setRpcRequests({
+          chainSpec_v1_chainName: () => 'MockedChain',
+          chainHead_v1_call: () => {
+            counter += 1;
+            return { result: 'started', operationId: `call0${counter}` } as MethodResponse;
+          },
+        });
+
+        simulator.notify(
+          {
+            operationId: 'call01',
+            event: 'operationCallDone',
+            output: '0x0c100000000f0000000e000000',
+          } as OperationCallDone,
+          10,
+        );
+
+        simulator.notify(
+          {
+            operationId: 'call02',
+            event: 'operationCallDone',
+            output: prefixedMetadataV15,
+          } as OperationCallDone,
+          20,
+        );
+      });
+
+      afterEach(async () => {
+        await simulator.cleanup();
+      });
+
+      it('should detect hasher from ChainHead during initialization', async () => {
+        const api = await V2Client.new({ provider });
+
+        // Mock chainHead.hasher() to return blake2_256
+        vi.spyOn(api.chainHead, 'hasher').mockResolvedValue(blake2_256);
+
+        // The hasher should be detected from ChainHead
+        const detectedHasher = await api.chainHead.hasher();
+        expect(detectedHasher).toBeDefined();
+        expect(detectedHasher).toBe(blake2_256);
+
+        // Registry should be initialized
+        expect(api.registry).toBeDefined();
+
+        // Verify hasher detection worked by testing hash functionality
+        const testData = new Uint8Array([1, 2, 3, 4, 5]);
+        const hash = api.registry.hash(testData);
+        const expectedHash = blake2_256(testData);
+
+        expect(hash).toEqual(expectedHash);
+
+        await api.disconnect();
+      });
+
+      it('should use user-provided hasher instead of detecting', async () => {
+        // Spy on keccak_256 to verify it's actually called
+        const hasherSpy = vi.fn(keccak_256);
+
+        const api = await V2Client.new({
+          provider,
+          hasher: hasherSpy,
+        });
+
+        // User-provided hasher should be used
+        expect(api.registry).toBeDefined();
+
+        // Verify the hasher is actually used
+        const testData = new Uint8Array([1, 2, 3, 4, 5]);
+        const hash = api.registry.hash(testData);
+
+        // Verify the spy was called with the test data
+        expect(hasherSpy).toHaveBeenCalledWith(testData);
+        expect(hash).toEqual(keccak_256(testData));
+
+        await api.disconnect();
+      });
+
+      it('should use detected hasher in at() instance', async () => {
+        const api = await V2Client.new({ provider });
+
+        // Mock runtime version call for at()
+        provider.setRpcRequest('chainHead_v1_call', () => ({
+          result: 'started',
+          operationId: 'call_at',
+        }));
+
+        simulator.notify({
+          operationId: 'call_at',
+          event: 'operationCallDone',
+          output: u8aToHex($RuntimeVersion.tryEncode(mockedRuntime)),
+        } as OperationCallDone);
+
+        const apiAt = await api.at('0x0f');
+
+        // apiAt should have a registry using the detected hasher
+        expect(apiAt.registry).toBeDefined();
+        expect(apiAt.atBlockHash).toEqual('0x0f');
+
+        // Verify the hasher actually works in at() instance
+        const testData = new Uint8Array([1, 2, 3, 4, 5]);
+        const hash = apiAt.registry.hash(testData);
+        const expectedHash = blake2_256(testData); // Detected hasher should be blake2_256
+
+        expect(hash).toEqual(expectedHash);
+
+        await api.disconnect();
+      });
+
+      it('should use user-provided hasher in at() instance', async () => {
+        // Spy on keccak_256 to verify it's used in at() instance
+        const hasherSpy = vi.fn(keccak_256);
+
+        const api = await V2Client.new({
+          provider,
+          hasher: hasherSpy,
+        });
+
+        // Mock runtime version call for at()
+        provider.setRpcRequest('chainHead_v1_call', () => ({
+          result: 'started',
+          operationId: 'call_at2',
+        }));
+
+        simulator.notify({
+          operationId: 'call_at2',
+          event: 'operationCallDone',
+          output: u8aToHex($RuntimeVersion.tryEncode(mockedRuntime)),
+        } as OperationCallDone);
+
+        const apiAt = await api.at('0x0f');
+
+        // apiAt should have a registry using the user-provided hasher
+        expect(apiAt.registry).toBeDefined();
+        expect(apiAt.atBlockHash).toEqual('0x0f');
+
+        // Verify the user-provided hasher is actually used in at() instance
+        const testData = new Uint8Array([1, 2, 3, 4, 5]);
+        const hash = apiAt.registry.hash(testData);
+
+        // Verify the spy was called with the test data
+        expect(hasherSpy).toHaveBeenCalledWith(testData);
+        expect(hash).toEqual(keccak_256(testData));
+
+        await api.disconnect();
       });
     });
 
