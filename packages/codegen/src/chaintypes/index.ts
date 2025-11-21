@@ -2,7 +2,7 @@ import { DedotClient, SubstrateRuntimeVersion } from '@dedot/api';
 import { Metadata, MetadataLatest } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import { RpcMethods } from '@dedot/types/json-rpc';
-import { HexString, stringDashCase, stringPascalCase } from '@dedot/utils';
+import { assert, HexString, stringDashCase, stringPascalCase } from '@dedot/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { GeneratedResult } from '../types.js';
@@ -62,7 +62,12 @@ export async function generateTypesFromEndpoint(options: GenerateTypesFromEndpoi
     let metadata: Metadata;
 
     if (blockHash) {
-      const clientAt = await client.at(blockHash);
+      // Get the header of the target block
+      const header = await client.block.header(blockHash);
+      assert(`Header not found for block hash: ${blockHash}`);
+
+      const childBlockHash = await client.rpc.chain_getBlockHash(header.number + 1);
+      const clientAt = await client.at(childBlockHash!);
 
       runtimeVersion = clientAt.runtimeVersion;
       metadata = clientAt.metadata;

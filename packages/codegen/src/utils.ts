@@ -133,7 +133,7 @@ export const getVariantDeprecationComment = (
  */
 export async function resolveBlockHash(client: DedotClient, at: string): Promise<HexString> {
   // Check if it's a hex string (block hash)
-  if (isHex(at.startsWith)) {
+  if (isHex(at)) {
     return at as HexString;
   }
 
