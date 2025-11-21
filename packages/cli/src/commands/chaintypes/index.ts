@@ -22,7 +22,7 @@ type Args = {
   wasm?: string;
   metadata?: string;
   at?: string;
-  spec?: number;
+  specVersion?: number;
 };
 
 const shortenHash = (hash: string, prefixLen = 6, suffixLen = 6): string => {
@@ -34,7 +34,7 @@ export const chaintypes: CommandModule<Args, Args> = {
   command: 'chaintypes',
   describe: 'Generate Types & APIs for Substrate-based chains',
   handler: async (yargs) => {
-    let { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true, at, spec } = yargs;
+    let { wsUrl, wasm, metadata, output = '', chain = '', dts = true, subpath = true, at, specVersion } = yargs;
 
     const outDir = path.resolve(output);
     const extension = dts ? 'd.ts' : 'ts';
@@ -87,14 +87,14 @@ export const chaintypes: CommandModule<Args, Args> = {
         try {
           let blockNumber: number | undefined;
 
-          if (spec) {
+          if (specVersion) {
             spinner.start();
-            spinner.text = `Resolving block hash for spec version ${spec}...`;
-            const result = await findBlockFromSpecVersion(client, spec);
+            spinner.text = `Resolving block hash for spec version ${specVersion}...`;
+            const result = await findBlockFromSpecVersion(client, specVersion);
             at = result.blockHash;
             blockNumber = result.blockNumber;
 
-            spinner.succeed(`Resolved block hash ${shortenHash(at)} (#${blockNumber}) for spec version ${spec}`);
+            spinner.succeed(`Resolved block hash ${shortenHash(at)} (#${blockNumber}) for spec version ${specVersion}`);
           }
 
           spinner.start();
@@ -194,11 +194,13 @@ export const chaintypes: CommandModule<Args, Args> = {
       })
       .option('at', {
         type: 'string',
-        describe: 'Block hash or block number to fetch metadata at',
+        describe: 'Block hash or block number to generate chaintypes at',
+        alias: 'a',
       })
-      .option('spec', {
+      .option('specVersion', {
         type: 'number',
-        describe: 'Spec version to fetch metadata at (only with --wsUrl)',
+        describe: 'Spec version to generate chaintypes at',
+        alias: 'x',
       })
       .check((argv) => {
         const inputs = ['wsUrl', 'wasm', 'metadata'];
@@ -216,12 +218,12 @@ export const chaintypes: CommandModule<Args, Args> = {
           throw new Error('The --at option can only be used with --wsUrl');
         }
 
-        if (argv.spec && !argv.wsUrl) {
-          throw new Error('The --spec option can only be used with --wsUrl');
+        if (argv.specVersion && !argv.wsUrl) {
+          throw new Error('The --specVersion option can only be used with --wsUrl');
         }
 
-        if (argv.spec && argv.at) {
-          throw new Error('Please provide only one of the following options: --spec, --at');
+        if (argv.specVersion && argv.at) {
+          throw new Error('Please provide only one of the following options: --spec-version, --at');
         }
 
         return true;
