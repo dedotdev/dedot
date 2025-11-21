@@ -25,7 +25,7 @@ import {
   waitFor,
   LRUCache,
 } from '@dedot/utils';
-import { detectHasherFromBlockHeader } from '../../../client/hasherDetection.js';
+import { detectHasherFromHeader } from '../../../client/utils.js';
 import type { IJsonRpcClient } from '../../../types.js';
 import { Archive } from '../Archive.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
@@ -652,7 +652,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     );
 
     // Detect hasher using the finalized header we just fetched
-    this.#hasher = detectHasherFromBlockHeader(finalizedHeader, this.#finalizedHash!);
+    this.#hasher = detectHasherFromHeader(finalizedHeader, this.#finalizedHash!);
 
     Object.values(this.#pinnedBlocks).forEach((b, idx) => {
       b.number += startingHeader.number;

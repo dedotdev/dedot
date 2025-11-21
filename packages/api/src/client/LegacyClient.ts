@@ -19,7 +19,7 @@ import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
 import type { ApiOptions, BlockExplorer, IChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
 import { LegacyBlockExplorer } from './explorer/index.js';
-import { detectHasherFromBlockHeader, detectHasherFromMetadata } from './hasherDetection.js';
+import { detectHasherFromHeader, detectHasherFromMetadata } from './utils.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
@@ -196,7 +196,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
           const hash: BlockHash = await this.rpc.chain_getFinalizedHead();
           const header: Header = await this.rpc.chain_getHeader(hash);
           if (header) {
-            this.#hasher = detectHasherFromBlockHeader(header, hash);
+            this.#hasher = detectHasherFromHeader(header, hash);
           }
         } catch {
           // Ignore errors in fallback detection
