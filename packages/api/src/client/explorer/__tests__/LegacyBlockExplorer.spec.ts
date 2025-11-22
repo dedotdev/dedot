@@ -229,9 +229,6 @@ describe('LegacyBlockExplorer', () => {
       mockProvider.notify('subscription-best-0', encodeHeader(createMockHeader(5)));
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Should warn about gap
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('best block gap detected'));
-
       // Should fetch missing blocks 2, 3, 4
       expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [2]);
       expect(providerSend).toHaveBeenCalledWith('chain_getBlockHash', [3]);

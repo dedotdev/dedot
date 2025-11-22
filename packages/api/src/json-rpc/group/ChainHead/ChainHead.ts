@@ -744,10 +744,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return;
     }
 
-    // Gap detected - emit warning
-    const gapSize = currentNumber - lastNumber - 1;
-    console.warn(`best block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${currentNumber - 1})`);
-
     // Emit missing blocks from pinned blocks
     for (let num = lastNumber + 1; num < currentNumber; num++) {
       const blocks = this.#findBlocksByNumber(num);
