@@ -1,5 +1,5 @@
-import { assert, u8aToHex } from '@dedot/utils';
 import { Contract } from 'dedot/contracts';
+import { assert, u8aToHex } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LazyvecContractApi } from '../../../../../examples/scripts/inkv5/lazyvec/index.js';
 import { deployInkv5LazyVec, devPairs } from '../../utils.js';

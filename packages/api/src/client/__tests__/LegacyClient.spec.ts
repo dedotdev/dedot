@@ -1,10 +1,11 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
+import staticSubstrateV16 from '@polkadot/types-support/metadata/v16/substrate-hex';
 import { SubstrateRuntimeVersion } from '@dedot/api';
-import type { RuntimeVersion } from '@dedot/codecs';
+import { $Header, type Header, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
-import { HexString, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { blake2_256, HexString, keccak_256, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { LegacyClient } from '../LegacyClient.js';
 import MockProvider, { MockedRuntimeVersion } from './MockProvider.js';
@@ -27,6 +28,7 @@ describe('LegacyClient', () => {
 
     afterEach(async () => {
       api && (await api.disconnect());
+      vi.restoreAllMocks();
     });
 
     it('should create new api instance', async () => {
@@ -73,12 +75,16 @@ describe('LegacyClient', () => {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeDefined();
               // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeDefined();
+              // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeDefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedEntries).toBeDefined();
             } else {
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].multi).toBeUndefined();
+              // @ts-ignore
+              expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].entries).toBeUndefined();
               // @ts-ignore
               expect(api.query[stringCamelCase(pallet.name)][stringCamelCase(entry.name)].pagedKeys).toBeUndefined();
               // @ts-ignore
@@ -258,11 +264,7 @@ describe('LegacyClient', () => {
         expect(providerSend).toBeCalledWith('chain_getHeader', ['0x12345678']);
         expect(providerSend).toBeCalledWith('state_getRuntimeVersion', ['0x0c']);
         // runtime version is not changing, so the metadata can be re-use
-        expect(providerSend).not.toBeCalledWith('state_call', [
-          'Metadata_metadata_at_version',
-          '0x10000000',
-          '0x0c',
-        ]);
+        expect(providerSend).not.toBeCalledWith('state_call', ['Metadata_metadata_at_version', '0x10000000', '0x0c']);
       });
 
       it('should re-fetch metadata if runtime version is changing', async () => {
@@ -472,6 +474,9 @@ describe('LegacyClient', () => {
 
         // Call queryMulti and expect it to reject with the error
         await expect(apiAt.queryMulti([{ fn: mockQueryFn as any, args: [] }])).rejects.toThrow(mockError);
+
+        // Restore the spy immediately to prevent affecting background operations
+        providerSend.mockRestore();
       });
 
       it('should use cached api instance for queryMulti', async () => {
@@ -769,14 +774,39 @@ describe('LegacyClient', () => {
         const originalRuntime = api.runtimeVersion;
         const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
 
+        // Mock state_getRuntimeVersion to return the new runtime version when called with the block hash
+        provider.setRpcRequests({
+          state_getRuntimeVersion: async (params) => {
+            // If called with a block hash parameter, return the new runtime version
+            if (params && params.length > 0) {
+              return nextRuntime;
+            }
+            // Otherwise return the original runtime
+            return MockedRuntimeVersion;
+          },
+        });
+
         setTimeout(() => {
-          provider.notify('runtime-version-subscription-id', nextRuntime);
+          // Send a header with RuntimeEnvironmentUpdated digest
+          const header = {
+            parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            number: 100,
+            stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            digest: { logs: [{ type: 'RuntimeEnvironmentUpdated' }] },
+          };
+          // Encode the header before sending
+          const encodedHeader = u8aToHex($Header.tryEncode(header));
+          provider.notify('new-heads-subscription-id', encodedHeader);
         }, 100);
 
         await new Promise<void>((resolve, reject) => {
-          api.on('runtimeUpgraded', (newRuntime: SubstrateRuntimeVersion) => {
+          api.on('runtimeUpgraded', (newRuntime, at) => {
             try {
               expect(nextRuntime.specVersion).toEqual(newRuntime.specVersion);
+              expect(at).toBeDefined();
+              expectTypeOf(at.hash).toBeString();
+              expectTypeOf(at.number).toBeNumber();
               resolve();
             } catch (e) {
               reject(e);
@@ -789,6 +819,9 @@ describe('LegacyClient', () => {
       });
 
       it('getRuntimeVersion should return the latest version', async () => {
+        const originalRuntime = api.runtimeVersion;
+        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
+
         provider.setRpcRequests({
           state_call: async (params) => {
             return new Promise<HexString>((resolve) => {
@@ -801,16 +834,32 @@ describe('LegacyClient', () => {
               }, 300);
             });
           },
+          state_getRuntimeVersion: async (params) => {
+            // If called with a block hash parameter, return the new runtime version
+            if (params && params.length > 0) {
+              return nextRuntime;
+            }
+            // Otherwise return the original runtime
+            return MockedRuntimeVersion;
+          },
         });
 
-        const originalRuntime = api.runtimeVersion;
-        const nextRuntime = { ...MockedRuntimeVersion, specVersion: originalRuntime.specVersion + 1 } as RuntimeVersion;
-        provider.notify('runtime-version-subscription-id', nextRuntime);
+        // Send a header with RuntimeEnvironmentUpdated digest
+        const header = {
+          parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          number: 100,
+          stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          digest: { logs: [{ type: 'RuntimeEnvironmentUpdated' }] },
+        };
+        // Encode the header before sending
+        const encodedHeader = u8aToHex($Header.tryEncode(header));
+        provider.notify('new-heads-subscription-id', encodedHeader);
 
         const newVersion = await new Promise<SubstrateRuntimeVersion>((resolve) => {
           setTimeout(async () => {
             resolve(await api.getRuntimeVersion());
-          }, 100);
+          }, 500);
         });
 
         expect(originalRuntime.specVersion + 1).toEqual(newVersion.specVersion);
@@ -829,6 +878,7 @@ describe('LegacyClient', () => {
         await api.clearCache();
         await api.disconnect();
       }
+      vi.restoreAllMocks();
     });
 
     it('should load metadata from cache', async () => {
@@ -893,6 +943,257 @@ describe('LegacyClient', () => {
     it('should return undefined if tx not found', async () => {
       expect(api.tx.system.notFound).toBeUndefined();
       expect(api.tx.notFound.notFound).toBeUndefined();
+    });
+  });
+
+  describe('reconnection behavior', () => {
+    let provider: MockProvider;
+
+    beforeEach(() => {
+      provider = new MockProvider();
+    });
+
+    afterEach(async () => {
+      vi.restoreAllMocks();
+    });
+
+    it('should fetch all required data on first initialization', async () => {
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      const api = await LegacyClient.new({ provider });
+
+      // Verify that all required RPC methods were called for first initialization
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getBlockHash', [0]);
+
+      // state_getRuntimeVersion is called with undefined as the block hash parameter
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter((call) => call[0] === 'state_getRuntimeVersion');
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify genesis hash, runtime version, and metadata were initialized
+      expect(api.genesisHash).toBeDefined();
+      expect(api.runtimeVersion).toBeDefined();
+      expect(api.metadata).toBeDefined();
+      expect(api.metadata.version).toEqual('V15');
+
+      await api.disconnect();
+    });
+
+    it('should skip metadata fetch on second client with cached data and same spec version', async () => {
+      // First client - this will cache the metadata
+      const api1 = await LegacyClient.new({ provider, cacheMetadata: true });
+      const specVersion1 = api1.runtimeVersion.specVersion;
+
+      await api1.disconnect();
+
+      // Create spy for second client
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      // Second client with same spec version - should use cached metadata
+      const api2 = await LegacyClient.new({ provider, cacheMetadata: true });
+
+      // Verify genesis hash and runtime version were still fetched
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getBlockHash', [0]);
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter((call) => call[0] === 'state_getRuntimeVersion');
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify metadata was NOT re-fetched (loaded from cache)
+      expect(providerSendSpy).not.toHaveBeenCalledWith('state_getMetadata', []);
+
+      // Verify spec version is the same
+      expect(api2.runtimeVersion.specVersion).toBe(specVersion1);
+
+      await api2.clearCache();
+      await api2.disconnect();
+    });
+
+    it('should refetch metadata when spec version changes', async () => {
+      // First client with initial spec version
+      const api1 = await LegacyClient.new({ provider, cacheMetadata: true });
+      const initialSpecVersion = api1.runtimeVersion.specVersion;
+
+      await api1.disconnect();
+
+      // Mock provider to return new spec version
+      const newSpecVersion = initialSpecVersion + 1;
+      provider.setRpcRequest(
+        'state_getRuntimeVersion',
+        () =>
+          ({
+            ...MockedRuntimeVersion,
+            specVersion: newSpecVersion,
+          }) as RuntimeVersion,
+      );
+
+      // Create spy for second client
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      // Second client with different spec version - should fetch new metadata
+      const api2 = await LegacyClient.new({ provider, cacheMetadata: true });
+
+      // Verify runtime version was fetched
+      const runtimeVersionCalls = providerSendSpy.mock.calls.filter((call) => call[0] === 'state_getRuntimeVersion');
+      expect(runtimeVersionCalls.length).toBeGreaterThan(0);
+
+      // Verify metadata was re-fetched because spec version changed
+      expect(providerSendSpy).toHaveBeenCalledWith('state_getMetadata', []);
+
+      // Verify the new spec version is set
+      expect(api2.runtimeVersion.specVersion).toBe(newSpecVersion);
+
+      await api2.clearCache();
+      await api2.disconnect();
+    });
+  });
+
+  describe('hasher detection', () => {
+    let provider: MockProvider;
+    let api: LegacyClient;
+
+    beforeEach(() => {
+      provider = new MockProvider();
+    });
+
+    afterEach(async () => {
+      if (api) {
+        await api.disconnect();
+      }
+      vi.restoreAllMocks();
+    });
+
+    it('should detect hasher from V16 metadata', async () => {
+      // V16 metadata has Hashing associatedType in System pallet
+      // So hasher should be detected from metadata directly (no fallback RPC calls needed)
+
+      // Create provider with V16 metadata
+      provider = new MockProvider(MockedRuntimeVersion, unwrapOpaqueMetadata(staticSubstrateV16));
+
+      // Spy on RPC calls to verify fallback is NOT triggered
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      api = await LegacyClient.new({ provider });
+
+      // Registry should be initialized
+      expect(api.registry).toBeDefined();
+
+      // Verify hasher detection from metadata worked
+      // V16 Substrate uses blake2_256
+      const testData = new Uint8Array([1, 2, 3, 4, 5]);
+      const hash = api.registry.hash(testData);
+      const expectedHash = blake2_256(testData);
+      expect(hash).toEqual(expectedHash);
+
+      // Verify fallback RPC calls were NOT made (because metadata detection succeeded)
+      expect(providerSendSpy).not.toHaveBeenCalledWith('chain_getFinalizedHead', expect.anything());
+      expect(providerSendSpy).not.toHaveBeenCalledWith('chain_getHeader', expect.anything());
+    });
+
+    it('should fallback to block header detection for V15 metadata', async () => {
+      // V15 metadata doesn't have Hashing associatedType in System pallet
+      // So detection should fallback to fetching finalized block header
+
+      // Create a test header with known hash
+      const testHeader: Header = {
+        parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        number: 1,
+        stateRoot: '0x1111111111111111111111111111111111111111111111111111111111111111',
+        extrinsicsRoot: '0x2222222222222222222222222222222222222222222222222222222222222222',
+        digest: { logs: [] },
+      };
+
+      // Encode header and compute its blake2_256 hash
+      const encodedHeader = $Header.tryEncode(testHeader);
+      const expectedHash = u8aToHex(blake2_256(encodedHeader));
+
+      // Spy on RPC calls to verify fallback is triggered
+      const providerSendSpy = vi.spyOn(provider, 'send');
+
+      // Mock the RPC calls for fallback detection
+      provider.setRpcRequests({
+        chain_getFinalizedHead: () => expectedHash,
+        chain_getHeader: () => testHeader,
+      });
+
+      // Note: MockProvider returns staticSubstrateV15 by default for state_getMetadata
+      // which is V15 metadata without Hashing associatedType
+      api = await LegacyClient.new({ provider });
+
+      // Registry should be initialized
+      expect(api.registry).toBeDefined();
+
+      // Verify fallback RPC calls were made
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getFinalizedHead', []);
+      expect(providerSendSpy).toHaveBeenCalledWith('chain_getHeader', [expectedHash]);
+
+      // Verify that the detected hasher works correctly
+      // by hashing the same header and checking if it matches
+      const computedHash = api.registry.hashAsHex(encodedHeader);
+      expect(computedHash).toBe(expectedHash);
+    });
+
+    it('should use user-provided hasher instead of detecting', async () => {
+      // Spy on keccak_256 to verify it's actually called
+      const hasherSpy = vi.fn(keccak_256);
+
+      api = await LegacyClient.new({
+        provider,
+        hasher: hasherSpy,
+      });
+
+      // Should skip hasher detection entirely and use user-provided hasher
+      expect(api.registry).toBeDefined();
+
+      // Test that the hasher is actually used
+      const testData = new Uint8Array([1, 2, 3, 4, 5]);
+      const hash = api.registry.hash(testData);
+
+      // Verify the spy was called with the test data
+      expect(hasherSpy).toHaveBeenCalledWith(testData);
+      expect(hash).toEqual(keccak_256(testData));
+    });
+
+    it('should use hasher in at() instance', async () => {
+      api = await LegacyClient.new({ provider });
+
+      provider.setRpcRequest('state_getStorage', () => u8aToHex($.u32.encode(123)));
+
+      const apiAt = await api.at('0x12345678');
+
+      // apiAt should have a registry using the hasher
+      expect(apiAt.registry).toBeDefined();
+      expect(apiAt.atBlockHash).toEqual('0x12345678');
+
+      // Verify the hasher actually works in at() instance
+      const testData = new Uint8Array([1, 2, 3, 4, 5]);
+      const hash = apiAt.registry.hash(testData);
+      const expectedHash = blake2_256(testData); // Default hasher is blake2_256
+
+      expect(hash).toEqual(expectedHash);
+    });
+
+    it('should use user-provided hasher in at() instance', async () => {
+      // Spy on keccak_256 to verify it's used in at() instance
+      const hasherSpy = vi.fn(keccak_256);
+
+      api = await LegacyClient.new({
+        provider,
+        hasher: hasherSpy,
+      });
+
+      provider.setRpcRequest('state_getStorage', () => u8aToHex($.u32.encode(123)));
+
+      const apiAt = await api.at('0x12345678');
+
+      // apiAt should have a registry using the user-provided hasher
+      expect(apiAt.registry).toBeDefined();
+      expect(apiAt.atBlockHash).toEqual('0x12345678');
+
+      // Verify the user-provided hasher is actually used in at() instance
+      const testData = new Uint8Array([1, 2, 3, 4, 5]);
+      const hash = apiAt.registry.hash(testData);
+
+      // Verify the spy was called with the test data
+      expect(hasherSpy).toHaveBeenCalledWith(testData);
+      expect(hash).toEqual(keccak_256(testData));
     });
   });
 });

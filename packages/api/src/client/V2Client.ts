@@ -1,8 +1,17 @@
-import { $H256, $Header, $RuntimeVersion, BlockHash, Hash, PortableRegistry } from '@dedot/codecs';
+import {
+  $H256,
+  $Header,
+  $RuntimeVersion,
+  BlockHash,
+  type Extrinsic,
+  Hash,
+  Metadata,
+  PortableRegistry,
+} from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { GenericStorageQuery, GenericSubstrateApi } from '@dedot/types';
-import { assert, concatU8a, DedotError, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import { Callback, GenericStorageQuery, GenericSubstrateApi, TxUnsub } from '@dedot/types';
+import { assert, concatU8a, DedotError, HashFn, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -13,17 +22,21 @@ import {
   TxExecutorV2,
   ViewFunctionExecutorV2,
 } from '../executor/index.js';
+import { SubmittableExtrinsicV2 } from '../extrinsic/submittable/SubmittableExtrinsicV2.js';
 import { Archive, ChainHead, ChainSpec, PinnedBlock, Transaction, TransactionWatch } from '../json-rpc/index.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, NewStorageQuery } from '../storage/index.js';
 import type {
   ApiOptions,
+  BlockExplorer,
+  BlockInfo,
   DedotClientEvent,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
   TxBroadcaster,
 } from '../types.js';
 import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+import { V2BlockExplorer } from './explorer/index.js';
 
 /**
  * @name V2Client
@@ -38,6 +51,8 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   protected _chainSpec?: ChainSpec;
   protected _archive?: Archive;
   protected _txBroadcaster?: TxBroadcaster;
+  protected _blockExplorer?: BlockExplorer;
+  #hasher?: HashFn;
 
   /**
    * Use factory methods (`create`, `new`) to create `V2Client` instances.
@@ -79,8 +94,6 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
   }
 
   get archive(): Archive | undefined {
-    assert(this._archive, 'Archive JSON-RPC is not supported by the connected server');
-
     return this._archive;
   }
 
@@ -121,6 +134,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       }
 
       this._txBroadcaster = await this.#initializeTxBroadcaster(rpcMethods);
+      this._blockExplorer = new V2BlockExplorer(this);
     }
 
     // Fetching node information
@@ -188,10 +202,32 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
     await this.setupMetadata(newMetadata);
 
-    this.emit('runtimeUpgraded', this._runtimeVersion);
+    const blockInfo: BlockInfo = {
+      hash: block.hash,
+      number: block.number,
+      parent: block.parent,
+      runtimeUpgraded: block.runtimeUpgraded === true,
+    };
+
+    this.emit('runtimeUpgraded', this._runtimeVersion, blockInfo);
 
     this.doneRuntimeUpgrade();
   };
+
+  protected override async setMetadata(metadata: Metadata) {
+    this._metadata = metadata;
+
+    // Here we assume that hasher method of a chain is less likely to change via runtime upgrades
+    // So for now, we only need to detect it in initial connection and reuse it later
+    if (!this.#hasher && !this.options.hasher) {
+      this.#hasher = await this.chainHead.hasher();
+    }
+
+    this._registry = new PortableRegistry<ChainApi['types']>(
+      metadata.latest, // --
+      this.#hasher || this.options.hasher,
+    );
+  }
 
   protected override async beforeDisconnect(): Promise<void> {
     await this.chainHead.unfollow();
@@ -203,6 +239,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     this._chainSpec = undefined;
     this._archive = undefined;
     this._txBroadcaster = undefined;
+    this._blockExplorer = undefined;
   }
 
   /**
@@ -238,6 +275,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   override get tx(): ChainApi['tx'] {
     return newProxyChain({ executor: new TxExecutorV2(this) }) as ChainApi['tx'];
+  }
+
+  get block(): BlockExplorer {
+    return ensurePresence(this._blockExplorer);
   }
 
   /**
@@ -305,7 +346,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, parentVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.#hasher || this.options.hasher);
       }
     }
 
@@ -343,5 +384,12 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   protected override getStorageQuery(): BaseStorageQuery {
     return new NewStorageQuery(this);
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return SubmittableExtrinsicV2.fromTx(this, tx) // --
+      .send((result) => {
+        callback && callback(result);
+      });
   }
 }

@@ -1,3 +1,4 @@
+import { $Header, type Header } from '@dedot/codecs';
 import {
   ChainHeadRuntimeVersion,
   MethodResponse,
@@ -9,7 +10,7 @@ import {
   OperationStorageItems,
   StorageQuery,
 } from '@dedot/types/json-rpc';
-import { waitFor } from '@dedot/utils';
+import { blake2_256, type HashFn, HexString, keccak_256, u8aToHex, waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
@@ -673,7 +674,7 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -707,16 +708,16 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'body02',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -750,7 +751,7 @@ describe('ChainHead', () => {
         const result = await chainHead.body();
         expect(result).toEqual(['0x1111']);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
@@ -759,12 +760,12 @@ describe('ChainHead', () => {
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'body02',
         ]);
@@ -787,7 +788,7 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
@@ -823,18 +824,18 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'call02',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_call', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
@@ -870,27 +871,27 @@ describe('ChainHead', () => {
         const result = await chainHead.call('func', '0x');
         expect(result).toEqual('0x1111');
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
-          simulator.subscriptionId,
-          await chainHead.bestHash(),
-          'func',
-          '0x',
-        ]);
-        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
+        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_call', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           'func',
           '0x',
         ]);
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
+          simulator.subscriptionId,
+          await chainHead.bestHash(),
+          'func',
+          '0x',
+        ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'call02',
         ]);
@@ -928,7 +929,7 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -975,18 +976,18 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
           null,
         ]);
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'storage01',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -1051,19 +1052,19 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual([...storageItemsBatch1, ...storageItemsBatch2]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
           null,
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
           simulator.subscriptionId,
           'storage01',
         ]);
 
-        expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries.slice(2),
@@ -1111,14 +1112,6 @@ describe('ChainHead', () => {
         const result = await chainHead.storage(queries);
         expect(result).toEqual(storageItems);
 
-        expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
-          simulator.subscriptionId,
-          await chainHead.bestHash(),
-          queries,
-          null,
-        ]);
-
-        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
@@ -1126,7 +1119,15 @@ describe('ChainHead', () => {
           null,
         ]);
 
+        // 2 retries
         expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_storage', [
+          simulator.subscriptionId,
+          await chainHead.bestHash(),
+          queries,
+          null,
+        ]);
+
+        expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_storage', [
           simulator.subscriptionId,
           await chainHead.bestHash(),
           queries,
@@ -1169,9 +1170,9 @@ describe('ChainHead', () => {
 
         setTimeout(() => {
           expect(prevSubId).not.toEqual(simulator.subscriptionId);
-          expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
-          expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_follow', [true]);
-          expect(providerSend).not.toHaveBeenNthCalledWith(6, 'chainHead_v1_header', [
+          expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+          expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_follow', [true]);
+          expect(providerSend).not.toHaveBeenNthCalledWith(7, 'chainHead_v1_header', [
             simulator.subscriptionId,
             '0x00',
           ]);
@@ -1211,9 +1212,9 @@ describe('ChainHead', () => {
 
       await expect(result).resolves.toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body02']);
     });
 
@@ -1247,9 +1248,9 @@ describe('ChainHead', () => {
 
       await expect(result).resolves.toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
       expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_stopOperation', [simulator.subscriptionId, 'body03']);
     });
 
@@ -1271,8 +1272,8 @@ describe('ChainHead', () => {
 
       await expect(result).rejects.toThrow('Block hash 0x0e is not pinned');
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [prevSubId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [prevSubId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_unfollow', [prevSubId]);
     });
 
     it(`should continue to receive & resolve in-coming requests to chainHead while recovering`, async () => {
@@ -1343,30 +1344,30 @@ describe('ChainHead', () => {
 
       await expect(results).resolves.toEqual([['0x1111'], '0x1111', storageItems]);
 
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_unfollow', [prevSubId]);
-      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_unfollow', [prevSubId]);
+      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
 
-      expect(providerSend).toHaveBeenNthCalledWith(7, 'chainHead_v1_call', [
+      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_call', [
         simulator.subscriptionId,
         bestHash,
         'func',
         '0x',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(8, 'chainHead_v1_storage', [
+      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_storage', [
         simulator.subscriptionId,
         bestHash,
         queries,
         null,
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(9, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'body02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(10, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(12, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'call02',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(11, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(13, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'storage02',
       ]);
@@ -1388,8 +1389,8 @@ describe('ChainHead', () => {
       expect(h1).toEqual(h2);
       expect(h2).toEqual(h3);
 
-      expect(providerSend).toHaveBeenCalledTimes(4);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_header', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenCalledTimes(5);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_header', [simulator.subscriptionId, bestHash]);
     });
     it('should should cache chainHead_body', async () => {
       provider.setRpcRequest(
@@ -1412,9 +1413,9 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual(['0x1111']);
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_body', [simulator.subscriptionId, bestHash]);
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'body02',
       ]);
@@ -1440,14 +1441,14 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual('0x1111');
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_call', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_call', [
         simulator.subscriptionId,
         bestHash,
         'func',
         '0x',
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'call02',
       ]);
@@ -1488,14 +1489,14 @@ describe('ChainHead', () => {
       expect(r2).toEqual(r3);
       expect(r3).toEqual(storageItems);
 
-      expect(providerSend).toHaveBeenCalledTimes(5);
-      expect(providerSend).toHaveBeenNthCalledWith(4, 'chainHead_v1_storage', [
+      expect(providerSend).toHaveBeenCalledTimes(6);
+      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_storage', [
         simulator.subscriptionId,
         bestHash,
         queries,
         null,
       ]);
-      expect(providerSend).toHaveBeenNthCalledWith(5, 'chainHead_v1_stopOperation', [
+      expect(providerSend).toHaveBeenNthCalledWith(6, 'chainHead_v1_stopOperation', [
         simulator.subscriptionId,
         'storage01',
       ]);
@@ -1792,6 +1793,305 @@ describe('ChainHead', () => {
         // Execute & Verify
         await expect(chainHead.body(mockBlockHash)).rejects.toThrow(ChainHeadBlockNotPinnedError);
       });
+    });
+  });
+
+  describe('best block gap detection and filling', () => {
+    it('should detect and fill best block gaps from pinned blocks', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Create some new blocks
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x12
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x13
+
+      await waitFor(10);
+
+      // Emit best block 0x0f (block 15)
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Jump to block 0x13 (block 19) - should fill 0x10, 0x11, 0x12
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x13',
+      });
+      await waitFor(10);
+
+      // Should emit: 15, 16, 17, 18, 19
+      expect(emittedBlocks).toHaveLength(5);
+      expect(emittedBlocks.map((b) => b.number)).toEqual([15, 16, 17, 18, 19]);
+    });
+
+    it('should not fill gaps when blocks are sequential', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Create and emit blocks sequentially
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      await waitFor(10);
+      notify(simulator.subscriptionId, simulator.nextBestBlock()); // emit 0x0f
+      await waitFor(10);
+
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      await waitFor(10);
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x10',
+      });
+      await waitFor(10);
+
+      // Should emit only 2 blocks (15, 16) - no gap filling
+      expect(emittedBlocks).toHaveLength(2);
+      expect(emittedBlocks.map((b) => b.number)).toEqual([15, 16]);
+    });
+
+    it('should log warning when gap is detected', async () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      // Create blocks
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+
+      await waitFor(10);
+
+      // Emit best block 0x0f
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Jump to 0x11 (skip 0x10)
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x11',
+      });
+      await waitFor(10);
+
+      // Should have logged warning about gap
+      expect(consoleWarnSpy).toHaveBeenCalledWith('best block gap detected: 1 blocks missing (16 to 16)');
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should reset gap tracking after stop/recovery', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const emittedBlocks: PinnedBlock[] = [];
+      chainHead.on('bestBlock', (block) => {
+        emittedBlocks.push(block);
+      });
+
+      // Emit first best block
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x0f
+      await waitFor(10);
+      notify(simulator.subscriptionId, simulator.nextBestBlock());
+      await waitFor(10);
+
+      // Trigger stop event
+      notify(simulator.subscriptionId, { event: 'stop' });
+      await waitFor(50);
+
+      emittedBlocks.length = 0; // Clear
+
+      // After recovery, jump to much higher block
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x10
+      notify(simulator.subscriptionId, simulator.nextNewBlock()); // 0x11
+      await waitFor(10);
+
+      notify(simulator.subscriptionId, {
+        event: 'bestBlockChanged',
+        bestBlockHash: '0x11',
+      });
+      await waitFor(10);
+
+      // Should NOT try to fill gap from before stop (tracking was reset)
+      // Just emits new blocks
+      expect(emittedBlocks.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('hasher detection', () => {
+    let providerSend: MockInstance;
+    let providerSubscribe: MockInstance;
+    let simulator: ReturnType<typeof newChainHeadSimulator>;
+    let initialRuntime: ChainHeadRuntimeVersion;
+
+    beforeEach(() => {
+      provider = new MockProvider();
+      client = new JsonRpcClient({ provider });
+      chainHead = new ChainHead(client);
+      simulator = newChainHeadSimulator({ provider });
+      initialRuntime = simulator.runtime;
+
+      providerSend = vi.spyOn(provider, 'send');
+      providerSubscribe = vi.spyOn(provider, 'subscribe');
+    });
+
+    /**
+     * Helper function to create a header with proper hash for a given hasher
+     */
+    function createTestHeader(
+      hasher: HashFn,
+      blockNumber: number,
+      parentHash: HexString = '0x0000000000000000000000000000000000000000000000000000000000000000',
+    ) {
+      const header: Header = {
+        parentHash,
+        number: blockNumber, // Use decimal number for encoding
+        stateRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        extrinsicsRoot: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        digest: { logs: [] },
+      };
+
+      const encoded = $Header.encode(header);
+      const hash = u8aToHex(hasher(encoded));
+
+      return {
+        header,
+        hash,
+        encodedHex: u8aToHex(encoded),
+      };
+    }
+
+    it('should detect blake2_256 hasher from finalized block header', async () => {
+      // Create a test header with proper blake2_256 hash
+      // Use block number 1 to keep encoding simple
+      const { hash: finalizedHash, encodedHex } = createTestHeader(blake2_256, 1);
+
+      // Mock chainHead_v1_header to return the encoded header
+      const headerMock = vi.fn((params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+      provider.setRpcRequest('chainHead_v1_header', headerMock);
+
+      // Create custom initialized event with the real hash
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify header was requested
+      expect(headerMock).toHaveBeenCalledWith([simulator.subscriptionId, finalizedHash]);
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(blake2_256);
+    });
+
+    it('should detect keccak_256 hasher from finalized block header', async () => {
+      // Create a test header with proper keccak_256 hash
+      // Use block number 1 to keep encoding simple
+      const { hash: finalizedHash, encodedHex } = createTestHeader(keccak_256, 1);
+
+      // Mock chainHead_v1_header to return the encoded header
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+
+      // Create custom initialized event with the real hash
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(keccak_256);
+    });
+
+    it('should return undefined when hasher cannot be detected', async () => {
+      const { hash: claimedHash } = createTestHeader(blake2_256, 1);
+      // Create a different header with different data (block 2 header for block 1 hash)
+      const { encodedHex: wrongEncodedHex } = createTestHeader(blake2_256, 2);
+
+      // Return wrong header for the claimed hash
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        const requestedHash = params[1];
+        if (requestedHash === claimedHash) {
+          // Return wrong header data
+          return wrongEncodedHex;
+        }
+        return '0x';
+      });
+
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [claimedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Hasher should not be detected (header doesn't match hash)
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBeUndefined();
+    });
+
+    it('should correctly detect hasher using block number 2', async () => {
+      // Test with a different block number to ensure it works for various blocks
+      const { hash: finalizedHash, encodedHex } = createTestHeader(blake2_256, 2);
+
+      provider.setRpcRequest('chainHead_v1_header', (params: any[]) => {
+        if (params[1] === finalizedHash) {
+          return encodedHex;
+        }
+        return '0x';
+      });
+
+      const customInitializedEvent = {
+        event: 'initialized',
+        finalizedBlockHashes: [finalizedHash],
+        finalizedBlockRuntime: { type: 'valid', spec: simulator.runtime },
+      };
+
+      // Start follow and notify
+      const followPromise = chainHead.follow();
+      notify(simulator.subscriptionId, customInitializedEvent);
+      await followPromise;
+
+      // Verify hasher detection
+      const detectedHasher = await chainHead.hasher();
+      expect(detectedHasher).toBe(blake2_256);
     });
   });
 });

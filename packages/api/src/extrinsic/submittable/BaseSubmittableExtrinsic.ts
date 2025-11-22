@@ -1,4 +1,4 @@
-import { BlockHash, Extrinsic } from '@dedot/codecs';
+import { BlockHash, Extrinsic, Preamble } from '@dedot/codecs';
 import {
   AddressOrPair,
   Callback,
@@ -33,8 +33,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   constructor(
     readonly client: ISubstrateClient<any, any>,
     call: IRuntimeTxCall,
+    preamble?: Preamble,
   ) {
-    super(client.registry, call);
+    super(client.registry, call, preamble);
   }
 
   withHooks(hooks: TxHooks) {

@@ -1,19 +1,21 @@
-import { BlockHash, Hash, Metadata, PortableRegistry } from '@dedot/codecs';
+import { BlockHash, Extrinsic, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { ConnectionStatus, JsonRpcProvider, ProviderEvent } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
 import {
   Callback,
   GenericStorageQuery,
+  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
   RpcVersion,
   RuntimeApiName,
   RuntimeApiSpec,
+  TxUnsub,
   Unsub,
-  GenericSubstrateApi,
 } from '@dedot/types';
+import { Properties } from '@dedot/types/json-rpc';
 import type { HashFn, HexString, IEventEmitter } from '@dedot/utils';
 import type { SubstrateApi } from './chaintypes/index.js';
 import type { AnySignedExtension } from './extrinsic/index.js';
@@ -161,6 +163,34 @@ export interface ISubstrateClientAt<
   atBlockHash: BlockHash;
 }
 
+export interface BlockInfo {
+  hash: BlockHash;
+  number: number;
+  parent: BlockHash;
+  runtimeUpgraded: boolean;
+}
+
+export interface BlockExplorer {
+  // Get the best block
+  best(): Promise<BlockInfo>;
+  // Subscribe to the best block
+  best(callback: (block: BlockInfo) => void): () => void;
+  // Get the finalized block
+  finalized(): Promise<BlockInfo>;
+  // Subscribe to the finalized block
+  finalized(callback: (block: BlockInfo) => void): () => void;
+
+  // Get the header of a block
+  header(hash: BlockHash): Promise<Header>;
+  // Get the body of a block
+  body(hash: BlockHash): Promise<HexString[]>;
+}
+
+export interface IChainSpec {
+  chainName(): Promise<string>;
+  properties(): Promise<Properties>;
+}
+
 /**
  * A generic interface for Substrate clients
  */
@@ -171,6 +201,9 @@ export interface ISubstrateClient<
     IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
+
+  chainSpec: IChainSpec;
+  block: BlockExplorer;
 
   at<ChainApiAt extends GenericSubstrateApi = ChainApi>(hash: BlockHash): Promise<ISubstrateClientAt<ChainApiAt>>;
 
@@ -189,6 +222,45 @@ export interface ISubstrateClient<
    * @param signer
    */
   setSigner(signer?: InjectedSigner): void;
+
+  /**
+   * Broadcasts a transaction to the network and monitors its status.
+   *
+   * This method accepts a transaction (either as a hex-encoded string or an Extrinsic instance)
+   * and submits it to the network. It returns a TxUnsub object that allows you to:
+   * - Subscribe to transaction status updates via an optional callback
+   * - Wait for specific transaction states (finalized, included in best chain block)
+   *
+   * @param tx - The signed transaction to broadcast, either as a hex-encoded string or Extrinsic instance
+   * @param callback - Optional callback function to receive transaction status updates. The callback
+   *                   receives an ISubmittableResult object containing status, events, errors, tx hash, etc...
+   *
+   * @returns A TxUnsub object that is both a Promise<Unsub> and provides utility methods:
+   *          - `.untilFinalized()` - Resolves when transaction is finalized
+   *          - `.untilBestChainBlockIncluded()` - Resolves when transaction is included in best chain block
+   *          - When awaited directly, resolves to an unsubscribe function
+   *
+   * @example
+   * // Basic usage with callback for status updates
+   * const unsub = await client.sendTx(rawTxHex, (result) => {
+   *   console.log('Transaction status:', result.status);
+   *   console.log('Transaction hash:', result.txHash);
+   *   if (result.dispatchError) {
+   *     console.error('Transaction failed:', result.dispatchError);
+   *   }
+   * });
+   *
+   * @example
+   * // Wait for transaction to be included in best chain block
+   * const result = await client.sendTx(rawTxHex, console.log).untilBestChainBlockIncluded();
+   * console.log('Transaction included in block:', result);
+   *
+   * @example
+   * // Wait for transaction finalization
+   * const result = await client.sendTx(rawTxHex).untilFinalized();
+   * console.log('Transaction finalized:', result);
+   */
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub;
 
   /**
    * Query multiple storage items in a single call or subscribe to multiple storage items
@@ -223,6 +295,20 @@ export interface ISubstrateClient<
     queries: { [K in keyof Fns]: Query<Fns[K]> },
     callback: Callback<{ [K in keyof Fns]: QueryFnResult<Fns[K]> }>,
   ): Promise<Unsub>;
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void;
+}
+
+export type EventHandlerFn<Event extends string> = EventTypes[Event];
+
+interface EventTypes {
+  ready: () => void;
+  connected: (connectedEndpoint: string) => void;
+  disconnected: () => void;
+  reconnecting: () => void;
+  runtimeUpgraded: (newRuntimeVersion: SubstrateRuntimeVersion, at: BlockInfo) => void;
+  error: (error?: Error) => void;
+  [event: string]: (...args: any[]) => void;
 }
 
 /**

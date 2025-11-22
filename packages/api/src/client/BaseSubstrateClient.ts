@@ -1,4 +1,13 @@
-import { $Metadata, BlockHash, Hash, Metadata, PortableRegistry, RuntimeVersion, StorageDataLike } from '@dedot/codecs';
+import {
+  $Metadata,
+  BlockHash,
+  Extrinsic,
+  Hash,
+  Metadata,
+  PortableRegistry,
+  RuntimeVersion,
+  StorageDataLike,
+} from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
@@ -9,6 +18,7 @@ import {
   Query,
   QueryFnResult,
   RpcVersion,
+  TxUnsub,
   Unsub,
 } from '@dedot/types';
 import {
@@ -16,6 +26,7 @@ import {
   deferred,
   Deferred,
   ensurePresence as _ensurePresence,
+  HexString,
   LRUCache,
   u8aToHex,
 } from '@dedot/utils';
@@ -27,6 +38,9 @@ import { BaseStorageQuery, QueryableStorage } from '../storage/index.js';
 import type {
   ApiEvent,
   ApiOptions,
+  BlockExplorer,
+  EventHandlerFn,
+  IChainSpec,
   ISubstrateClient,
   ISubstrateClientAt,
   JsonRpcClientOptions,
@@ -144,7 +158,7 @@ export abstract class BaseSubstrateClient<
       throw new Error('Cannot load metadata');
     }
 
-    this.setMetadata(metadata);
+    await this.setMetadata(metadata);
   }
 
   /**
@@ -180,7 +194,7 @@ export abstract class BaseSubstrateClient<
     }
   }
 
-  protected setMetadata(metadata: Metadata) {
+  protected async setMetadata(metadata: Metadata) {
     this._metadata = metadata;
     this._registry = new PortableRegistry<ChainApi['types']>(metadata.latest, this.options.hasher);
   }
@@ -401,6 +415,10 @@ export abstract class BaseSubstrateClient<
     return this.runtimeVersion;
   }
 
+  get block(): BlockExplorer {
+    throw new Error('Unimplemented!');
+  }
+
   get consts(): ChainApi['consts'] {
     return newProxyChain({ executor: new ConstantExecutor(this) }) as ChainApi['consts'];
   }
@@ -511,5 +529,17 @@ export abstract class BaseSubstrateClient<
 
   protected getStorageQuery(): BaseStorageQuery {
     throw new Error('Unimplemented!');
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    throw new Error('Unimplemented!');
+  }
+
+  get chainSpec(): IChainSpec {
+    throw new Error('Unimplemented!');
+  }
+
+  on<Event extends Events = Events>(event: Event, handler: EventHandlerFn<Event>): () => void {
+    return super.on(event, handler);
   }
 }

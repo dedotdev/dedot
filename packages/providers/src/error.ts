@@ -23,3 +23,5 @@ export class JsonRpcError<Data = any> extends Error {
 }
 
 export class MaxRetryAttemptedError extends DedotError {}
+
+export class NetworkDisconnectedError extends DedotError {}

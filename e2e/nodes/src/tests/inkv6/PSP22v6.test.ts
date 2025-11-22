@@ -1,5 +1,5 @@
-import { assert } from '@dedot/utils';
 import { Contract, toEvmAddress } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Psp22v6ContractApi } from '../../../../../examples/scripts/inkv6/psp22v6/index.js';
 import { deployInkv6Psp22, devPairs } from '../../utils.js';

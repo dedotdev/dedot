@@ -1,5 +1,5 @@
-import { assert } from '@dedot/utils';
 import { Contract, isSolContractExecutionError, toEvmAddress } from 'dedot/contracts';
+import { assert } from 'dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Psp22ContractApi } from '../../../../../examples/scripts/sol/psp22/index.js';
 import { deploySolPsp22, devPairs } from '../../utils.js';

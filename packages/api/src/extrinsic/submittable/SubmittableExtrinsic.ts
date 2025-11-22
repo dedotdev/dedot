@@ -1,4 +1,4 @@
-import { BlockHash, SignedBlock, TransactionStatus } from '@dedot/codecs';
+import { BlockHash, Extrinsic, SignedBlock, TransactionStatus } from '@dedot/codecs';
 import {
   AddressOrPair,
   Callback,
@@ -10,10 +10,10 @@ import {
   TxUnsub,
   Unsub,
 } from '@dedot/types';
-import { assert, isHex } from '@dedot/utils';
+import { assert, HexString, isHex } from '@dedot/utils';
+import { LegacyClient } from '../../client/LegacyClient.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { RejectedTxError } from './errors.js';
 import { toTxStatus, txDefer } from './utils.js';
 
 /**
@@ -21,6 +21,17 @@ import { toTxStatus, txDefer } from './utils.js';
  * @description A wrapper around an Extrinsic that exposes methods to sign, send, and other utility around Extrinsic.
  */
 export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements ISubmittableExtrinsicLegacy {
+  static fromTx(client: LegacyClient<any>, tx: HexString | Extrinsic) {
+    let extrinsic: Extrinsic;
+    if (isHex(tx)) {
+      extrinsic = client.registry.$Extrinsic.tryDecode(tx);
+    } else {
+      extrinsic = tx;
+    }
+
+    return new SubmittableExtrinsic(client, extrinsic.call, extrinsic.preamble);
+  }
+
   async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {
     const dryRunFn = this.client.rpc.system_dryRun;
 

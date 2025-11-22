@@ -1,7 +1,8 @@
-import { BlockHash, Hash, Header, PortableRegistry, RuntimeVersion } from '@dedot/codecs';
+import { BlockHash, type Extrinsic, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { GenericSubstrateApi, Unsub } from '@dedot/types';
-import { assert } from '@dedot/utils';
+import { Callback, GenericSubstrateApi, TxUnsub } from '@dedot/types';
+import { ChainProperties } from '@dedot/types/json-rpc';
+import { assert, HashFn, HexString, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -12,10 +13,13 @@ import {
   TxExecutor,
   ViewFunctionExecutor,
 } from '../executor/index.js';
+import { SubmittableExtrinsic } from '../extrinsic/submittable/SubmittableExtrinsic.js';
 import { newProxyChain } from '../proxychain.js';
 import { BaseStorageQuery, LegacyStorageQuery } from '../storage/index.js';
-import type { ApiOptions, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
-import { BaseSubstrateClient } from './BaseSubstrateClient.js';
+import type { ApiOptions, BlockExplorer, IChainSpec, ISubstrateClientAt, SubstrateRuntimeVersion } from '../types.js';
+import { BaseSubstrateClient, ensurePresence } from './BaseSubstrateClient.js';
+import { LegacyBlockExplorer } from './explorer/index.js';
+import { detectHasherFromHeader, detectHasherFromMetadata } from './utils.js';
 
 const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 
@@ -60,8 +64,10 @@ const KEEP_ALIVE_INTERVAL = 10_000; // in ms
 export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> // prettier-end-here
   extends BaseSubstrateClient<ChainApi>
 {
-  #runtimeSubscriptionUnsub?: Unsub;
+  #runtimeSubscriptionUnsub?: () => void;
   #healthTimer?: ReturnType<typeof setInterval>;
+  #hasher?: HashFn;
+  protected _blockExplorer?: BlockExplorer;
 
   /**
    * Use factory methods (`create`, `new`) to create `Dedot` instances.
@@ -94,10 +100,6 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     return LegacyClient.create(options);
   }
 
-  protected override onDisconnected = async () => {
-    await this.#unsubscribeUpdates();
-  };
-
   protected override async beforeDisconnect() {
     await this.#unsubscribeUpdates();
   }
@@ -106,57 +108,112 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
    * Initialize APIs before usage
    */
   protected override async doInitialize() {
-    let [genesisHash, runtimeVersion, metadata] = await Promise.all([
-      this.rpc.chain_getBlockHash(0),
-      this.#getRuntimeVersion(),
-      (await this.shouldPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
-    ]);
+    // Determine if this is the first initialization
+    const shouldInitialize = !this._genesisHash;
 
-    this._genesisHash = genesisHash;
-    this._runtimeVersion = runtimeVersion;
+    if (shouldInitialize) {
+      // First load: Run all requests in parallel for speed
+      let [genesisHash, runtimeVersion, metadata] = await Promise.all([
+        this.rpc.chain_getBlockHash(0),
+        this.#getRuntimeVersion(),
+        (await this.shouldPreloadMetadata()) ? this.fetchMetadata() : Promise.resolve(undefined),
+      ]);
 
-    await this.setupMetadata(metadata);
-    this.#subscribeUpdates();
+      this._genesisHash = genesisHash;
+      this._runtimeVersion = runtimeVersion;
+
+      await this.setupMetadata(metadata);
+
+      // Initialize block explorer
+      this._blockExplorer = new LegacyBlockExplorer(this);
+
+      // Subscribe to updates
+      this.#subscribeUpdates();
+    } else {
+      // Reconnect: Only fetch runtime version to check for changes
+      const newRuntimeVersion = await this.#getRuntimeVersion();
+
+      // Only fetch metadata if spec version has changed
+      if (newRuntimeVersion.specVersion !== this._runtimeVersion?.specVersion) {
+        this._runtimeVersion = newRuntimeVersion;
+
+        const metadata = await this.fetchMetadata();
+
+        await this.setupMetadata(metadata);
+      }
+    }
   }
 
   protected override cleanUp() {
     super.cleanUp();
     this.#healthTimer = undefined;
     this.#runtimeSubscriptionUnsub = undefined;
+    this._blockExplorer = undefined;
   }
 
   #subscribeRuntimeUpgrades() {
     if (this.#runtimeSubscriptionUnsub) return;
 
-    this.rpc
-      .state_subscribeRuntimeVersion(async (runtimeVersion: RuntimeVersion) => {
-        if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
-          this.startRuntimeUpgrade();
+    this.#runtimeSubscriptionUnsub = this.block.best(async (block) => {
+      if (!block.runtimeUpgraded) return;
 
-          this._runtimeVersion = this.toSubstrateRuntimeVersion(runtimeVersion);
+      const { hash } = block;
 
-          const newMetadata = await this.fetchMetadata(undefined, this._runtimeVersion);
-          await this.setupMetadata(newMetadata);
+      // Fetch the runtime version at this block
+      const runtimeVersion: SubstrateRuntimeVersion = await this.#getRuntimeVersion(hash);
 
-          this.emit('runtimeUpgraded', this._runtimeVersion);
+      // Check if the spec version has actually changed
+      if (runtimeVersion.specVersion !== this.runtimeVersion?.specVersion) {
+        this.startRuntimeUpgrade();
 
-          this.doneRuntimeUpgrade();
-        }
-      })
-      .then((unsub) => {
-        this.#runtimeSubscriptionUnsub = unsub;
-      });
+        this._runtimeVersion = runtimeVersion;
+
+        const newMetadata = await this.fetchMetadata(hash, this._runtimeVersion);
+        await this.setupMetadata(newMetadata);
+
+        this.emit('runtimeUpgraded', this._runtimeVersion, block);
+
+        this.doneRuntimeUpgrade();
+      }
+    });
   }
 
   async #getRuntimeVersion(at?: BlockHash): Promise<SubstrateRuntimeVersion> {
     return this.toSubstrateRuntimeVersion(await this.rpc.state_getRuntimeVersion(at));
   }
 
+  protected override async setMetadata(metadata: Metadata) {
+    this._metadata = metadata;
+
+    // Detect hasher if not provided by user
+    // Here we assume that hasher method of a chain is less likely to be changed via runtime upgrades
+    // So for now, we only need to detect it in initial connection and reuse it later
+    if (!this.#hasher && !this.options.hasher) {
+      // Try metadata first
+      this.#hasher = detectHasherFromMetadata(metadata);
+
+      // Fallback to block header detection
+      if (!this.#hasher) {
+        try {
+          const hash: BlockHash = await this.rpc.chain_getFinalizedHead();
+          const header: Header = await this.rpc.chain_getHeader(hash);
+          if (header) {
+            this.#hasher = detectHasherFromHeader(header, hash);
+          }
+        } catch {
+          // Ignore errors in fallback detection
+        }
+      }
+    }
+
+    this._registry = new PortableRegistry<ChainApi['types']>(metadata.latest, this.#hasher || this.options.hasher);
+  }
+
   #subscribeHealth() {
     this.#unsubscribeHealth();
 
     this.#healthTimer = setInterval(() => {
-      this.rpc.system_health().catch(console.error);
+      this.rpc.system_health().catch(noop);
     }, KEEP_ALIVE_INTERVAL);
   }
 
@@ -175,7 +232,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     }
 
     try {
-      await this.#runtimeSubscriptionUnsub();
+      this.#runtimeSubscriptionUnsub();
       this.#runtimeSubscriptionUnsub = undefined;
     } catch {
       // ignore
@@ -271,6 +328,21 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     return newProxyChain({ executor: new TxExecutor(this) }) as ChainApi['tx'];
   }
 
+  get block(): BlockExplorer {
+    return ensurePresence(this._blockExplorer);
+  }
+
+  get chainSpec(): IChainSpec {
+    return {
+      chainName: (): Promise<string> => {
+        return this.rpc.system_chain();
+      },
+      properties: (): Promise<ChainProperties> => {
+        return this.rpc.system_properties();
+      },
+    };
+  }
+
   /**
    * Create a new API instance at a specific block hash
    * This is useful when we want to inspect the state of the chain at a specific block hash
@@ -295,7 +367,7 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
         registry = cachedMetadata[1];
       } else {
         metadata = await this.fetchMetadata(parentHash, targetVersion);
-        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.options.hasher);
+        registry = new PortableRegistry<ChainApiAt['types']>(metadata.latest, this.#hasher || this.options.hasher);
       }
     }
 
@@ -338,5 +410,12 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
       assert(header, `Header for ${hash} not found`);
       return header.parentHash;
     }
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return SubmittableExtrinsic.fromTx(this, tx) // --
+      .send((result) => {
+        callback && callback(result);
+      });
   }
 }

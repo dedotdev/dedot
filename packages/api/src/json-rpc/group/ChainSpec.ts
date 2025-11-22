@@ -1,9 +1,9 @@
 import { Properties } from '@dedot/types/json-rpc';
 import { HexString } from '@dedot/utils';
-import { IJsonRpcClient } from '../../types.js';
+import { IJsonRpcClient, IChainSpec } from '../../types.js';
 import { JsonRpcGroup, JsonRpcGroupOptions } from './JsonRpcGroup.js';
 
-export class ChainSpec extends JsonRpcGroup {
+export class ChainSpec extends JsonRpcGroup implements IChainSpec {
   constructor(client: IJsonRpcClient<any>, options?: Partial<JsonRpcGroupOptions>) {
     super(client, { prefix: 'chainSpec', supportedVersions: ['unstable', 'v1'], ...options });
   }

@@ -1,5 +1,5 @@
-import { $Header, BlockHash, Option } from '@dedot/codecs';
-import type { JsonRpcSubscription } from '@dedot/providers';
+import { $Header, BlockHash, Header, Option } from '@dedot/codecs';
+import { type JsonRpcSubscription, NetworkDisconnectedError } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
   ArchiveStorageResult,
@@ -12,6 +12,7 @@ import type {
   StorageQuery,
   StorageResult,
 } from '@dedot/types/json-rpc';
+import { HashFn } from '@dedot/utils';
 import {
   assert,
   AsyncQueue,
@@ -24,6 +25,7 @@ import {
   waitFor,
   LRUCache,
 } from '@dedot/utils';
+import { detectHasherFromHeader } from '../../../client/utils.js';
 import type { IJsonRpcClient } from '../../../types.js';
 import { Archive } from '../Archive.js';
 import { JsonRpcGroup, type JsonRpcGroupOptions } from '../JsonRpcGroup.js';
@@ -46,11 +48,18 @@ export type OperationHandler<T = any> = {
   hash: BlockHash; // block hash at which the operation is called
 };
 
+export type PendingRequest<T = any> = {
+  method: string;
+  params: any[];
+  defer: Deferred<T>;
+};
+
 export type PinnedBlock = {
   hash: BlockHash;
   number: number;
   parent: BlockHash;
   runtime?: ChainHeadRuntimeVersion;
+  runtimeUpgraded?: boolean;
 };
 
 export type ChainHeadEvent =
@@ -70,12 +79,17 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #handlers: Record<OperationId, OperationHandler>;
   #pendingOperations: Record<OperationId, FollowOperationEvent[]>;
 
+  #pendingRequests: Map<string, PendingRequest> = new Map();
+  #requestIdCounter: number = 0;
+
   #finalizedQueue: Array<BlockHash>;
   #pinnedBlocks: Record<BlockHash, PinnedBlock>;
 
   #bestHash?: BlockHash;
+  #lastBestBlockNumber?: number; // Track last emitted best block number for gap detection
   #finalizedHash?: BlockHash; // best finalized hash
   #finalizedRuntime?: ChainHeadRuntimeVersion;
+  #hasher?: HashFn; // detected hasher from block header
   #followResponseQueue: AsyncQueue;
   #retryQueue: AsyncQueue;
   #recovering?: Deferred<void>;
@@ -123,6 +137,37 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this;
   }
 
+  /**
+   * Override send() to track pending requests for retry on network disconnection
+   */
+  override async send<T = any>(method: string, ...params: any[]): Promise<T> {
+    const requestId = `req_${++this.#requestIdCounter}`;
+    const defer = deferred<T>();
+
+    this.#pendingRequests.set(requestId, {
+      method,
+      params,
+      defer,
+    });
+
+    try {
+      const result = await super.send<T>(method, ...params);
+      this.#pendingRequests.delete(requestId);
+      defer.resolve(result);
+      return result;
+    } catch (error: any) {
+      if (error instanceof NetworkDisconnectedError) {
+        // Keep in pending for retry on re-follow - don't delete
+        // Return the deferred promise that will be resolved on retry
+        return defer.promise;
+      }
+
+      // Other errors: clean up and throw
+      this.#pendingRequests.delete(requestId);
+      throw error;
+    }
+  }
+
   async runtimeVersion(): Promise<ChainHeadRuntimeVersion> {
     await this.#ensureFollowed();
 
@@ -155,8 +200,21 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.findBlock(await this.finalizedHash())!;
   }
 
+  /**
+   * Returns the detected hasher for the chain
+   * Returns undefined if detection failed (client should use default)
+   */
+  async hasher(): Promise<HashFn | undefined> {
+    await this.#ensureFollowed();
+    return this.#hasher;
+  }
+
   findBlock(hash: BlockHash): PinnedBlock | undefined {
     return this.#pinnedBlocks[hash];
+  }
+
+  #findBlocksByNumber(blockNumber: number): PinnedBlock[] {
+    return Object.values(this.#pinnedBlocks).filter((block) => block.number === blockNumber);
   }
 
   isPinned(hash: BlockHash): boolean {
@@ -170,6 +228,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     await this.#ensureFollowed();
 
     this.#unsub && (await this.#unsub());
+
     this.#cleanUp();
   }
 
@@ -188,7 +247,6 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     const defer = deferred<void>();
 
     try {
-      this.#subscriptionId = undefined;
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
 
       const SIGNAL_THRESHOLD = this.#__unsafe__isSmoldot() ? 2 : 1;
@@ -215,7 +273,46 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       defer.reject(e);
     }
 
-    return defer.promise;
+    // Wait for follow to complete, then retry pending requests
+    await defer.promise;
+
+    // Retry pending requests if any (from previous disconnection)
+    if (this.#pendingRequests.size > 0) {
+      this.#retryPendingRequests();
+    }
+  }
+
+  /**
+   * Retry pending requests that were queued during network disconnection
+   */
+  #retryPendingRequests() {
+    const pending = Array.from(this.#pendingRequests.entries());
+
+    for (const [requestId, request] of pending) {
+      const { method, params, defer } = request;
+
+      // Update subscription ID with the new one (first param for all ChainHead RPC methods)
+      const updatedParams = [...params];
+      if (updatedParams.length > 0) {
+        updatedParams[0] = this.#subscriptionId;
+      }
+
+      // Retry the request with new subscriptionId
+      super
+        .send(method, ...updatedParams)
+        .then((result) => {
+          defer.resolve(result);
+          this.#pendingRequests.delete(requestId);
+        })
+        .catch((error) => {
+          if (!(error instanceof NetworkDisconnectedError)) {
+            // Real error, reject and clean up
+            defer.reject(error);
+            this.#pendingRequests.delete(requestId);
+          }
+          // If NetworkDisconnectedError again, keep in pending for next retry
+        });
+    }
   }
 
   #onFollowEvent = async (result: FollowEvent, subscription?: JsonRpcSubscription) => {
@@ -226,6 +323,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const lastFinalizedHash = this.#finalizedHash;
         const prevPinnedBlocks = this.#pinnedBlocks;
 
+        // Initialize subscription state
         this.#subscriptionId = subscription!.subscriptionId;
         this.#finalizedQueue = finalizedBlockHashes;
         if (finalizedBlockHashes.length > MIN_FINALIZED_QUEUE_SIZE) {
@@ -235,63 +333,21 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         assert(this.#finalizedRuntime, 'Invalid finalized runtime');
 
-        this.#bestHash = this.#finalizedHash = finalizedBlockHashes.at(-1);
+        // Build initial pinned blocks
+        this.#finalizedHash = finalizedBlockHashes.at(-1);
+        if (!this.#bestHash) {
+          this.#bestHash = this.#finalizedHash;
+        }
 
-        this.#pinnedBlocks = finalizedBlockHashes.reduce(
-          (o, hash, idx, arr) => {
-            o[hash] = { hash, parent: arr[idx - 1], number: idx };
+        this.#pinnedBlocks = this.#buildInitialPinnedBlocks(finalizedBlockHashes, this.#finalizedRuntime);
 
-            // assign finalized runtime to the current finalized block
-            if (idx === finalizedBlockHashes.length - 1) {
-              o[hash]['runtime'] = this.#finalizedRuntime;
-            }
+        await this.#updateBlockNumbersAndParents(finalizedBlockHashes, prevPinnedBlocks);
 
-            return o;
-          },
-          {} as Record<BlockHash, PinnedBlock>,
-        );
-
-        // Get starting block info
-        const startingBlock = await (async () => {
-          const startingBlockHash = finalizedBlockHashes[0];
-          const existing = prevPinnedBlocks[startingBlockHash];
-          if (existing) {
-            return {
-              number: existing.number,
-              parent: existing.parent,
-            };
-          } else {
-            const header = $Header.tryDecode(await this.#getHeader(startingBlockHash));
-            return {
-              number: header.number,
-              parent: header.parentHash,
-            };
-          }
-        })();
-
-        Object.values(this.#pinnedBlocks).forEach((b, idx) => {
-          b.number += startingBlock.number;
-          if (idx === 0) {
-            b.parent = startingBlock.parent;
-          }
-        });
-
+        // Handle first initialization or reconnection
         if (!lastFinalizedHash) {
           this.emit('finalizedBlock', await this.finalizedBlock());
         } else {
-          const lastFinalizedIndex = finalizedBlockHashes.indexOf(lastFinalizedHash as HexString);
-
-          if (lastFinalizedIndex !== -1 && lastFinalizedIndex < finalizedBlockHashes.length - 1) {
-            // Emit all finalized blocks that occurred during the disconnection
-            for (let i = lastFinalizedIndex + 1; i < finalizedBlockHashes.length; i++) {
-              const hash = finalizedBlockHashes[i];
-              const block = this.#pinnedBlocks[hash];
-
-              if (block) {
-                this.emit('finalizedBlock', block);
-              }
-            }
-          }
+          await this.#handleMissingBlocks(finalizedBlockHashes, lastFinalizedHash, prevPinnedBlocks);
         }
 
         break;
@@ -312,6 +368,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           // if the runtime is not provided, we'll find it from the parent block
           runtime: runtime || this.#findRuntimeAt(parent),
           number: parentBlock.number + 1,
+          runtimeUpgraded: !!runtime,
         };
 
         this.emit('newBlock', this.#pinnedBlocks[hash]);
@@ -325,8 +382,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         if (!newBestBlock) return;
         if (currentBestBlock.hash === newBestBlock.hash) return;
 
+        // Detect and fill gaps before updating best hash
+        if (this.#lastBestBlockNumber !== undefined) {
+          this.#fillBestBlockGaps(this.#lastBestBlockNumber, newBestBlock.number);
+        }
+
         const bestChainChanged = !this.#onTheSameChain(currentBestBlock, newBestBlock);
         this.#bestHash = bestBlockHash;
+        this.#lastBestBlockNumber = newBestBlock.number; // Update tracking
+
         this.emit('bestBlock', newBestBlock, bestChainChanged);
         if (bestChainChanged) this.emit('bestChainChanged', newBestBlock);
         break;
@@ -522,6 +586,142 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     return this.#findRuntimeAt(block.parent!);
   }
 
+  #hasRuntimeUpgrade(header: Header): boolean {
+    return header.digest.logs.some((log) => log.type === 'RuntimeEnvironmentUpdated');
+  }
+
+  #buildInitialPinnedBlocks(
+    finalizedBlockHashes: BlockHash[],
+    runtime: ChainHeadRuntimeVersion,
+  ): Record<BlockHash, PinnedBlock> {
+    return finalizedBlockHashes.reduce(
+      (o, hash, idx, arr) => {
+        o[hash] = { hash, parent: arr[idx - 1], number: idx };
+
+        // assign finalized runtime to the current finalized block
+        if (idx === finalizedBlockHashes.length - 1) {
+          o[hash]['runtime'] = runtime;
+        }
+
+        return o;
+      },
+      {} as Record<BlockHash, PinnedBlock>,
+    );
+  }
+
+  async #fetchInitializationHeaders(
+    finalizedBlockHashes: BlockHash[],
+    prevPinnedBlocks: Record<BlockHash, PinnedBlock>,
+  ): Promise<{
+    startingHeader: { number: number; parent: BlockHash };
+    finalizedHeader: Header;
+  }> {
+    const fetchStartingHeader = async () => {
+      const startingBlockHash = finalizedBlockHashes[0];
+      const existing = prevPinnedBlocks[startingBlockHash];
+      if (existing) {
+        return {
+          number: existing.number,
+          parent: existing.parent,
+        };
+      } else {
+        const header = $Header.tryDecode(await this.#getHeader(startingBlockHash));
+        return {
+          number: header.number,
+          parent: header.parentHash,
+        };
+      }
+    };
+
+    const [startingBlock, finalizedHeader] = await Promise.all([
+      fetchStartingHeader(),
+      $Header.tryDecode(await this.#getHeader(this.#finalizedHash!)),
+    ]);
+
+    return { startingHeader: startingBlock, finalizedHeader };
+  }
+
+  async #updateBlockNumbersAndParents(
+    finalizedBlockHashes: BlockHash[],
+    prevPinnedBlocks: Record<BlockHash, PinnedBlock>,
+  ) {
+    // Fetch headers and update block metadata
+    const { startingHeader, finalizedHeader } = await this.#fetchInitializationHeaders(
+      finalizedBlockHashes,
+      prevPinnedBlocks,
+    );
+
+    // Detect hasher using the finalized header we just fetched
+    this.#hasher = detectHasherFromHeader(finalizedHeader, this.#finalizedHash!);
+
+    Object.values(this.#pinnedBlocks).forEach((b, idx) => {
+      b.number += startingHeader.number;
+      if (idx === 0) {
+        b.parent = startingHeader.parent;
+      }
+    });
+
+    this.#pinnedBlocks[this.#finalizedHash!].runtimeUpgraded = this.#hasRuntimeUpgrade(finalizedHeader);
+  }
+
+  async #fetchAndApplyRuntimeUpgrades(missingHashes: BlockHash[], prevPinnedBlocks: Record<BlockHash, PinnedBlock>) {
+    const blocksNeedingHeaders: BlockHash[] = [];
+
+    for (const hash of missingHashes) {
+      const prevBlock = prevPinnedBlocks[hash];
+      const currentBlock = this.#pinnedBlocks[hash];
+
+      if (prevBlock?.runtimeUpgraded !== undefined) {
+        // Reuse existing runtime info from prevPinnedBlocks
+        currentBlock.runtimeUpgraded = prevBlock.runtimeUpgraded;
+      } else {
+        // Need to fetch header for this block
+        blocksNeedingHeaders.push(hash);
+      }
+    }
+
+    if (blocksNeedingHeaders.length === 0) return;
+
+    const headers = await Promise.all(
+      blocksNeedingHeaders.map(async (hash) => ({
+        hash,
+        header: $Header.tryDecode(await this.#getHeader(hash)),
+      })),
+    );
+
+    // Set runtimeUpgraded flag based on digest check
+    for (const { hash, header } of headers) {
+      const block = this.#pinnedBlocks[hash];
+      if (block) {
+        block.runtimeUpgraded = this.#hasRuntimeUpgrade(header);
+      }
+    }
+  }
+
+  async #handleMissingBlocks(
+    finalizedBlockHashes: BlockHash[],
+    lastFinalizedHash: BlockHash,
+    prevPinnedBlocks: Record<BlockHash, PinnedBlock>,
+  ): Promise<void> {
+    const lastFinalizedIndex = finalizedBlockHashes.indexOf(lastFinalizedHash as HexString);
+
+    if (lastFinalizedIndex !== -1 && lastFinalizedIndex < finalizedBlockHashes.length - 1) {
+      // Get missing block hashes that occurred during disconnection
+      const missingHashes = finalizedBlockHashes.slice(lastFinalizedIndex + 1);
+
+      // Identify blocks needing header fetch vs those with cached runtime info
+      await this.#fetchAndApplyRuntimeUpgrades(missingHashes, prevPinnedBlocks);
+
+      // Emit all missing finalized blocks with proper runtime info
+      for (const hash of missingHashes) {
+        const block = this.#pinnedBlocks[hash];
+        if (block) {
+          this.emit('finalizedBlock', block);
+        }
+      }
+    }
+  }
+
   #onTheSameChain(b1: PinnedBlock | undefined, b2: PinnedBlock | undefined): boolean {
     if (!b1 || !b2) return false;
 
@@ -531,6 +731,29 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       return this.#onTheSameChain(b1, this.findBlock(b2.parent));
     } else {
       return this.#onTheSameChain(this.findBlock(b1.parent), b2);
+    }
+  }
+
+  /**
+   * Detect and emit missing best blocks from pinned blocks
+   * Called when bestBlockChanged event detects a gap
+   */
+  #fillBestBlockGaps(lastNumber: number, currentNumber: number): void {
+    // No gap if current is next sequential block
+    if (currentNumber <= lastNumber + 1) {
+      return;
+    }
+
+    // Gap detected - emit warning
+    const gapSize = currentNumber - lastNumber - 1;
+    console.warn(`best block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${currentNumber - 1})`);
+
+    // Emit missing blocks from pinned blocks
+    for (let num = lastNumber + 1; num < currentNumber; num++) {
+      const blocks = this.#findBlocksByNumber(num);
+      for (let idx = 0; idx < blocks.length; idx++) {
+        this.emit('bestBlock', blocks[idx], idx >= 1);
+      }
     }
   }
 
@@ -640,9 +863,11 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#unsub = undefined;
     this.#handlers = {};
     this.#pendingOperations = {};
+    this.#pendingRequests.clear();
 
     this.#pinnedBlocks = {};
     this.#bestHash = undefined;
+    this.#lastBestBlockNumber = undefined;
     this.#finalizedHash = undefined;
     this.#finalizedRuntime = undefined;
     this.#followResponseQueue.clear();
@@ -650,6 +875,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#blockUsage.clear();
     this.clearCache();
     this.#operationQueue.cancel();
+    this.#hasher = undefined;
   }
 
   async #ensureFollowed(): Promise<void> {

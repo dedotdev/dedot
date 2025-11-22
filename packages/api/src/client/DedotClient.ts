@@ -1,24 +1,28 @@
-import { Metadata, PortableRegistry } from '@dedot/codecs';
+import { type Extrinsic, Metadata, PortableRegistry } from '@dedot/codecs';
 import { ConnectionStatus, JsonRpcProvider } from '@dedot/providers';
 import {
   Callback,
   GenericStorageQuery,
+  GenericSubstrateApi,
   InjectedSigner,
   Query,
   QueryFnResult,
-  Unsub,
-  GenericSubstrateApi,
   RpcVersion,
+  TxUnsub,
+  Unsub,
 } from '@dedot/types';
 import { HexString } from '@dedot/utils';
 import { SubstrateApi } from '../chaintypes/index.js';
 import { isJsonRpcProvider } from '../json-rpc/index.js';
 import {
+  ApiEvent,
   ApiOptions,
-  DedotClientEvent,
+  BlockExplorer,
   ISubstrateClient,
   ISubstrateClientAt,
   SubstrateRuntimeVersion,
+  IChainSpec,
+  type EventHandlerFn,
 } from '../types.js';
 import { LegacyClient } from './LegacyClient.js';
 import { V2Client } from './V2Client.js';
@@ -29,9 +33,9 @@ export type ClientOptions = ApiOptions & {
 
 export class DedotClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
-> implements ISubstrateClient<ChainApi, DedotClientEvent>
+> implements ISubstrateClient<ChainApi, ApiEvent>
 {
-  #client: ISubstrateClient<ChainApi, DedotClientEvent>;
+  #client: ISubstrateClient<ChainApi, ApiEvent>;
   rpcVersion: RpcVersion;
 
   constructor(options: ClientOptions | JsonRpcProvider) {
@@ -138,6 +142,14 @@ export class DedotClient<
     return this.#client.view;
   }
 
+  get block(): BlockExplorer {
+    return this.#client.block;
+  }
+
+  get chainSpec(): IChainSpec {
+    return this.#client.chainSpec;
+  }
+
   async connect(): Promise<this> {
     await this.#client.connect();
 
@@ -148,13 +160,15 @@ export class DedotClient<
     await this.#client.disconnect();
   }
 
-  on(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
+  on<Event extends ApiEvent = ApiEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
     return this.#client.on(event, handler);
   }
-  once(event: DedotClientEvent, handler: (...args: any[]) => void): () => void {
+
+  once<Event extends ApiEvent = ApiEvent>(event: Event, handler: EventHandlerFn<Event>): () => void {
     return this.#client.once(event, handler);
   }
-  off(event: DedotClientEvent, handler?: ((...args: any[]) => void) | undefined): this {
+
+  off(event: ApiEvent, handler?: ((...args: any[]) => void) | undefined): this {
     this.#client.off(event, handler);
     return this;
   }
@@ -184,5 +198,9 @@ export class DedotClient<
   ): Promise<any[] | Unsub> {
     // @ts-ignore
     return this.#client.queryMulti(queries, callback);
+  }
+
+  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+    return this.#client.sendTx(tx, callback);
   }
 }
