@@ -24,6 +24,7 @@ import {
   IChainSpec,
   type EventHandlerFn,
 } from '../types.js';
+import { BaseSubstrateClient } from './BaseSubstrateClient.js';
 import { LegacyClient } from './LegacyClient.js';
 import { V2Client } from './V2Client.js';
 
@@ -202,5 +203,9 @@ export class DedotClient<
 
   sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
     return this.#client.sendTx(tx, callback);
+  }
+
+  async clearCache(keepMetadataCache: boolean = false): Promise<void> {
+    await (this.#client as BaseSubstrateClient<ChainApi, ApiEvent>).clearCache(keepMetadataCache);
   }
 }
