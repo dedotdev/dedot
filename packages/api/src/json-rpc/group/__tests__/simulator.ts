@@ -74,17 +74,27 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     return b;
   };
 
+  const makeBlockHash = (height: number, forkCounter?: number): HexString => {
+    // Convert height and fork to hex (without 0x prefix)
+    // Use 4 hex chars (2 bytes) for height, 4 hex chars (2 bytes) for fork counter
+    const heightHex = height.toString(16).padStart(4, '0'); // 2 bytes for height
+    const forkHex = isNumber(forkCounter) ? forkCounter.toString(16).padStart(4, '0') : '0000'; // 2 bytes for fork
+
+    // Create 32-byte hash: 28 bytes of zeros + 2 bytes fork + 2 bytes height
+    // Format: 0x + 56 zeros + 4 hex (fork) + 4 hex (height) = 0x + 64 hex chars = 32 bytes
+    return `0x${'0'.repeat(56)}${forkHex}${heightHex}` as HexString;
+  };
+
   const newBlockAtHeight = (height: number, forkCounter?: number, parentForkCounter?: number): BlockInfo => {
+    const hash = makeBlockHash(height, forkCounter);
+
     if (height === 0) {
       return {
         height,
-        hash: '0x00' as HexString,
-        parent: '0x00' as HexString,
+        hash,
+        parent: hash, // Genesis block is its own parent
       };
     }
-
-    const suffix = isNumber(forkCounter) ? `-${forkCounter}` : '';
-    const hash = `${numberToHex(height)}${suffix}` as HexString;
 
     if (blockDb[hash]) return blockDb[hash];
 

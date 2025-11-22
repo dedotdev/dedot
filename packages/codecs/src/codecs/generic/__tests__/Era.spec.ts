@@ -1,3 +1,4 @@
+import { assert } from '@dedot/shape';
 import { describe, expect, it } from 'vitest';
 import { $Era, nextPowerOfTwo, numOfTrailingZeroes } from '../Era.js';
 
@@ -41,6 +42,132 @@ describe('Era', () => {
     const e = $Era.tryEncode({ period: 32768n, current: 20000n });
     expect(e).toEqual(new Uint8Array([14 + (2500 % 16) * 16, 2500 / 16]));
     expect($Era.tryDecode(e)).toEqual({ type: 'Mortal', value: { period: 32768n, phase: 20000n } });
+  });
+
+  describe('subAssert', () => {
+    describe('valid MortalInputs format', () => {
+      it('should accept valid MortalInputs { period: bigint, current: bigint }', () => {
+        expect(() => assert($Era, { period: 64n, current: 42n })).not.toThrow();
+      });
+
+      it('should accept MortalInputs with large values', () => {
+        expect(() => assert($Era, { period: 32768n, current: 20000n })).not.toThrow();
+        expect(() => assert($Era, { period: 1000000n, current: 1000001n })).not.toThrow();
+      });
+
+      it('should accept MortalInputs with small values', () => {
+        expect(() => assert($Era, { period: 2n, current: 1n })).not.toThrow();
+        expect(() => assert($Era, { period: 4n, current: 5n })).not.toThrow();
+      });
+    });
+
+    describe('valid Era format - Immortal', () => {
+      it('should accept valid Immortal era', () => {
+        expect(() => assert($Era, { type: 'Immortal' })).not.toThrow();
+      });
+    });
+
+    describe('valid Era format - Mortal', () => {
+      it('should accept valid Mortal era with period and phase', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 64n, phase: 42n } })).not.toThrow();
+      });
+
+      it('should accept Mortal era with period=4n, phase=1n', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 4n, phase: 1n } })).not.toThrow();
+      });
+
+      it('should accept Mortal era with period=65536n', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 65536n, phase: 100n } })).not.toThrow();
+      });
+    });
+
+    describe('invalid type errors', () => {
+      it('should throw for non-object input', () => {
+        expect(() => assert($Era, 'string' as any)).toThrow();
+        expect(() => assert($Era, 123 as any)).toThrow();
+      });
+
+      it('should throw for null', () => {
+        expect(() => assert($Era, null as any)).toThrow();
+      });
+
+      it('should throw for array', () => {
+        expect(() => assert($Era, [] as any)).toThrow();
+      });
+
+      it('should throw for string', () => {
+        expect(() => assert($Era, 'invalid' as any)).toThrow();
+      });
+    });
+
+    describe('invalid MortalInputs errors', () => {
+      it('should throw when period is not bigint', () => {
+        expect(() => assert($Era, { period: '64' as any, current: 42n })).toThrow();
+        expect(() => assert($Era, { period: 64 as any, current: 42n })).toThrow();
+      });
+
+      it('should throw when current is not bigint', () => {
+        expect(() => assert($Era, { period: 64n, current: '42' as any })).toThrow();
+        expect(() => assert($Era, { period: 64n, current: 42 as any })).toThrow();
+      });
+
+      it('should throw when period is number instead of bigint', () => {
+        expect(() => assert($Era, { period: 100, current: 42n } as any)).toThrow();
+      });
+    });
+
+    describe('invalid Era format errors', () => {
+      it('should throw when type field is missing', () => {
+        expect(() => assert($Era, { value: { period: 64n, phase: 42n } } as any)).toThrow();
+      });
+
+      it('should throw when type is not string', () => {
+        expect(() => assert($Era, { type: 123 as any })).toThrow();
+      });
+
+      it('should throw when type is invalid value', () => {
+        expect(() => assert($Era, { type: 'Invalid' } as any)).toThrow();
+        expect(() => assert($Era, { type: 'mortal' } as any)).toThrow(); // lowercase
+      });
+    });
+
+    describe('invalid Mortal era errors', () => {
+      it('should throw when Mortal era missing value field', () => {
+        expect(() => assert($Era, { type: 'Mortal' } as any)).toThrow();
+      });
+
+      it('should throw when Mortal value.period is not bigint', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 64 as any, phase: 42n } })).toThrow();
+        expect(() => assert($Era, { type: 'Mortal', value: { period: '64' as any, phase: 42n } })).toThrow();
+      });
+
+      it('should throw when Mortal value.phase is not bigint', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 64n, phase: 42 as any } })).toThrow();
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 64n, phase: '42' as any } })).toThrow();
+      });
+
+      it('should throw when Mortal value is null', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: null as any })).toThrow();
+      });
+
+      it('should throw when Mortal value is missing period', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { phase: 42n } as any })).toThrow();
+      });
+
+      it('should throw when Mortal value is missing phase', () => {
+        expect(() => assert($Era, { type: 'Mortal', value: { period: 64n } as any })).toThrow();
+      });
+    });
+
+    describe('invalid format errors', () => {
+      it('should throw for empty object {}', () => {
+        expect(() => assert($Era, {} as any)).toThrow();
+      });
+
+      it('should throw for object with random properties', () => {
+        expect(() => assert($Era, { random: 'property' } as any)).toThrow();
+      });
+    });
   });
 });
 

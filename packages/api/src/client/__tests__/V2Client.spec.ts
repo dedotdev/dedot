@@ -1,10 +1,11 @@
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { SubstrateRuntimeVersion } from '@dedot/api';
 import { fakeSigner } from '@dedot/api/extrinsic/submittable/fakeSigner';
-import { $Header, $RuntimeVersion, type Header, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
+import { $RuntimeVersion, type RuntimeVersion, unwrapOpaqueMetadata } from '@dedot/codecs';
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
+import { createShape } from '@dedot/shape';
 import { InjectedSigner } from '@dedot/types';
 import {
   MethodResponse,
@@ -13,16 +14,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import {
-  assert,
-  blake2_256,
-  deferred,
-  keccak_256,
-  stringCamelCase,
-  stringPascalCase,
-  u8aToHex,
-  waitFor,
-} from '@dedot/utils';
+import { assert, blake2_256, deferred, keccak_256, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
@@ -105,14 +97,14 @@ describe(
         it('should create new api instance', async () => {
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0e',
+            '0x000000000000000000000000000000000000000000000000000000000000000e',
             'Metadata_metadata_versions',
             '0x',
           ]);
 
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
-            '0x0f',
+            '0x000000000000000000000000000000000000000000000000000000000000000f',
             'Metadata_metadata_at_version',
             '0x10000000',
           ]);
@@ -606,7 +598,11 @@ describe(
                 'BestChainBlockIncluded',
                 'Finalized',
               ]);
-              expect(finalizedBlock).toEqual({ blockHash: '0x11-1', blockNumber: 17, txIndex: 2 });
+              expect(finalizedBlock).toEqual({
+                blockHash: '0x0000000000000000000000000000000000000000000000000000000000010011',
+                blockNumber: 17,
+                txIndex: 2,
+              });
             });
           });
         });
@@ -640,11 +636,11 @@ describe(
               output: u8aToHex($RuntimeVersion.tryEncode(newRuntime)),
             } as OperationCallDone);
 
-            const _ = await api.at('0x0d');
+            const _ = await api.at('0x000000000000000000000000000000000000000000000000000000000000000d');
 
             expect(providerSend).toBeCalledWith('chainHead_v1_call', [
               simulator.subscriptionId,
-              '0x0c',
+              '0x000000000000000000000000000000000000000000000000000000000000000c',
               'Core_version',
               '0x',
             ]);
@@ -702,11 +698,11 @@ describe(
               20,
             );
 
-            const _ = await api.at('0x0d');
+            const _ = await api.at('0x000000000000000000000000000000000000000000000000000000000000000d');
 
             expect(providerSend).toBeCalledWith('chainHead_v1_call', [
               simulator.subscriptionId,
-              '0x0c',
+              '0x000000000000000000000000000000000000000000000000000000000000000c',
               'Core_version',
               '0x',
             ]);
@@ -715,14 +711,14 @@ describe(
 
             expect(providerSend).toBeCalledWith('chainHead_v1_call', [
               simulator.subscriptionId,
-              '0x0c',
+              '0x000000000000000000000000000000000000000000000000000000000000000c',
               'Metadata_metadata_versions',
               '0x',
             ]);
 
             expect(providerSend).toBeCalledWith('chainHead_v1_call', [
               simulator.subscriptionId,
-              '0x0c',
+              '0x000000000000000000000000000000000000000000000000000000000000000c',
               'Metadata_metadata_at_version',
               '0x10000000',
             ]);
@@ -731,10 +727,10 @@ describe(
           });
 
           it('should define valid props', async () => {
-            const apiAt = await api.at('0x0f');
+            const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
             expect(apiAt.rpcVersion).toEqual('v2');
-            expect(apiAt.atBlockHash).toEqual('0x0f');
+            expect(apiAt.atBlockHash).toEqual('0x000000000000000000000000000000000000000000000000000000000000000f');
             expect(apiAt.options).toBeDefined();
             expect(apiAt.runtimeVersion).toBe(simulator.runtime);
             expect(apiAt.registry).toBeDefined();
@@ -747,14 +743,14 @@ describe(
           });
 
           it('should execute rpc', async () => {
-            const apiAt = await api.at('0x0f');
+            const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
             await apiAt.rpc.system_chain();
             expect(providerSend).toBeCalledWith('system_chain', []);
           });
 
           it('should maintain proxy chain independence for events', async () => {
-            const apiAt = await api.at('0x0f');
+            const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
             // Access multiple events - they should be independent
             const eventRefs = [
@@ -783,7 +779,7 @@ describe(
           });
 
           it('should maintain proxy chain independence for errors', async () => {
-            const apiAt = await api.at('0x0f');
+            const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
             // Access multiple errors - they should be independent
             const errorRefs = [
@@ -804,7 +800,7 @@ describe(
               chainHead_v1_call: () => ({ result: 'started', operationId: 'call05' }) as MethodResponse,
             });
 
-            const hash = '0x0f';
+            const hash = '0x000000000000000000000000000000000000000000000000000000000000000f';
 
             const apiAt = await api.at(hash);
             const key = apiAt.query.system.number.rawKey();
@@ -1338,14 +1334,20 @@ describe(
 
       describe('custom runtime apis call', () => {
         it('should encode/decode custom call properly', async () => {
-          const $testParamCodec = {
-            tryDecode: vi.fn(),
-            tryEncode: vi.fn(() => new Uint8Array()),
-          };
-          const $mockCodec = {
-            tryDecode: vi.fn(),
-            tryEncode: vi.fn(() => new Uint8Array()),
-          };
+          const $testParamCodec = createShape({
+            staticSize: 0,
+            metadata: [],
+            subAssert: vi.fn(),
+            subEncode: vi.fn(),
+            subDecode: vi.fn(() => 'decoded'),
+          });
+          const $mockCodec = createShape({
+            staticSize: 0,
+            metadata: [],
+            subAssert: vi.fn(),
+            subEncode: vi.fn(),
+            subDecode: vi.fn(() => 'decoded'),
+          });
 
           const api = await V2Client.new({
             provider,
@@ -1382,8 +1384,8 @@ describe(
 
           await api.call.metadata.testMethod('hello');
 
-          expect($testParamCodec.tryEncode).toBeCalledWith('hello');
-          expect($mockCodec.tryDecode).toBeCalled();
+          expect($testParamCodec.subEncode).toBeCalled();
+          expect($mockCodec.subDecode).toBeCalled();
           expect(providerSend).toBeCalledWith('chainHead_v1_call', [
             simulator.subscriptionId,
             await api.chainHead.bestHash(),
@@ -1873,11 +1875,11 @@ describe(
           output: u8aToHex($RuntimeVersion.tryEncode(mockedRuntime)),
         } as OperationCallDone);
 
-        const apiAt = await api.at('0x0f');
+        const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
         // apiAt should have a registry using the detected hasher
         expect(apiAt.registry).toBeDefined();
-        expect(apiAt.atBlockHash).toEqual('0x0f');
+        expect(apiAt.atBlockHash).toEqual('0x000000000000000000000000000000000000000000000000000000000000000f');
 
         // Verify the hasher actually works in at() instance
         const testData = new Uint8Array([1, 2, 3, 4, 5]);
@@ -1910,11 +1912,11 @@ describe(
           output: u8aToHex($RuntimeVersion.tryEncode(mockedRuntime)),
         } as OperationCallDone);
 
-        const apiAt = await api.at('0x0f');
+        const apiAt = await api.at('0x000000000000000000000000000000000000000000000000000000000000000f');
 
         // apiAt should have a registry using the user-provided hasher
         expect(apiAt.registry).toBeDefined();
-        expect(apiAt.atBlockHash).toEqual('0x0f');
+        expect(apiAt.atBlockHash).toEqual('0x000000000000000000000000000000000000000000000000000000000000000f');
 
         // Verify the user-provided hasher is actually used in at() instance
         const testData = new Uint8Array([1, 2, 3, 4, 5]);

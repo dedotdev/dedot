@@ -1,5 +1,6 @@
 import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/runtime-specs';
+import * as $ from '@dedot/shape';
 import type { AnyShape } from '@dedot/shape';
 import type {
   GenericRuntimeApiMethod,
@@ -11,7 +12,6 @@ import type {
 import {
   assert,
   calcRuntimeApiHash,
-  concatU8a,
   isNumber,
   stringPascalCase,
   stringSnakeCase,
@@ -44,8 +44,18 @@ export class RuntimeApiExecutor extends Executor {
     const callFn: GenericRuntimeApiMethod = async (...args: any[]) => {
       const { params } = callSpec;
 
-      const formattedInputs = params.map((param, index) => this.tryEncode(param, args[index]));
-      const bytes = u8aToHex(concatU8a(...formattedInputs));
+      const $ParamsTuple = $.Tuple(
+        ...params.map((param) =>
+          this.#findCodec(
+            param, // --
+            `Codec not found for param ${param.name}`,
+          ),
+        ),
+      );
+      $ParamsTuple.assert?.(args);
+
+      const formattedInputs = $ParamsTuple.tryEncode(args);
+      const bytes = u8aToHex(formattedInputs);
 
       const callParams: StateCallParams = {
         func: callName,

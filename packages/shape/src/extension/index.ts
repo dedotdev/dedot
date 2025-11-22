@@ -10,3 +10,4 @@ export * from './str.js';
 export * from './result.js';
 export { createShape } from './createShape.js';
 export * from './alias.js';
+export { instance } from './instance.js';

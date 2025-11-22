@@ -1,5 +1,5 @@
 import * as $ from '@dedot/shape';
-import { HexString, toU8a, u8aToHex } from '@dedot/utils';
+import { HexString, isHex, toU8a, u8aToHex } from '@dedot/utils';
 
 // TODO docs!
 export type OpaqueExtrinsicLike = HexString | string | Uint8Array;
@@ -24,6 +24,25 @@ export const $OpaqueExtrinsic = $.createShape<OpaqueExtrinsicLike, OpaqueExtrins
     const value = buffer.array.subarray(buffer.index - lengthSize, buffer.index + length);
     buffer.index += length;
     return u8aToHex(value);
+  },
+  subAssert(assert: $.AssertState) {
+    const value = assert.value;
+
+    // Validate that value is either string or Uint8Array
+    const isValidType = typeof value === 'string' || value instanceof Uint8Array;
+
+    if (!isValidType) {
+      throw new $.ShapeAssertError(
+        this,
+        assert.value,
+        `${assert.path}: Expected HexString, string, or Uint8Array, got ${typeof value}`,
+      );
+    }
+
+    // If it's a string, validate it's a valid hex string
+    if (typeof value === 'string' && !isHex(value)) {
+      throw new $.ShapeAssertError(this, assert.value, `${assert.path}: Expected valid hex string, got ${value}`);
+    }
   },
 });
 
