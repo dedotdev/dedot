@@ -189,6 +189,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
   protected subscribeRuntimeUpgrades() {
     this.chainHead.on('bestBlock', this.onRuntimeUpgrade);
+    this.#subscribeStalingDetection();
   }
 
   protected onRuntimeUpgrade = async (block: PinnedBlock) => {
@@ -227,6 +228,13 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       metadata.latest, // --
       this.#hasher || this.options.hasher,
     );
+  }
+
+  #subscribeStalingDetection() {
+    const stalingDetectionFn = this.getStalingDetectionFn();
+    if (!stalingDetectionFn) return;
+
+    this.chainHead.on('bestBlock', stalingDetectionFn);
   }
 
   protected override async beforeDisconnect(): Promise<void> {
