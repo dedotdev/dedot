@@ -20,6 +20,73 @@ export interface ValidationContext {
 }
 
 /**
+ * Check if a codec is an Option type
+ */
+function isOptionCodec(codec: AnyShape): boolean {
+  try {
+    const metadata = codec?.metadata?.[0];
+    return metadata?.name === '$.option';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a parameter is optional (wrapped in Option)
+ */
+function isOptionalParam(param: ParamSpec, registry: TypeRegistry): boolean {
+  // Check direct codec first
+  if (param.codec) {
+    return isOptionCodec(param.codec);
+  }
+
+  // Check via typeId using registry
+  if (isNumber(param.typeId)) {
+    try {
+      const type = registry.findType(param.typeId);
+      return type.typeDef.type === 'Enum' && type.path.join('::') === 'Option';
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Format a value for display in error messages
+ * Stringifies and truncates to 20 characters max
+ */
+function formatValue(value: any): string {
+  try {
+    let str: string;
+
+    if (typeof value === 'string') {
+      str = JSON.stringify(value);
+    } else if (typeof value === 'undefined') {
+      str = 'undefined';
+    } else if (value === null) {
+      str = 'null';
+    } else if (typeof value === 'bigint') {
+      str = `${value}n`;
+    } else if (typeof value === 'object') {
+      // For objects/arrays, use JSON.stringify
+      str = JSON.stringify(value);
+    } else {
+      str = String(value);
+    }
+
+    // Truncate to 20 characters
+    if (str.length > 20) {
+      return str.slice(0, 20) + '...';
+    }
+    return str;
+  } catch {
+    return '[complex value]';
+  }
+}
+
+/**
  * Build a comprehensive API compatibility error with detailed information
  */
 export function buildCompatibilityError(
@@ -53,13 +120,18 @@ export function buildCompatibilityError(
 
     if (!param) {
       // Extra argument provided
-      paramErrors.push(`  [${i}] (unexpected)`);
+      paramErrors.push(`  [${i}] (unexpected) - value: ${formatValue(value)}`);
       continue;
     }
 
     if (value === undefined && i >= args.length) {
-      // Missing argument
-      paramErrors.push(`  [${i}] ${param.name}: missing`);
+      // Missing argument - check if it's actually optional
+      const isOptional = isOptionalParam(param, registry);
+      if (isOptional) {
+        paramErrors.push(`  [${i}] ${param.name}: omitted (optional)`);
+      } else {
+        paramErrors.push(`  [${i}] ${param.name}: ✗ required parameter missing - value: undefined`);
+      }
       continue;
     }
 
@@ -73,7 +145,7 @@ export function buildCompatibilityError(
       }
     } catch (error) {
       // Invalid parameter
-      paramErrors.push(`  [${i}] ${param.name}: ✗ invalid input type`);
+      paramErrors.push(`  [${i}] ${param.name}: ✗ invalid input type - value: ${formatValue(value)}`);
     }
   }
 

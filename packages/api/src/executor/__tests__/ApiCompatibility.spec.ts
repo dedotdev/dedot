@@ -67,7 +67,7 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 0');
-          expect(error.message).toContain('[0] version: missing');
+          expect(error.message).toContain('[0] version: ✗ required parameter missing');
           expect(error.message).toContain('npx dedot chaintypes');
         }
       });
@@ -84,8 +84,8 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 3');
           expect(error.message).toContain('[0] version: ✓ valid');
-          expect(error.message).toContain('[1] (unexpected)');
-          expect(error.message).toContain('[2] (unexpected)');
+          expect(error.message).toContain('[1] (unexpected) - value: "extra"');
+          expect(error.message).toContain('[2] (unexpected) - value: "params"');
         }
       });
     });
@@ -160,7 +160,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('[0] version: ✗ invalid input type');
+          expect(error.message).toContain('[0] version: ✗ invalid input type - value: "wrong_type"');
         }
 
         // state_call should not be called since validation failed
@@ -245,7 +245,7 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 2');
           expect(error.message).toContain('[0] seed: ✓ valid');
-          expect(error.message).toContain('[1] (unexpected)');
+          expect(error.message).toContain('[1] (unexpected) - value: "extra"');
         }
       });
 
@@ -375,7 +375,7 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 0');
-          expect(error.message).toContain('[0] version: missing');
+          expect(error.message).toContain('[0] version: ✗ required parameter missing');
           expect(error.message).toContain('npx dedot chaintypes');
         }
       });
@@ -392,8 +392,8 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 3');
           expect(error.message).toContain('[0] version: ✓ valid');
-          expect(error.message).toContain('[1] (unexpected)');
-          expect(error.message).toContain('[2] (unexpected)');
+          expect(error.message).toContain('[1] (unexpected) - value: "extra"');
+          expect(error.message).toContain('[2] (unexpected) - value: "params"');
         }
       });
     });
@@ -475,7 +475,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('[0] version: ✗ invalid input type');
+          expect(error.message).toContain('[0] version: ✗ invalid input type - value: "wrong_type"');
         }
 
         // chainHead_v1_call should not be called since validation failed
@@ -546,7 +546,7 @@ describe('API Compatibility Checking', () => {
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
           expect(error.message).toContain('API Compatibility Error: System.Account');
-          expect(error.message).toContain('[0] key0: ✗ invalid input type');
+          expect(error.message).toContain('[0] key0: ✗ invalid input type - value: undefined');
           expect(error.message).toContain('npx dedot chaintypes');
         }
       });
@@ -560,7 +560,7 @@ describe('API Compatibility Checking', () => {
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
           expect(error.message).toContain('API Compatibility Error: System.Account');
-          expect(error.message).toContain('[0] key0: ✗ invalid input type');
+          expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
           expect(error.message).toContain('npx dedot chaintypes');
         }
       });
@@ -577,7 +577,7 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 2');
           expect(error.message).toContain('[0] key0: ✓ valid');
-          expect(error.message).toContain('[1] (unexpected)');
+          expect(error.message).toContain('[1] (unexpected) - value: "extra"');
         }
       });
     });
