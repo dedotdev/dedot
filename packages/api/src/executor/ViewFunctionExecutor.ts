@@ -4,6 +4,7 @@ import type { GenericViewFunction } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, stringCamelCase, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
+import { ValidationHelper } from './ValidationHelper.js';
 
 const RUNTIME_API_NAME = 'RuntimeViewFunction';
 const METHOD_NAME = 'execute_view_function';
@@ -26,7 +27,28 @@ export class ViewFunctionExecutor extends Executor {
       const paddedArgs = this.padArgsForOptionalParams(args, inputs);
 
       const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
-      $ParamsTuple.assert?.(paddedArgs);
+
+      // Enhanced validation with detailed error messages
+      try {
+        $ParamsTuple.assert?.(paddedArgs);
+      } catch (error: any) {
+        // Enhance Shape assertion errors with detailed compatibility information
+        if (error.name === 'ShapeAssertError') {
+          const paramSpecs = inputs.map((input, index) => ({
+            name: `param${index}`,
+            typeId: input.typeId,
+          }));
+
+          throw ValidationHelper.buildCompatibilityError(
+            error,
+            paramSpecs,
+            args,
+            { apiName: `${targetPallet.name}.${viewFunction}`, type: 'viewFunction' },
+            this.registry,
+          );
+        }
+        throw error;
+      }
 
       const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
 

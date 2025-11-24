@@ -19,6 +19,7 @@ import {
   UnknownApiError,
 } from '@dedot/utils';
 import { Executor, StateCallParams } from './Executor.js';
+import { ValidationHelper } from './ValidationHelper.js';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
@@ -55,7 +56,23 @@ export class RuntimeApiExecutor extends Executor {
           ),
         ),
       );
-      $ParamsTuple.assert?.(paddedArgs);
+
+      // Enhanced validation with detailed error messages
+      try {
+        $ParamsTuple.assert?.(paddedArgs);
+      } catch (error: any) {
+        // Enhance Shape assertion errors with detailed compatibility information
+        if (error.name === 'ShapeAssertError') {
+          throw ValidationHelper.buildCompatibilityError(
+            error,
+            params,
+            args,
+            { apiName: callName, type: 'runtimeApi' },
+            this.registry,
+          );
+        }
+        throw error;
+      }
 
       const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
       const bytes = u8aToHex(formattedInputs);
