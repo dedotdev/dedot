@@ -71,7 +71,7 @@ export class ValidationHelper {
       try {
         const $codec = this.findCodec(param, registry);
         if ($codec) {
-          $codec.tryEncode(value);
+          $codec.assert?.(value);
           // Valid parameter
           paramErrors.push(`  [${i}] ${param.name}: ✓ valid`);
         }

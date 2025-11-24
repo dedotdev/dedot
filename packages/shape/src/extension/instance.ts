@@ -1,4 +1,4 @@
-import { instance as originalInstance, Shape, AssertState } from '../deshape.js';
+import { instance as originalInstance, Shape, AssertState, ShapeAssertError } from '../deshape.js';
 
 export function instance<AI extends readonly unknown[], AO extends readonly unknown[], I, O>(
   ctor: new (...args: AO) => O,
@@ -8,7 +8,11 @@ export function instance<AI extends readonly unknown[], AO extends readonly unkn
   const shaped = originalInstance(ctor, $args, toArgs);
 
   shaped.subAssert = function (assert: AssertState) {
-    $args.subAssert(new AssertState(toArgs(assert.value as I), '#arguments', assert));
+    try {
+      $args.subAssert(new AssertState(toArgs(assert.value as I), '#arguments', assert));
+    } catch (e: any) {
+      throw new ShapeAssertError($args, assert.value, e.message);
+    }
   };
 
   return shaped;
