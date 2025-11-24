@@ -19,7 +19,7 @@ import {
   UnknownApiError,
 } from '@dedot/utils';
 import { Executor, StateCallParams } from './Executor.js';
-import { ValidationHelper } from './ValidationHelper.js';
+import { buildCompatibilityError } from './validation-helpers.js';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
@@ -63,7 +63,7 @@ export class RuntimeApiExecutor extends Executor {
       } catch (error: any) {
         // Enhance Shape assertion errors with detailed compatibility information
         if (error.name === 'ShapeAssertError') {
-          throw ValidationHelper.buildCompatibilityError(
+          throw buildCompatibilityError(
             error,
             params,
             args,

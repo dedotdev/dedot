@@ -4,7 +4,7 @@ import type { GenericViewFunction } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, stringCamelCase, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
-import { ValidationHelper } from './ValidationHelper.js';
+import { buildCompatibilityError } from './validation-helpers.js';
 
 const RUNTIME_API_NAME = 'RuntimeViewFunction';
 const METHOD_NAME = 'execute_view_function';
@@ -39,7 +39,7 @@ export class ViewFunctionExecutor extends Executor {
             typeId: input.typeId,
           }));
 
-          throw ValidationHelper.buildCompatibilityError(
+          throw buildCompatibilityError(
             error,
             paramSpecs,
             args,

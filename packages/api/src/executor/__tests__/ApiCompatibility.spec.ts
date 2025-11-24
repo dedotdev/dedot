@@ -219,7 +219,7 @@ describe('API Compatibility Checking', () => {
         const providerSend = vi.spyOn(providerWithSessionKeys, 'send');
 
         // Explicit undefined encodes as None
-        await apiWithSessionKeys.call.sessionKeys.generateSessionKeys();
+        await apiWithSessionKeys.call.sessionKeys.generateSessionKeys(undefined);
 
         expect(providerSend).toHaveBeenCalledWith('state_call', [
           'SessionKeys_generate_session_keys',
