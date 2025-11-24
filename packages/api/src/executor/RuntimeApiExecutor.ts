@@ -44,6 +44,9 @@ export class RuntimeApiExecutor extends Executor {
     const callFn: GenericRuntimeApiMethod = async (...args: any[]) => {
       const { params } = callSpec;
 
+      // Pad args with undefined for missing trailing optional parameters
+      const paddedArgs = this.padArgsForOptionalParams(args, params);
+
       const $ParamsTuple = $.Tuple(
         ...params.map((param) =>
           this.#findCodec(
@@ -52,9 +55,9 @@ export class RuntimeApiExecutor extends Executor {
           ),
         ),
       );
-      $ParamsTuple.assert?.(args);
+      $ParamsTuple.assert?.(paddedArgs);
 
-      const formattedInputs = $ParamsTuple.tryEncode(args);
+      const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
       const bytes = u8aToHex(formattedInputs);
 
       const callParams: StateCallParams = {

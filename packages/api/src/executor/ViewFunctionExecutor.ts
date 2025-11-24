@@ -22,10 +22,13 @@ export class ViewFunctionExecutor extends Executor {
     const callFn: GenericViewFunction = async (...args: any[]) => {
       const { inputs, id, output } = viewFunctionDef;
 
-      const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
-      $ParamsTuple.assert?.(args);
+      // Pad args with undefined for missing trailing optional parameters
+      const paddedArgs = this.padArgsForOptionalParams(args, inputs);
 
-      const formattedInputs = $ParamsTuple.tryEncode(args);
+      const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
+      $ParamsTuple.assert?.(paddedArgs);
+
+      const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
 
       const bytes = u8aToHex(concatU8a(id, $.Vec($.u8).tryEncode(formattedInputs)));
 
