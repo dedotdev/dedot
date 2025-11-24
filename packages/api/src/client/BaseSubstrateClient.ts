@@ -298,7 +298,7 @@ export abstract class BaseSubstrateClient<
       this.cleanupStalingDetection();
 
       this.#stalingWatchdogTimer = setTimeout(() => {
-        console.warn(`No events received for ${timeout}ms, triggering reconnection with endpoint switch...`);
+        console.warn(`No new blocks received for over ${timeout}ms, triggering reconnection with endpoint switch...`);
         (this.provider as WsProvider).disconnect(true).catch(noop);
       }, timeout);
     };
