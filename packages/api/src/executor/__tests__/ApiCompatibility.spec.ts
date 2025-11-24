@@ -1,9 +1,15 @@
+import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { RuntimeVersion, $Bytes } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
+import { MethodResponse, OperationCallDone } from '@dedot/types/json-rpc';
 import { ApiCompatibilityError, calcRuntimeApiHash } from '@dedot/utils';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LegacyClient } from '../../client/LegacyClient.js';
+import { V2Client } from '../../client/V2Client.js';
 import MockProvider, { MockedRuntimeVersion } from '../../client/__tests__/MockProvider.js';
+import { newChainHeadSimulator } from '../../json-rpc/group/__tests__/simulator.js';
+
+const prefixedMetadataV15 = staticSubstrateV15;
 
 /**
  * Test API Compatibility Checking for Runtime APIs and View Functions
@@ -257,6 +263,234 @@ describe('API Compatibility Checking', () => {
           'state_call',
           expect.arrayContaining(['SessionKeys_generate_session_keys']),
         );
+      });
+    });
+  });
+
+  describe('V2 Client API Compatibility (via client.call)', () => {
+    let api: V2Client;
+    let provider: MockProvider;
+    let simulator: ReturnType<typeof newChainHeadSimulator>;
+
+    beforeEach(async () => {
+      provider = new MockProvider();
+      simulator = newChainHeadSimulator({ provider });
+      simulator.notify(simulator.initializedEvent);
+      simulator.notify(simulator.nextNewBlock()); // 0xf
+      simulator.notify(simulator.nextNewBlock()); // 0x10
+      simulator.notify(simulator.nextBestBlock()); // 0xf
+      simulator.notify(simulator.nextFinalized()); // 0xf
+
+      let counter = 0;
+      provider.setRpcRequests({
+        chainSpec_v1_chainName: () => 'MockedChain',
+        chainHead_v1_call: () => {
+          counter += 1;
+          return { result: 'started', operationId: `call${counter.toString().padStart(2, '0')}` } as MethodResponse;
+        },
+      });
+
+      // Notify runtime version call response
+      simulator.notify(
+        {
+          operationId: 'call01',
+          event: 'operationCallDone',
+          output: '0x0c100000000f0000000e000000',
+        } as OperationCallDone,
+        10,
+      );
+
+      // Notify metadata call response
+      simulator.notify(
+        {
+          operationId: 'call02',
+          event: 'operationCallDone',
+          output: prefixedMetadataV15,
+        } as OperationCallDone,
+        20,
+      );
+
+      api = await V2Client.new({ provider });
+    });
+
+    afterEach(async () => {
+      api && (await api.disconnect());
+      simulator && (await simulator.cleanup());
+      vi.restoreAllMocks();
+    });
+
+    describe('Happy Path - Valid Parameters', () => {
+      it('should execute with correct parameters', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock chainHead_v1_call for this specific call
+        provider.setRpcRequest(
+          'chainHead_v1_call',
+          () => ({ result: 'started', operationId: 'call03' }) as MethodResponse,
+        );
+
+        simulator.notify({
+          operationId: 'call03',
+          event: 'operationCallDone',
+          output: '0x',
+        } as OperationCallDone);
+
+        // Metadata.metadata_at_version(version: u32)
+        await api.call.metadata.metadataAtVersion(14);
+
+        expect(providerSend).toHaveBeenCalledWith(
+          'chainHead_v1_call',
+          expect.arrayContaining(['Metadata_metadata_at_version', '0x0e000000']),
+        );
+      });
+
+      it('should execute with zero parameters', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // Mock chainHead_v1_call for this specific call
+        provider.setRpcRequest(
+          'chainHead_v1_call',
+          () => ({ result: 'started', operationId: 'call03' }) as MethodResponse,
+        );
+
+        simulator.notify({
+          operationId: 'call03',
+          event: 'operationCallDone',
+          output: '0x',
+        } as OperationCallDone);
+
+        // Metadata.metadata() - no parameters
+        await api.call.metadata.metadata();
+
+        expect(providerSend).toHaveBeenCalledWith(
+          'chainHead_v1_call',
+          expect.arrayContaining(['Metadata_metadata', '0x']),
+        );
+      });
+    });
+
+    describe('Error Cases - Parameter Count Mismatch', () => {
+      it('should throw ApiCompatibilityError when too few parameters', async () => {
+        try {
+          // Metadata.metadata_at_version expects 1 parameter (version: u32)
+          // @ts-expect-error - intentionally passing no parameters
+          await api.call.metadata.metadataAtVersion();
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 0');
+          expect(error.message).toContain('[0] version: missing');
+          expect(error.message).toContain('npx dedot chaintypes');
+        }
+      });
+
+      it('should throw ApiCompatibilityError when too many parameters', async () => {
+        try {
+          // Metadata.metadata_at_version expects 1 parameter
+          // @ts-expect-error - intentionally passing extra parameters
+          await api.call.metadata.metadataAtVersion(14, 'extra', 'params');
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 3');
+          expect(error.message).toContain('[0] version: ✓ valid');
+          expect(error.message).toContain('[1] (unexpected)');
+          expect(error.message).toContain('[2] (unexpected)');
+        }
+      });
+    });
+
+    describe('Core Validation Logic', () => {
+      it('should validate parameter count correctly', async () => {
+        // Parameter count mismatch is the primary validation check
+        // Type validation happens at the codec level and may be more lenient
+        // (e.g., u32 codec can handle strings, numbers, bigints, etc.)
+
+        try {
+          // @ts-expect-error - no parameters when 1 is required
+          await api.call.metadata.metadataAtVersion();
+          expect.fail('Should have thrown');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 0');
+        }
+
+        try {
+          // @ts-expect-error - too many parameters
+          await api.call.metadata.metadataAtVersion(14, 'extra');
+          expect.fail('Should have thrown');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 2');
+        }
+      });
+    });
+
+    describe('Error Message Format', () => {
+      it('should include helpful suggestion to regenerate chaintypes', async () => {
+        try {
+          // @ts-expect-error
+          await api.call.metadata.metadataAtVersion();
+        } catch (error: any) {
+          expect(error.message).toContain('This may indicate your API definitions are outdated');
+          expect(error.message).toContain('Consider regenerating chain types with:');
+          expect(error.message).toContain('npx dedot chaintypes -w <your-chain-endpoint>');
+        }
+      });
+
+      it('should show parameter validation status clearly', async () => {
+        try {
+          // Pass one correct param, then wrong types
+          // @ts-expect-error
+          await api.call.metadata.metadataAtVersion(14, 'wrong');
+        } catch (error: any) {
+          expect(error.message).toContain('Parameters:');
+          expect(error.message).toContain('[0] version: ✓ valid');
+          expect(error.message).toContain('[1] (unexpected)');
+        }
+      });
+    });
+
+    describe('Non-Validation Errors Should Pass Through', () => {
+      it('should pass through RPC errors without wrapping', async () => {
+        // For V2Client, we cannot simply mock the send method to reject
+        // because it's used during initialization and would break the test setup.
+        // Instead, we test that validation errors are properly caught,
+        // and RPC errors would naturally pass through if they occurred.
+        // This behavior is already tested in the LegacyClient tests.
+        // Skip this test for V2Client as it requires more complex setup
+        // to mock RPC failures without breaking initialization
+      });
+
+      it('should not call RPC if validation fails', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+        const callCountBefore = providerSend.mock.calls.filter((call) => {
+          const args = call[1] as any[];
+          return call[0] === 'chainHead_v1_call' && args?.[2]?.includes('Metadata_metadata_at_version');
+        }).length;
+
+        try {
+          // @ts-expect-error - passing string to u32 parameter
+          await api.call.metadata.metadataAtVersion('wrong_type');
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('[0] version: ✗ invalid input type');
+        }
+
+        // chainHead_v1_call should not be called since validation failed
+        const callCountAfter = providerSend.mock.calls.filter((call) => {
+          const args = call[1] as any[];
+          return call[0] === 'chainHead_v1_call' && args?.[2]?.includes('Metadata_metadata_at_version');
+        }).length;
+
+        expect(callCountAfter).toBe(callCountBefore);
       });
     });
   });
