@@ -81,7 +81,9 @@ export interface ApiOptions extends JsonRpcClientOptions {
   /**
    * Timeout in milliseconds for detecting stale WebSocket connections.
    * When set, monitors block subscription activity and triggers reconnection
-   * with endpoint switching if no blocks/events received within the timeout period.
+   * to switch to a different endpoint if no blocks/events received within the timeout period.
+   *
+   * Note: This option is only supported when used with WsProvider.
    *
    * - Default: 30000 (30 seconds) - staling detection enabled
    * - 0: Disabled - no staling detection
