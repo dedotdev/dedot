@@ -265,6 +265,102 @@ describe('API Compatibility Checking', () => {
         );
       });
     });
+
+    describe('Optional vs Required Parameter Detection', () => {
+      let apiWithTestApi: LegacyClient;
+      let providerWithTestApi: MockProvider;
+
+      beforeEach(async () => {
+        // Create a custom runtime version that includes TestApi
+        const testApiHash = calcRuntimeApiHash('TestApi');
+        const customRuntimeVersion: RuntimeVersion = {
+          ...MockedRuntimeVersion,
+          apis: [...MockedRuntimeVersion.apis, [testApiHash, 1]],
+        };
+
+        providerWithTestApi = new MockProvider(customRuntimeVersion);
+        apiWithTestApi = await LegacyClient.new({
+          provider: providerWithTestApi,
+          runtimeApis: {
+            TestApi: [
+              {
+                methods: {
+                  // Method with required param followed by optional param
+                  mixedParams: {
+                    docs: ['Test method with required and optional params'],
+                    params: [
+                      { name: 'required', type: 'u32', codec: $.u32 },
+                      { name: 'optional', type: 'Option<u32>', codec: $.Option($.u32) },
+                    ],
+                    type: 'Bytes',
+                    codec: $Bytes,
+                  },
+                  // Method with only optional params
+                  allOptional: {
+                    docs: ['Test method with all optional params'],
+                    params: [
+                      { name: 'opt1', type: 'Option<u32>', codec: $.Option($.u32) },
+                      { name: 'opt2', type: 'Option<Bytes>', codec: $.Option($Bytes) },
+                    ],
+                    type: 'Bytes',
+                    codec: $Bytes,
+                  },
+                },
+                version: 1,
+              },
+            ],
+          },
+        });
+      });
+
+      afterEach(async () => {
+        apiWithTestApi && (await apiWithTestApi.disconnect());
+      });
+
+      it('should allow calling with only required param (optional param omitted)', async () => {
+        const providerSend = vi.spyOn(providerWithTestApi, 'send');
+
+        // mixedParams(required: u32, optional: Option<u32>)
+        // Passing only the required param, omitting the optional - this should succeed
+        await apiWithTestApi.call.testApi.mixedParams(42);
+
+        // state_call should be called since validation passed
+        expect(providerSend).toHaveBeenCalledWith('state_call', [
+          'TestApi_mixed_params',
+          expect.any(String),
+        ]);
+      });
+
+      it('should show "✗ required parameter missing" when required param is missing', async () => {
+        try {
+          // mixedParams(required: u32, optional: Option<u32>)
+          // Calling with no parameters - required param is missing
+          await (apiWithTestApi.call.testApi.mixedParams as any)();
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: TestApi_mixed_params');
+          expect(error.message).toContain('Expected 2 parameters');
+          expect(error.message).toContain('received 0');
+          expect(error.message).toContain('[0] required: ✗ required parameter missing');
+          expect(error.message).toContain('[1] optional: omitted (optional)');
+        }
+      });
+
+      it('should allow calling with no params when all params are optional', async () => {
+        // allOptional(opt1: Option<u32>, opt2: Option<Bytes>)
+        // Calling with no parameters - both are optional, so this should succeed
+        await apiWithTestApi.call.testApi.allOptional();
+        // If we get here without throwing, the test passes
+      });
+
+      it('should allow calling with first optional param provided, second omitted', async () => {
+        // allOptional(opt1: Option<u32>, opt2: Option<Bytes>)
+        // Passing only the first optional param, second is omitted
+        await apiWithTestApi.call.testApi.allOptional(42);
+        // If we get here without throwing, the test passes
+      });
+    });
   });
 
   describe('V2 Client API Compatibility (via client.call)', () => {
