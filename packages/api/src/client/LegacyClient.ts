@@ -239,9 +239,17 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     }
   }
 
+  #subscribeStalingDetection() {
+    const stalingDetectionFn = this.getStalingDetectionFn();
+    if (!stalingDetectionFn) return;
+
+    this.block.best(stalingDetectionFn);
+  }
+
   #subscribeUpdates() {
     this.#subscribeRuntimeUpgrades();
     this.#subscribeHealth();
+    this.#subscribeStalingDetection();
   }
 
   async #unsubscribeUpdates() {

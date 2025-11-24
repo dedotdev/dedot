@@ -8,7 +8,7 @@ import {
   RuntimeVersion,
   StorageDataLike,
 } from '@dedot/codecs';
-import type { JsonRpcProvider } from '@dedot/providers';
+import { type JsonRpcProvider, WsProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
   Callback,
@@ -28,6 +28,7 @@ import {
   ensurePresence as _ensurePresence,
   HexString,
   LRUCache,
+  noop,
   u8aToHex,
 } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
@@ -81,6 +82,7 @@ export abstract class BaseSubstrateClient<
   protected _localCache?: IStorage;
   protected _runtimeUpgrading?: Deferred<void>;
   protected _apiAtCache: LRUCache;
+  #stalingWatchdogTimer?: ReturnType<typeof setTimeout>;
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -279,6 +281,39 @@ export abstract class BaseSubstrateClient<
     }
   }
 
+  /**
+   * Set up staling detection with timeout reset logic.
+   * Returns a callback function that should be called on each activity (block/event).
+   *
+   * @returns A function to call on each activity to reset the timeout
+   */
+  protected getStalingDetectionFn(): (() => void) | undefined {
+    const timeout = this._options.stalingDetectionTimeout ?? 30_000; // default to 30 seconds
+
+    if (timeout === 0 || !(this.provider instanceof WsProvider)) {
+      return;
+    }
+
+    return () => {
+      this.cleanupStalingDetection();
+
+      this.#stalingWatchdogTimer = setTimeout(() => {
+        console.warn(`No new blocks received for over ${timeout}ms, triggering reconnection with endpoint switch...`);
+        (this.provider as WsProvider).disconnect(true).catch(noop);
+      }, timeout);
+    };
+  }
+
+  /**
+   * Clean up staling detection timer
+   */
+  protected cleanupStalingDetection() {
+    if (this.#stalingWatchdogTimer) {
+      clearTimeout(this.#stalingWatchdogTimer);
+      this.#stalingWatchdogTimer = undefined;
+    }
+  }
+
   protected cleanUp() {
     this._registry = undefined;
     this._metadata = undefined;
@@ -286,6 +321,7 @@ export abstract class BaseSubstrateClient<
     this._runtimeVersion = undefined;
     this._localCache = undefined;
     this._apiAtCache.clear();
+    this.cleanupStalingDetection();
   }
 
   /**

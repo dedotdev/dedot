@@ -78,6 +78,20 @@ export interface ApiOptions extends JsonRpcClientOptions {
    * A signer instance to use for signing transactions
    */
   signer?: InjectedSigner;
+  /**
+   * Timeout in milliseconds for detecting stale WebSocket connections.
+   * When set, monitors block subscription activity and triggers reconnection
+   * to switch to a different endpoint if no blocks/events received within the timeout period.
+   *
+   * Note: This option is only supported when used with WsProvider.
+   *
+   * - Default: 30000 (30 seconds) - staling detection enabled
+   * - 0: Disabled - no staling detection
+   * - Any positive number: Custom timeout in milliseconds
+   *
+   * @default 30000
+   */
+  stalingDetectionTimeout?: number;
 }
 
 export type ApiEvent = ProviderEvent | 'ready' | 'runtimeUpgraded';
