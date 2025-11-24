@@ -1,8 +1,10 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
 import type { AsyncMethod, Callback, GenericStorageQuery, PaginationOptions, Unsub } from '@dedot/types';
 import { assert, isFunction, isObject } from '@dedot/utils';
 import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
+import { buildCompatibilityError, type ParamSpec } from './validation-helpers.js';
 
 const DEFAULT_KEYS_PAGE_SIZE = 1000;
 const DEFAULT_ENTRIES_PAGE_SIZE = 250;
@@ -42,6 +44,12 @@ export class StorageQueryExecutor extends Executor {
 
     const queryFn: GenericStorageQuery = async (...args: any[]) => {
       const [inArgs, callback] = extractArgs(args);
+
+      // Validate storage inputs before encoding (only for non-subscription queries)
+      if (!callback) {
+        this.#validateStorageInputs(entry, inArgs.at(0));
+      }
+
       const encodedKey = entry.encodeKey(inArgs.at(0));
 
       // if a callback is passed, make a storage subscription and return an unsub function
@@ -159,6 +167,71 @@ export class StorageQueryExecutor extends Executor {
     };
 
     return { entries, pagedKeys, pagedEntries };
+  }
+
+  /**
+   * Validate storage query inputs before encoding
+   * @param entry - QueryableStorage instance
+   * @param keyInput - Input keys to validate
+   */
+  #validateStorageInputs(entry: QueryableStorage, keyInput: any): void {
+    const { storageType } = entry.storageEntry;
+
+    // Plain storage doesn't require validation
+    if (storageType.type === 'Plain') {
+      return;
+    }
+
+    if (storageType.type === 'Map') {
+      const { hashers, keyTypeId } = storageType.value;
+      const requiredKeys = hashers.length;
+
+      // Extract keyTypeIds for multi-key storage
+      let keyTypeIds = [keyTypeId];
+      if (hashers.length > 1) {
+        const { typeDef } = this.registry.findType(keyTypeId);
+        assert(typeDef.type === 'Tuple', 'Key type should be a tuple!');
+        keyTypeIds = typeDef.value.fields;
+      }
+
+      // Normalize input to array format
+      let keys: any[];
+      if (requiredKeys === 1) {
+        // Single key: accept both single value or array
+        keys = Array.isArray(keyInput) ? keyInput : [keyInput];
+      } else {
+        // Multiple keys: must be array
+        keys = keyInput;
+      }
+
+      // Build parameter specs for error messages
+      const paramSpecs: ParamSpec[] = keyTypeIds.map((typeId, index) => ({
+        name: `key${index}`,
+        typeId,
+      }));
+
+      // Create tuple codec for validation
+      const $ParamsTuple = $.Tuple(...keyTypeIds.map((id) => this.registry.findCodec(id)));
+
+      // Validate inputs
+      try {
+        $ParamsTuple.assert?.(keys);
+      } catch (error: any) {
+        if (error.name === 'ShapeAssertError') {
+          throw buildCompatibilityError(
+            error,
+            paramSpecs,
+            keys,
+            {
+              apiName: `${entry.pallet.name}.${entry.storageEntry.name}`,
+              type: 'storage',
+            },
+            this.registry,
+          );
+        }
+        throw error;
+      }
+    }
   }
 
   protected getStorageQuery(): BaseStorageQuery {

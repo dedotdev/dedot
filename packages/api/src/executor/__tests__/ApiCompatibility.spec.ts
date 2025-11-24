@@ -290,25 +290,19 @@ describe('API Compatibility Checking', () => {
         },
       });
 
-      // Notify runtime version call response
-      simulator.notify(
-        {
-          operationId: 'call01',
-          event: 'operationCallDone',
-          output: '0x0c100000000f0000000e000000',
-        } as OperationCallDone,
-        10,
-      );
+      // Notify runtime version call response (no delay)
+      simulator.notify({
+        operationId: 'call01',
+        event: 'operationCallDone',
+        output: '0x0c100000000f0000000e000000',
+      } as OperationCallDone);
 
-      // Notify metadata call response
-      simulator.notify(
-        {
-          operationId: 'call02',
-          event: 'operationCallDone',
-          output: prefixedMetadataV15,
-        } as OperationCallDone,
-        20,
-      );
+      // Notify metadata call response (no delay)
+      simulator.notify({
+        operationId: 'call02',
+        event: 'operationCallDone',
+        output: prefixedMetadataV15,
+      } as OperationCallDone);
 
       api = await V2Client.new({ provider });
     });
@@ -491,6 +485,100 @@ describe('API Compatibility Checking', () => {
         }).length;
 
         expect(callCountAfter).toBe(callCountBefore);
+      });
+    });
+  });
+
+  describe('Storage Query Compatibility (via client.query)', () => {
+    let api: LegacyClient;
+    let provider: MockProvider;
+
+    beforeEach(async () => {
+      provider = new MockProvider();
+      api = await LegacyClient.new({ provider });
+    });
+
+    afterEach(async () => {
+      api && (await api.disconnect());
+      vi.restoreAllMocks();
+    });
+
+    describe('Happy Path - Valid Keys', () => {
+      it('should query with correct single key', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // System.Account query with AccountId32
+        const address = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        await api.query.staking.claimedRewards([1, address]);
+
+        // Verify state_queryStorageAt was called
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', expect.any(Array));
+      });
+
+      it('should query plain storage without keys', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // System.Number - plain storage
+        await api.query.system.number();
+
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', expect.any(Array));
+      });
+
+      it('should query with correct array-keys', async () => {
+        const providerSend = vi.spyOn(provider, 'send');
+
+        // System.Account query with AccountId32
+        const address = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        await api.query.staking.claimedRewards([1, address]);
+
+        // Verify state_queryStorageAt was called
+        expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', expect.any(Array));
+      });
+    });
+
+    describe('Error Cases - Invalid Keys', () => {
+      it('should throw ApiCompatibilityError for missing inputs', async () => {
+        try {
+          // System.Account expects AccountId32, passing undefined
+          // @ts-expect-error - intentionally passing wrong type
+          await api.query.system.account();
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('[0] key0: ✗ invalid input type');
+          expect(error.message).toContain('npx dedot chaintypes');
+        }
+      });
+
+      it('should throw ApiCompatibilityError for invalid key type', async () => {
+        try {
+          // System.Account expects AccountId32, passing number instead
+          // @ts-expect-error - intentionally passing wrong type
+          await api.query.system.account(12345);
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('[0] key0: ✗ invalid input type');
+          expect(error.message).toContain('npx dedot chaintypes');
+        }
+      });
+
+      it('should throw ApiCompatibilityError for wrong number of keys', async () => {
+        try {
+          // System.Account expects 1 key, passing 2 in array format
+          // @ts-expect-error - intentionally passing wrong number of keys
+          await api.query.system.account(['5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 'extra']);
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 2');
+          expect(error.message).toContain('[0] key0: ✓ valid');
+          expect(error.message).toContain('[1] (unexpected)');
+        }
       });
     });
   });
