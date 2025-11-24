@@ -1,7 +1,9 @@
-import { ApiCompatibilityError } from '@dedot/utils';
+import { RuntimeVersion, $Bytes } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
+import { ApiCompatibilityError, calcRuntimeApiHash } from '@dedot/utils';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { LegacyClient } from '../../client/LegacyClient.js';
-import MockProvider from '../../client/__tests__/MockProvider.js';
+import MockProvider, { MockedRuntimeVersion } from '../../client/__tests__/MockProvider.js';
 
 /**
  * Test API Compatibility Checking for Runtime APIs and View Functions
@@ -163,9 +165,99 @@ describe('API Compatibility Checking', () => {
       });
     });
 
-    // Note: Optional parameter handling is tested in E2E tests
-    // where real runtime APIs with optional parameters (like MmrApi.generateProof,
-    // SessionKeys.generateSessionKeys) are available. The MockProvider uses
-    // FallbackRuntimeApis which only includes Metadata APIs for unit testing.
+    describe('Optional Parameter Handling - SessionKeys', () => {
+      let apiWithSessionKeys: LegacyClient;
+      let providerWithSessionKeys: MockProvider;
+
+      beforeEach(async () => {
+        // Create a custom runtime version that includes SessionKeys API
+        const sessionKeysHash = calcRuntimeApiHash('SessionKeys');
+        const customRuntimeVersion: RuntimeVersion = {
+          ...MockedRuntimeVersion,
+          apis: [...MockedRuntimeVersion.apis, [sessionKeysHash, 1]],
+        };
+
+        providerWithSessionKeys = new MockProvider(customRuntimeVersion);
+        apiWithSessionKeys = await LegacyClient.new({
+          provider: providerWithSessionKeys,
+          runtimeApis: {
+            SessionKeys: [
+              {
+                methods: {
+                  generateSessionKeys: {
+                    docs: ['Generate session keys with optional seed'],
+                    params: [{ name: 'seed', type: 'Option<Bytes>', codec: $.Option($Bytes) }],
+                    type: 'Bytes',
+                    codec: $Bytes,
+                  },
+                },
+                version: 1,
+              },
+            ],
+          },
+        });
+      });
+
+      afterEach(async () => {
+        apiWithSessionKeys && (await apiWithSessionKeys.disconnect());
+      });
+
+      it('should execute with optional parameter provided', async () => {
+        const providerSend = vi.spyOn(providerWithSessionKeys, 'send');
+
+        // Provide the optional seed parameter
+        const seed = '0x1234567890abcdef';
+        await apiWithSessionKeys.call.sessionKeys.generateSessionKeys(seed);
+
+        expect(providerSend).toHaveBeenCalledWith('state_call', [
+          'SessionKeys_generate_session_keys',
+          expect.any(String),
+        ]);
+      });
+
+      it('should execute with explicit undefined for optional parameter', async () => {
+        const providerSend = vi.spyOn(providerWithSessionKeys, 'send');
+
+        // Explicit undefined encodes as None
+        await apiWithSessionKeys.call.sessionKeys.generateSessionKeys();
+
+        expect(providerSend).toHaveBeenCalledWith('state_call', [
+          'SessionKeys_generate_session_keys',
+          expect.any(String),
+        ]);
+      });
+
+      it('should throw ApiCompatibilityError when passing too many parameters', async () => {
+        try {
+          // SessionKeys.generate_session_keys expects 1 parameter
+          // @ts-expect-error - intentionally passing extra parameters
+          await apiWithSessionKeys.call.sessionKeys.generateSessionKeys('0x1234', 'extra');
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: SessionKeys_generate_session_keys');
+          expect(error.message).toContain('Expected 1 parameter');
+          expect(error.message).toContain('received 2');
+          expect(error.message).toContain('[0] seed: ✓ valid');
+          expect(error.message).toContain('[1] (unexpected)');
+        }
+      });
+
+      it('should validate parameter types for Option parameters', async () => {
+        const providerSend = vi.spyOn(providerWithSessionKeys, 'send');
+
+        // Test that validation happens - passing invalid type should throw
+        await expect(
+          // @ts-expect-error - passing array to Bytes parameter (invalid for Option<Bytes>)
+          apiWithSessionKeys.call.sessionKeys.generateSessionKeys([1, 2, 3]),
+        ).rejects.toThrow();
+
+        // state_call should not be called since validation failed
+        expect(providerSend).not.toHaveBeenCalledWith(
+          'state_call',
+          expect.arrayContaining(['SessionKeys_generate_session_keys']),
+        );
+      });
+    });
   });
 });
