@@ -15,8 +15,8 @@ import {
 } from '@dedot/types';
 import { DedotError, HexString, hexToU8a, isFunction, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
-import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { buildCompatibilityError } from '../../executor/validation-helpers.js';
+import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
 import { isKeyringPair, signRawMessage, txDefer } from './utils.js';
@@ -234,9 +234,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     try {
       $ParamsTuple.assert?.(args);
     } catch (error: any) {
-      if (error.name === 'ShapeAssertError') {
+      if (error instanceof $.ShapeAssertError) {
         throw buildCompatibilityError(
-          error,
+          error, // --
           paramSpecs,
           args,
           {

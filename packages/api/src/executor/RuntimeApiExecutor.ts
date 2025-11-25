@@ -70,11 +70,16 @@ export class RuntimeApiExecutor extends Executor {
         $ParamsTuple.assert?.(paddedArgs);
       } catch (error: any) {
         // Enhance Shape assertion errors with detailed compatibility information
-        if (error.name === 'ShapeAssertError') {
-          throw buildCompatibilityError(error, params, args, {
-            apiName: `${stringCamelCase(runtimeApi)}.${stringCamelCase(method)}`,
-            registry: this.registry,
-          });
+        if (error instanceof $.ShapeAssertError) {
+          throw buildCompatibilityError(
+            error, // --
+            params,
+            args,
+            {
+              apiName: `${runtimeApi}.${method}`,
+              registry: this.registry,
+            },
+          );
         }
         throw error;
       }

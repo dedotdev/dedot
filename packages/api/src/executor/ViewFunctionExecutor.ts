@@ -33,11 +33,16 @@ export class ViewFunctionExecutor extends Executor {
         $ParamsTuple.assert?.(paddedArgs);
       } catch (error: any) {
         // Enhance Shape assertion errors with detailed compatibility information
-        if (error.name === 'ShapeAssertError') {
-          throw buildCompatibilityError(error, inputs, args, {
-            apiName: `${stringCamelCase(targetPallet.name)}.${stringCamelCase(viewFunction)}`,
-            registry: this.registry,
-          });
+        if (error instanceof $.ShapeAssertError) {
+          throw buildCompatibilityError(
+            error, // --
+            inputs,
+            args,
+            {
+              apiName: `${pallet}.${viewFunction}`,
+              registry: this.registry,
+            },
+          );
         }
         throw error;
       }

@@ -223,9 +223,9 @@ export class StorageQueryExecutor extends Executor {
       try {
         $ParamsTuple.assert?.(keys);
       } catch (error: any) {
-        if (error.name === 'ShapeAssertError') {
+        if (error instanceof $.ShapeAssertError) {
           throw buildCompatibilityError(
-            error,
+            error, // -
             paramSpecs,
             keys,
             {

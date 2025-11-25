@@ -47,7 +47,7 @@ export function isOptionalParam(param: ParamSpec, registry: TypeRegistry): boole
       const type = registry.findType(param.typeId);
       return type.typeDef.type === 'Enum' && type.path.join('::') === 'Option';
     } catch {
-      return false;
+      // ignore
     }
   }
 
@@ -202,7 +202,7 @@ function findCodec(param: ParamSpec, registry: TypeRegistry): AnyShape | undefin
     try {
       return registry.findCodec(param.typeId);
     } catch {
-      return undefined;
+      // ignore
     }
   }
   return undefined;
