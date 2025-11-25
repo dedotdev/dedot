@@ -43,8 +43,10 @@ export class ViewFunctionExecutor extends Executor {
             error,
             paramSpecs,
             args,
-            { apiName: `${targetPallet.name}.${viewFunction}`, type: 'viewFunction' },
-            this.registry,
+            {
+              apiName: `${stringCamelCase(targetPallet.name)}.${stringCamelCase(viewFunction)}`,
+              registry: this.registry,
+            },
           );
         }
         throw error;

@@ -13,6 +13,7 @@ import {
   assert,
   calcRuntimeApiHash,
   isNumber,
+  stringCamelCase,
   stringPascalCase,
   stringSnakeCase,
   u8aToHex,
@@ -67,8 +68,10 @@ export class RuntimeApiExecutor extends Executor {
             error,
             params,
             args,
-            { apiName: callName, type: 'runtimeApi' },
-            this.registry,
+            {
+              apiName: `${stringCamelCase(runtimeApi)}.${stringCamelCase(method)}`,
+              registry: this.registry,
+            },
           );
         }
         throw error;

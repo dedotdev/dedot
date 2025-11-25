@@ -1,7 +1,7 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
 import type { AsyncMethod, Callback, GenericStorageQuery, PaginationOptions, Unsub } from '@dedot/types';
-import { assert, isFunction, isObject } from '@dedot/utils';
+import { assert, isFunction, isObject, stringCamelCase } from '@dedot/utils';
 import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
 import { buildCompatibilityError, type ParamSpec } from './validation-helpers.js';
@@ -223,10 +223,9 @@ export class StorageQueryExecutor extends Executor {
             paramSpecs,
             keys,
             {
-              apiName: `${entry.pallet.name}.${entry.storageEntry.name}`,
-              type: 'storage',
+              apiName: `${stringCamelCase(entry.pallet.name)}.${stringCamelCase(entry.storageEntry.name)}`,
+              registry: this.registry,
             },
-            this.registry,
           );
         }
         throw error;

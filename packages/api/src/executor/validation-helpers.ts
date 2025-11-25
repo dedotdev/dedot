@@ -16,7 +16,7 @@ export interface ParamSpec {
  */
 export interface ValidationContext {
   apiName: string;
-  type: 'runtimeApi' | 'viewFunction' | 'storage' | 'transaction';
+  registry: TypeRegistry;
 }
 
 /**
@@ -94,7 +94,6 @@ export function buildCompatibilityError(
   params: ParamSpec[],
   args: any[],
   context: ValidationContext,
-  registry: TypeRegistry,
 ): ApiCompatibilityError {
   const lines: string[] = [];
 
@@ -126,7 +125,7 @@ export function buildCompatibilityError(
 
     if (value === undefined && i >= args.length) {
       // Missing argument - check if it's actually optional
-      const isOptional = isOptionalParam(param, registry);
+      const isOptional = isOptionalParam(param, context.registry);
       if (isOptional) {
         paramErrors.push(`  [${i}] ${param.name}: omitted (optional)`);
       } else {
@@ -137,7 +136,7 @@ export function buildCompatibilityError(
 
     // Try to validate the parameter
     try {
-      const $codec = findCodec(param, registry);
+      const $codec = findCodec(param, context.registry);
       if ($codec) {
         $codec.assert?.(value);
         // Valid parameter

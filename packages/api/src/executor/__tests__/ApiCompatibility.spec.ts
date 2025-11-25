@@ -64,7 +64,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('API Compatibility Error: metadata.metadataAtVersion');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 0');
           expect(error.message).toContain('[0] version: ✗ required parameter missing');
@@ -80,7 +80,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('API Compatibility Error: metadata.metadataAtVersion');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 3');
           expect(error.message).toContain('[0] version: ✓ valid');
@@ -241,7 +241,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: SessionKeys_generate_session_keys');
+          expect(error.message).toContain('API Compatibility Error: sessionKeys.generateSessionKeys');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 2');
           expect(error.message).toContain('[0] seed: ✓ valid');
@@ -339,7 +339,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: TestApi_mixed_params');
+          expect(error.message).toContain('API Compatibility Error: testApi.mixedParams');
           expect(error.message).toContain('Expected 2 parameters');
           expect(error.message).toContain('received 0');
           expect(error.message).toContain('[0] required: ✗ required parameter missing');
@@ -468,7 +468,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('API Compatibility Error: metadata.metadataAtVersion');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 0');
           expect(error.message).toContain('[0] version: ✗ required parameter missing');
@@ -484,7 +484,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Metadata_metadata_at_version');
+          expect(error.message).toContain('API Compatibility Error: metadata.metadataAtVersion');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 3');
           expect(error.message).toContain('[0] version: ✓ valid');
@@ -641,7 +641,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('API Compatibility Error: system.account');
           expect(error.message).toContain('[0] key0: ✗ invalid input type - value: undefined');
           expect(error.message).toContain('npx dedot chaintypes');
         }
@@ -655,7 +655,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('API Compatibility Error: system.account');
           expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
           expect(error.message).toContain('npx dedot chaintypes');
         }
@@ -669,7 +669,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: System.Account');
+          expect(error.message).toContain('API Compatibility Error: system.account');
           expect(error.message).toContain('Expected 1 parameter');
           expect(error.message).toContain('received 2');
           expect(error.message).toContain('[0] key0: ✓ valid');
@@ -741,7 +741,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          expect(error.message).toContain('API Compatibility Error: balances.transferAllowDeath');
           expect(error.message).toContain('[0] dest: ✗ invalid input type - value: 12345');
           expect(error.message).toContain('npx dedot chaintypes');
         }
@@ -761,7 +761,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          expect(error.message).toContain('API Compatibility Error: balances.transferAllowDeath');
           expect(error.message).toContain('[1] value: ✗ invalid input type - value: "not a number"');
         }
       });
@@ -776,7 +776,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          expect(error.message).toContain('API Compatibility Error: balances.transferAllowDeath');
           // When params are missing, they show as invalid type with value: undefined
           expect(error.message).toContain('[0] dest: ✗ invalid input type - value: undefined');
           expect(error.message).toContain('[1] value: ✗ invalid input type - value: undefined');

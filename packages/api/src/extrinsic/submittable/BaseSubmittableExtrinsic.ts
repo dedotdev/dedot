@@ -240,10 +240,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
           paramSpecs,
           args,
           {
-            apiName: `${pallet.name}.${callDef.name}`,
-            type: 'transaction',
+            apiName: `${stringCamelCase(pallet.name)}.${stringCamelCase(callDef.name)}`,
+            registry: this.registry,
           },
-          this.registry,
         );
       }
       throw error;
