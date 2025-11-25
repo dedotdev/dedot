@@ -16,7 +16,7 @@ export interface ParamSpec {
  */
 export interface ValidationContext {
   apiName: string;
-  type: 'runtimeApi' | 'viewFunction' | 'storage';
+  type: 'runtimeApi' | 'viewFunction' | 'storage' | 'transaction';
 }
 
 /**

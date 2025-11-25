@@ -678,4 +678,185 @@ describe('API Compatibility Checking', () => {
       });
     });
   });
+
+  describe('Transaction Compatibility (via client.tx)', () => {
+    let api: LegacyClient;
+    let provider: MockProvider;
+
+    beforeEach(async () => {
+      provider = new MockProvider();
+      api = await LegacyClient.new({ provider });
+    });
+
+    afterEach(async () => {
+      api && (await api.disconnect());
+      vi.restoreAllMocks();
+    });
+
+    describe('Happy Path - Valid Parameters', () => {
+      it('should create transaction with correct parameters', async () => {
+        // Balances.transfer_allow_death(dest: AccountId32, value: u128)
+        const dest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        const value = 1000000000000n;
+
+        const tx = api.tx.balances.transferAllowDeath(dest, value);
+
+        // Should not throw during creation or encoding
+        expect(() => tx.callHex).not.toThrow();
+        expect(tx.callHex).toMatch(/^0x/);
+      });
+
+      it('should create transaction with no parameters', async () => {
+        // Democracy.clear_public_proposals() - no parameters
+        const tx = api.tx.democracy.clearPublicProposals();
+
+        // Should not throw
+        expect(() => tx.callHex).not.toThrow();
+        expect(tx.callHex).toMatch(/^0x/);
+      });
+
+      it('should validate on toHex() call', async () => {
+        const dest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        const value = 1000000000000n;
+
+        const tx = api.tx.balances.transferAllowDeath(dest, value);
+
+        // Should not throw
+        expect(() => tx.toHex()).not.toThrow();
+      });
+    });
+
+    describe('Error Cases - Invalid Parameters', () => {
+      it('should throw ApiCompatibilityError for invalid parameter type', async () => {
+        try {
+          const tx = api.tx.balances.transferAllowDeath(
+            // @ts-expect-error - passing number instead of AccountId32
+            12345,
+            1000000000000n,
+          );
+
+          // Validation happens on encoding
+          tx.callHex;
+
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          expect(error.message).toContain('[0] dest: ✗ invalid input type - value: 12345');
+          expect(error.message).toContain('npx dedot chaintypes');
+        }
+      });
+
+      it('should throw ApiCompatibilityError for wrong value type', async () => {
+        try {
+          const dest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+          const tx = api.tx.balances.transferAllowDeath(
+            dest,
+            // @ts-expect-error - passing string instead of u128
+            'not a number',
+          );
+
+          tx.callHex;
+
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          expect(error.message).toContain('[1] value: ✗ invalid input type - value: "not a number"');
+        }
+      });
+
+      it('should throw ApiCompatibilityError for missing required parameters', async () => {
+        try {
+          // @ts-expect-error - missing parameters
+          const tx = api.tx.balances.transferAllowDeath();
+
+          tx.callHex;
+
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('API Compatibility Error: Balances.transfer_allow_death');
+          // When params are missing, they show as invalid type with value: undefined
+          expect(error.message).toContain('[0] dest: ✗ invalid input type - value: undefined');
+          expect(error.message).toContain('[1] value: ✗ invalid input type - value: undefined');
+        }
+      });
+
+      it('should silently ignore extra parameters (TxExecutor behavior)', async () => {
+        // Note: Extra parameters are ignored by TxExecutor during call creation
+        // Only the first N parameters matching the call definition are used
+        const dest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        const tx = api.tx.balances.transferAllowDeath(
+          dest,
+          1000000000000n,
+          // @ts-expect-error - extra parameter is ignored
+          'unexpected',
+        );
+
+        // Should not throw - extra params are simply ignored
+        expect(() => tx.callHex).not.toThrow();
+      });
+    });
+
+    describe('Error Message Format', () => {
+      it('should include helpful suggestion to regenerate chaintypes', async () => {
+        try {
+          // @ts-expect-error - wrong type
+          const tx = api.tx.balances.transferAllowDeath(123, 456);
+          tx.callHex;
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('This may indicate your API definitions are outdated');
+          expect(error.message).toContain('npx dedot chaintypes -w <your-chain-endpoint>');
+        }
+      });
+
+      it('should show parameter validation status clearly', async () => {
+        try {
+          const validDest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+          // @ts-expect-error - second param wrong type
+          const tx = api.tx.balances.transferAllowDeath(validDest, 'invalid');
+          tx.callHex;
+          expect.fail('Should have thrown ApiCompatibilityError');
+        } catch (error: any) {
+          expect(error).toBeInstanceOf(ApiCompatibilityError);
+          expect(error.message).toContain('[0] dest: ✓ valid');
+          expect(error.message).toContain('[1] value: ✗ invalid input type');
+        }
+      });
+    });
+
+    describe('Validation Timing', () => {
+      it('should validate before encoding (on callU8a access)', async () => {
+        // @ts-expect-error - wrong type
+        const tx = api.tx.balances.transferAllowDeath(123, 456);
+
+        // Should not throw on creation
+        expect(tx).toBeDefined();
+
+        // Should throw on encoding
+        expect(() => tx.callU8a).toThrow(ApiCompatibilityError);
+      });
+
+      it('should validate before toU8a() and toHex()', async () => {
+        const dest = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+        // @ts-expect-error - wrong type (string instead of u128)
+        const tx = api.tx.balances.transferAllowDeath(dest, 'not a number');
+
+        // All encoding paths should validate parameters
+        expect(() => tx.toU8a()).toThrow(ApiCompatibilityError);
+        expect(() => tx.toHex()).toThrow(ApiCompatibilityError);
+        expect(() => tx.callHex).toThrow(ApiCompatibilityError);
+      });
+
+      it('should validate before callHex access', async () => {
+        // @ts-expect-error - wrong type
+        const tx = api.tx.balances.transferAllowDeath(123, 456);
+
+        expect(() => tx.callHex).toThrow(ApiCompatibilityError);
+      });
+    });
+  });
 });
