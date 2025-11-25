@@ -5,6 +5,7 @@ import { $Header, type Header, type RuntimeVersion, unwrapOpaqueMetadata } from 
 import { WsProvider } from '@dedot/providers';
 import type { AnyShape } from '@dedot/shape';
 import * as $ from '@dedot/shape';
+import { createShape } from '@dedot/shape';
 import { blake2_256, HexString, keccak_256, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { LegacyClient } from '../LegacyClient.js';
@@ -196,14 +197,20 @@ describe('LegacyClient', () => {
 
     describe('custom runtime apis call', () => {
       it('should works properly', async () => {
-        const $testParamCodec = {
-          tryDecode: vi.fn(),
-          tryEncode: vi.fn(() => new Uint8Array()),
-        };
-        const $mockCodec = {
-          tryDecode: vi.fn(),
-          tryEncode: vi.fn(() => new Uint8Array()),
-        };
+        const $testParamCodec = createShape({
+          staticSize: 0,
+          metadata: [],
+          subAssert: vi.fn(),
+          subEncode: vi.fn(),
+          subDecode: vi.fn(() => 'decoded'),
+        });
+        const $mockCodec = createShape({
+          staticSize: 0,
+          metadata: [],
+          subAssert: vi.fn(),
+          subEncode: vi.fn(),
+          subDecode: vi.fn(() => 'decoded'),
+        });
 
         api = await LegacyClient.create({
           provider: new MockProvider(),
@@ -229,8 +236,8 @@ describe('LegacyClient', () => {
 
         await api.call.metadata.testMethod('hello');
 
-        expect($testParamCodec.tryEncode).toBeCalledWith('hello');
-        expect($mockCodec.tryDecode).toBeCalled();
+        expect($testParamCodec.subEncode).toBeCalled();
+        expect($mockCodec.subDecode).toBeCalled();
       });
     });
 

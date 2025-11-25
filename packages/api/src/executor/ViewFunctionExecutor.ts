@@ -4,6 +4,7 @@ import type { GenericViewFunction } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, stringCamelCase, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
+import { buildCompatibilityError, padArgsForOptionalParams } from './validation-helpers.js';
 
 const RUNTIME_API_NAME = 'RuntimeViewFunction';
 const METHOD_NAME = 'execute_view_function';
@@ -22,8 +23,33 @@ export class ViewFunctionExecutor extends Executor {
     const callFn: GenericViewFunction = async (...args: any[]) => {
       const { inputs, id, output } = viewFunctionDef;
 
-      const formattedInputs = inputs.map(({ typeId }, index) => this.registry.findCodec(typeId).tryEncode(args[index]));
-      const bytes = u8aToHex(concatU8a(id, $.Vec($.u8).tryEncode(concatU8a(...formattedInputs))));
+      // Pad args with undefined for missing trailing optional parameters
+      const paddedArgs = padArgsForOptionalParams(args, inputs, this.registry);
+
+      const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
+
+      // Enhanced validation with detailed error messages
+      try {
+        $ParamsTuple.assert?.(paddedArgs);
+      } catch (error: any) {
+        // Enhance Shape assertion errors with detailed compatibility information
+        if (error instanceof $.ShapeAssertError) {
+          throw buildCompatibilityError(
+            error, // --
+            inputs,
+            args,
+            {
+              apiName: `${pallet}.${viewFunction}`,
+              registry: this.registry,
+            },
+          );
+        }
+        throw error;
+      }
+
+      const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
+
+      const bytes = u8aToHex(concatU8a(id, $.Vec($.u8).tryEncode(formattedInputs)));
 
       const func = `${RUNTIME_API_NAME}_${METHOD_NAME}`;
       const callParams: StateCallParams = {

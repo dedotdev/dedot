@@ -1,5 +1,6 @@
-import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { RuntimeApiMethodDefLatest, TypeRegistry } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/runtime-specs';
+import * as $ from '@dedot/shape';
 import type { AnyShape } from '@dedot/shape';
 import type {
   GenericRuntimeApiMethod,
@@ -11,14 +12,15 @@ import type {
 import {
   assert,
   calcRuntimeApiHash,
-  concatU8a,
   isNumber,
+  stringCamelCase,
   stringPascalCase,
   stringSnakeCase,
   u8aToHex,
   UnknownApiError,
 } from '@dedot/utils';
 import { Executor, StateCallParams } from './Executor.js';
+import { buildCompatibilityError, padArgsForOptionalParams } from './validation-helpers.js';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
@@ -44,8 +46,46 @@ export class RuntimeApiExecutor extends Executor {
     const callFn: GenericRuntimeApiMethod = async (...args: any[]) => {
       const { params } = callSpec;
 
-      const formattedInputs = params.map((param, index) => this.tryEncode(param, args[index]));
-      const bytes = u8aToHex(concatU8a(...formattedInputs));
+      // Pad args with undefined for missing trailing optional parameters
+      const withCodecs = params.every((p) => !!p.codec);
+      const paddedArgs = padArgsForOptionalParams(
+        args,
+        params,
+        withCodecs
+          ? ({} as unknown as TypeRegistry) // intentional trick to pass-by client initialization
+          : this.registry,
+      );
+
+      const $ParamsTuple = $.Tuple(
+        ...params.map((param) =>
+          this.#findCodec(
+            param, // --
+            `Codec not found for param ${param.name}`,
+          ),
+        ),
+      );
+
+      // Enhanced validation with detailed error messages
+      try {
+        $ParamsTuple.assert?.(paddedArgs);
+      } catch (error: any) {
+        // Enhance Shape assertion errors with detailed compatibility information
+        if (error instanceof $.ShapeAssertError) {
+          throw buildCompatibilityError(
+            error, // --
+            params,
+            args,
+            {
+              apiName: `${runtimeApi}.${method}`,
+              registry: this.registry,
+            },
+          );
+        }
+        throw error;
+      }
+
+      const formattedInputs = $ParamsTuple.tryEncode(paddedArgs);
+      const bytes = u8aToHex(formattedInputs);
 
       const callParams: StateCallParams = {
         func: callName,

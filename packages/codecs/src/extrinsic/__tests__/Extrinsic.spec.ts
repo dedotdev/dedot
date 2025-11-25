@@ -1,5 +1,6 @@
 import { AccountId32, Extrinsic } from '@dedot/codecs';
 import * as $ from '@dedot/shape';
+import { assert } from '@dedot/shape';
 import { u8aToHex } from '@dedot/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { westendMetadataV16 } from '../../metadata/__tests__/shared.js';
@@ -403,6 +404,236 @@ describe('Extrinsic', () => {
           extrinsicType: ExtrinsicType.Signed,
         } as any);
       }).toThrow('Version 5 does not support Signed extrinsic type');
+    });
+  });
+
+  describe('subAssert', () => {
+    describe('V4 Extrinsics', () => {
+      let $Extrinsic: $.Shape<Extrinsic>;
+      let registry: PortableRegistry;
+
+      beforeEach(() => {
+        const metadata = $Metadata.tryDecode(staticSubstrateV14);
+        registry = new PortableRegistry(metadata.latest);
+        $Extrinsic = registry.$Extrinsic;
+      });
+
+      it('should accept valid V4 signed extrinsic instance', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferAllowDeath',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 4,
+            extrinsicType: ExtrinsicType.Signed,
+            signature: {
+              address: { type: 'Id', value: new AccountId32('0xfcc4910cb536b4333db4bccb40e2cf6427b4766518e754b91e70c97e4a87dbb3') },
+              signature: { type: 'Ed25519', value: '0xd99ffe3e610ad234e1414bda5831395a6df9098bf80b01561ce89a5065ae89d5c10e1619c6c99131b0bea4fb73ef04d07c07770e2ae9df5c325c331769ccb300' },
+              extra: [{}, {}, {}, {}, { type: 'Mortal', value: { period: 1024n, phase: 186n } }, 68, {}, 30000000000n],
+            },
+          } as PreambleV4Signed,
+        );
+
+        expect(() => assert($Extrinsic, ex)).not.toThrow();
+      });
+
+      it('should accept valid V4 bare extrinsic instance', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferAllowDeath',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 4,
+            extrinsicType: ExtrinsicType.Bare,
+          } as PreambleV4Bare,
+        );
+
+        expect(() => assert($Extrinsic, ex)).not.toThrow();
+      });
+
+      it('should throw for non-Extrinsic instance', () => {
+        expect(() => assert($Extrinsic, {} as any)).toThrow();
+        expect(() => assert($Extrinsic, { version: 4, type: ExtrinsicType.Signed } as any)).toThrow();
+      });
+
+      it('should throw for null', () => {
+        expect(() => assert($Extrinsic, null as any)).toThrow();
+      });
+
+      it('should throw when V4 signed extrinsic missing signature', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferAllowDeath',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 4,
+            extrinsicType: ExtrinsicType.Signed,
+          } as any, // Missing signature
+        );
+
+        expect(() => assert($Extrinsic, ex)).toThrow(/Signature is required/);
+      });
+    });
+
+    describe('V5 Extrinsics', () => {
+      let $Extrinsic: $.Shape<Extrinsic>;
+      let registry: PortableRegistry;
+
+      beforeEach(() => {
+        const metadata = $Metadata.tryDecode(westendMetadataV16);
+        registry = new PortableRegistry(metadata.latest);
+        $Extrinsic = registry.$Extrinsic;
+      });
+
+      it('should accept valid V5 bare extrinsic instance', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferKeepAlive',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 5,
+            extrinsicType: ExtrinsicType.Bare,
+          } as PreambleV5Bare,
+        );
+
+        expect(() => assert($Extrinsic, ex)).not.toThrow();
+      });
+
+      it('should accept valid V5 general extrinsic instance', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferKeepAlive',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 5,
+            extrinsicType: ExtrinsicType.General,
+            versionedExtensions: {
+              extensionVersion: 0,
+              // Westend V16 expects 11 extension elements: Era at index 5, nonce at index 6, tip at index 8, CheckMetadataHash at index 9, array at index 10
+              extra: [{}, {}, {}, {}, {}, { type: 'Immortal' }, 0, {}, { tip: 0n }, { mode: 'Disabled' }, []],
+            },
+          } as PreambleV5General,
+        );
+
+        expect(() => assert($Extrinsic, ex)).not.toThrow();
+      });
+
+      it('should throw for non-Extrinsic instance', () => {
+        expect(() => assert($Extrinsic, {} as any)).toThrow();
+      });
+
+      it('should throw when V5 general extrinsic missing extensions', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferKeepAlive',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 5,
+            extrinsicType: ExtrinsicType.General,
+          } as any, // Missing versionedExtensions
+        );
+
+        expect(() => assert($Extrinsic, ex)).toThrow(/Extensions are required/);
+      });
+
+      it('should throw when V5 general extrinsic missing extensionVersion', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferKeepAlive',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 5,
+            extrinsicType: ExtrinsicType.General,
+            versionedExtensions: {
+              extra: [{}, {}, {}, {}, {}, { type: 'Immortal' }, {}, {}, {}, {}, {}], // 11 elements with Era
+            },
+          } as any, // Missing extensionVersion
+        );
+
+        expect(() => assert($Extrinsic, ex)).toThrow(/extensionVersion is required/);
+      });
+
+      it('should throw when V5 general extensionVersion is not number', () => {
+        const ex = new Extrinsic(
+          registry,
+          {
+            pallet: 'Balances',
+            palletCall: {
+              name: 'TransferKeepAlive',
+              params: {
+                dest: { type: 'Id', value: new AccountId32('0x495e1e506f266418af07fa0c5c108dd436f2faa59fe7d9e54403779f5bbd7718') },
+                value: 104560923320000n,
+              },
+            },
+          },
+          {
+            version: 5,
+            extrinsicType: ExtrinsicType.General,
+            versionedExtensions: {
+              extensionVersion: '0' as any, // Wrong type
+              extra: [{}, {}, {}, {}, {}, { type: 'Immortal' }, {}, {}, {}, {}, {}], // 11 elements with Era
+            },
+          } as any,
+        );
+
+        expect(() => assert($Extrinsic, ex)).toThrow();
+      });
     });
   });
 });

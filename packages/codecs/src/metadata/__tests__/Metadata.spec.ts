@@ -2,8 +2,10 @@ import staticSubstrateV13 from '@polkadot/types-support/metadata/v13/substrate-h
 import staticSubstrateV14 from '@polkadot/types-support/metadata/v14/substrate-hex';
 import staticSubstrateV15 from '@polkadot/types-support/metadata/v15/substrate-hex';
 import { $Metadata, decodeOpaqueMetadata, MAGIC_NUMBER } from '@dedot/codecs';
+import { assert as shapeAssert, AssertState } from '@dedot/shape';
 import { assert, hexToString, numberToHex } from '@dedot/utils';
 import { describe, expect, expectTypeOf, it } from 'vitest';
+import { notSupportedCodec } from '../Metadata.js';
 import { westendMetadataV16 } from './shared.js';
 
 describe('$Metadata', () => {
@@ -67,5 +69,49 @@ describe('$Metadata', () => {
     expectTypeOf(metadataVersioned.value.apis).toBeArray();
     expectTypeOf(metadataVersioned.value.outerEnums).toBeObject();
     expectTypeOf(metadataVersioned.value.custom.map).toBeObject();
+  });
+});
+
+describe('notSupportedCodec', () => {
+  describe('subAssert', () => {
+    it('should throw default message for default notSupportedCodec', () => {
+      const $NotSupported = notSupportedCodec();
+      expect(() => shapeAssert($NotSupported, {})).toThrow('Not supported!');
+    });
+
+    it('should throw custom message', () => {
+      const $Custom = notSupportedCodec('Custom error message');
+      expect(() => shapeAssert($Custom, {})).toThrow('Custom error message');
+    });
+
+    it('should throw for any input - null', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, null as any)).toThrow('Test message');
+    });
+
+    it('should throw for any input - undefined', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, undefined as any)).toThrow('Test message');
+    });
+
+    it('should throw for any input - object', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, {})).toThrow('Test message');
+    });
+
+    it('should throw for any input - number', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, 42 as any)).toThrow('Test message');
+    });
+
+    it('should throw for any input - string', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, 'test' as any)).toThrow('Test message');
+    });
+
+    it('should throw for any input - array', () => {
+      const $Custom = notSupportedCodec('Test message');
+      expect(() => shapeAssert($Custom, [] as any)).toThrow('Test message');
+    });
   });
 });

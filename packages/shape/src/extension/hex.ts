@@ -1,5 +1,5 @@
-import { HexString, hexToU8a, u8aToHex } from '@dedot/utils';
-import { DecodeBuffer, EncodeBuffer, metadata, Shape, sizedUint8Array, hex } from '../deshape.js';
+import { HexString, hexToU8a, isHex, u8aToHex } from '@dedot/utils';
+import { AssertState, DecodeBuffer, EncodeBuffer, metadata, Shape, ShapeAssertError, sizedUint8Array, hex } from '../deshape.js';
 import { compactU32 } from './compact.js';
 import { createShape } from './createShape.js';
 
@@ -31,5 +31,11 @@ export const PrefixedHex = createShape<HexString>({
     const value = buffer.array.subarray(buffer.index, buffer.index + length);
     buffer.index += length;
     return u8aToHex(value);
+  },
+  subAssert(assert: AssertState) {
+    assert.typeof(this, 'string');
+    if (!isHex(assert.value as string)) {
+      throw new ShapeAssertError(this, assert.value, `${assert.path}: Expected valid hex string`);
+    }
   },
 });

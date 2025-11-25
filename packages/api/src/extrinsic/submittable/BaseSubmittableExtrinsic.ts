@@ -1,4 +1,5 @@
 import { BlockHash, Extrinsic, Preamble } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
 import {
   AddressOrPair,
   Callback,
@@ -12,8 +13,9 @@ import {
   TxPaymentInfo,
   TxUnsub,
 } from '@dedot/types';
-import { DedotError, HexString, hexToU8a, isFunction, toHex, u8aToHex } from '@dedot/utils';
+import { DedotError, HexString, hexToU8a, isFunction, stringCamelCase, toHex, u8aToHex } from '@dedot/utils';
 import type { FrameSystemEventRecord } from '../../chaintypes/index.js';
+import { buildCompatibilityError } from '../../executor/validation-helpers.js';
 import type { ISubstrateClient, ISubstrateClientAt } from '../../types.js';
 import { ExtraSignedExtension } from '../extensions/index.js';
 import { fakeSigner } from './fakeSigner.js';
@@ -180,10 +182,80 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
     return await atApi.query.system.events();
   }
 
-  toU8a(): Uint8Array {
+  /**
+   * Override callU8a to add transaction parameter validation before encoding
+   */
+  override get callU8a(): Uint8Array {
+    // Validate transaction parameters first
+    this.#validateTxParams();
+
+    // Then call parent implementation which does $RuntimeCall.assert and encoding
+    return super.callU8a;
+  }
+
+  /**
+   * Validate transaction parameters against their type definitions
+   * @private
+   */
+  #validateTxParams(): void {
+    // Skip if palletCall is a string (flat enum, no params)
+    if (typeof this.call.palletCall === 'string') return;
+    if (!this.call.palletCall?.name) return;
+
+    // 1. Find pallet metadata
+    const palletName = this.call.pallet;
+    const pallet = this.registry.metadata.pallets.find((p) => stringCamelCase(p.name) === stringCamelCase(palletName));
+
+    if (!pallet?.calls) return;
+
+    // 2. Get calls enum type definition
+    const callsType = this.registry.metadata.types[pallet.calls.typeId];
+    if (callsType.typeDef.type !== 'Enum') return;
+
+    // 3. Find specific call definition
+    const callName = this.call.palletCall.name;
+    const callDef = callsType.typeDef.value.members.find((m) => stringCamelCase(m.name) === stringCamelCase(callName));
+
+    if (!callDef) return;
+
+    // 4. Build param specs from field definitions
+    const paramSpecs = callDef.fields.map((f) => ({
+      name: stringCamelCase(f.name || ''),
+      typeId: f.typeId,
+    }));
+
+    // 5. Extract args in field order from params object
+    const params = this.call.palletCall.params || {};
+    const args = paramSpecs.map((spec) => params[spec.name]);
+
+    // 6. Validate with tuple codec
+    const $ParamsTuple = $.Tuple(...paramSpecs.map((spec) => this.registry.findCodec(spec.typeId)));
+
+    try {
+      $ParamsTuple.assert?.(args);
+    } catch (error: any) {
+      if (error instanceof $.ShapeAssertError) {
+        throw buildCompatibilityError(
+          error, // --
+          paramSpecs,
+          args,
+          {
+            apiName: `${stringCamelCase(pallet.name)}.${stringCamelCase(callDef.name)}`,
+            registry: this.registry,
+          },
+        );
+      }
+      throw error;
+    }
+  }
+
+  override toU8a(): Uint8Array {
     if (this.#alterTx) {
       return hexToU8a(this.#alterTx);
     }
+
+    // Validate transaction parameters before encoding
+    this.#validateTxParams();
 
     return super.toU8a();
   }

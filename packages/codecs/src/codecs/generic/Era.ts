@@ -75,6 +75,57 @@ export const $Era: $.Shape<EraLike, Era> = $.createShape({
       }
     }
   },
+  subAssert(assert: $.AssertState) {
+    // Validate it's an object
+    assert.typeof(this, 'object');
+    assert.nonNull(this);
+
+    const value = assert.value as EraLike;
+
+    // Check for MortalInputs format: { period: bigint, current: bigint }
+    if (value.hasOwnProperty('period') && value.hasOwnProperty('current')) {
+      const periodAssert = assert.key(this, 'period');
+      periodAssert.typeof(this, 'bigint');
+
+      const currentAssert = assert.key(this, 'current');
+      currentAssert.typeof(this, 'bigint');
+    }
+    // Check for Era format: { type: 'Immortal' | 'Mortal', value?: ... }
+    else if (value.hasOwnProperty('type')) {
+      const era = value as Era;
+
+      const typeAssert = assert.key(this, 'type');
+      typeAssert.typeof(this, 'string');
+
+      if (era.type === 'Immortal') {
+        // No additional validation needed for Immortal
+      } else if (era.type === 'Mortal') {
+        // Validate value property exists
+        const valueAssert = assert.key(this, 'value');
+        valueAssert.typeof(this, 'object');
+        valueAssert.nonNull(this);
+
+        // Validate period and phase types
+        const periodAssert = valueAssert.key(this, 'period');
+        periodAssert.typeof(this, 'bigint');
+
+        const phaseAssert = valueAssert.key(this, 'phase');
+        phaseAssert.typeof(this, 'bigint');
+      } else {
+        throw new $.ShapeAssertError(
+          this,
+          assert.value,
+          `${assert.path}.type: Invalid era type, expected 'Immortal' or 'Mortal'`,
+        );
+      }
+    } else {
+      throw new $.ShapeAssertError(
+        this,
+        assert.value,
+        `${assert.path}: Invalid Era format, expected { type: 'Immortal' | 'Mortal', ... } or { period: bigint, current: bigint }`,
+      );
+    }
+  },
 });
 
 export type MortalInputs = { period: bigint; current: bigint };

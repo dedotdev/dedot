@@ -1,8 +1,10 @@
 import { BlockHash, Option, StorageData, StorageKey } from '@dedot/codecs';
+import * as $ from '@dedot/shape';
 import type { AsyncMethod, Callback, GenericStorageQuery, PaginationOptions, Unsub } from '@dedot/types';
-import { assert, isFunction, isObject } from '@dedot/utils';
+import { assert, isFunction, isObject, stringCamelCase } from '@dedot/utils';
 import { type BaseStorageQuery, LegacyStorageQuery, QueryableStorage } from '../storage/index.js';
 import { Executor } from './Executor.js';
+import { buildCompatibilityError, type ParamSpec } from './validation-helpers.js';
 
 const DEFAULT_KEYS_PAGE_SIZE = 1000;
 const DEFAULT_ENTRIES_PAGE_SIZE = 250;
@@ -42,6 +44,10 @@ export class StorageQueryExecutor extends Executor {
 
     const queryFn: GenericStorageQuery = async (...args: any[]) => {
       const [inArgs, callback] = extractArgs(args);
+
+      // Validate storage inputs before encoding
+      this.#validateStorageInputs(entry, inArgs.at(0));
+
       const encodedKey = entry.encodeKey(inArgs.at(0));
 
       // if a callback is passed, make a storage subscription and return an unsub function
@@ -69,6 +75,12 @@ export class StorageQueryExecutor extends Executor {
         const [inArgs, callback] = extractArgs(args);
         const multiArgs = inArgs.at(0);
         assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
+
+        // Validate each argument before encoding
+        multiArgs.forEach((arg, index) => {
+          this.#validateStorageInputs(entry, arg, index);
+        });
+
         const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
 
         // if a callback is passed, make a storage subscription and return an unsub function
@@ -159,6 +171,73 @@ export class StorageQueryExecutor extends Executor {
     };
 
     return { entries, pagedKeys, pagedEntries };
+  }
+
+  /**
+   * Validate storage query inputs before encoding
+   * @param entry - QueryableStorage instance
+   * @param keyInput - Input keys to validate
+   * @param itemIndex - Optional index for multi query error messages
+   */
+  #validateStorageInputs(entry: QueryableStorage, keyInput: any, itemIndex?: number): void {
+    const { storageType } = entry.storageEntry;
+
+    // Plain storage doesn't require validation
+    if (storageType.type === 'Plain') {
+      return;
+    }
+
+    if (storageType.type === 'Map') {
+      const { hashers, keyTypeId } = storageType.value;
+      const requiredKeys = hashers.length;
+
+      // Extract keyTypeIds for multi-key storage
+      let keyTypeIds = [keyTypeId];
+      if (hashers.length > 1) {
+        const { typeDef } = this.registry.findType(keyTypeId);
+        assert(typeDef.type === 'Tuple', 'Key type should be a tuple!');
+        keyTypeIds = typeDef.value.fields;
+      }
+
+      // Normalize input to array format
+      let keys: any[];
+      if (requiredKeys === 1) {
+        // Single key: accept both single value or array
+        keys = Array.isArray(keyInput) ? keyInput : [keyInput];
+      } else {
+        // Multiple keys: must be array
+        assert(Array.isArray(keyInput), 'Multi-key storage requires array input');
+        keys = keyInput;
+      }
+
+      // Build parameter specs for error messages
+      const paramSpecs: ParamSpec[] = keyTypeIds.map((typeId, index) => ({
+        name: `key${index}`,
+        typeId,
+      }));
+
+      // Create tuple codec for validation
+      const $ParamsTuple = $.Tuple(...keyTypeIds.map((id) => this.registry.findCodec(id)));
+
+      // Validate inputs
+      try {
+        $ParamsTuple.assert?.(keys);
+      } catch (error: any) {
+        if (error instanceof $.ShapeAssertError) {
+          throw buildCompatibilityError(
+            error, // -
+            paramSpecs,
+            keys,
+            {
+              apiName: `${stringCamelCase(entry.pallet.name)}.${stringCamelCase(entry.storageEntry.name)}`,
+              registry: this.registry,
+              itemIndex,
+            },
+          );
+        }
+        throw error;
+      }
+    }
   }
 
   protected getStorageQuery(): BaseStorageQuery {

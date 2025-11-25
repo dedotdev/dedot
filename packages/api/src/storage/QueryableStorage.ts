@@ -82,6 +82,8 @@ export class QueryableStorage {
         const keyId = keyTypeIds[index];
         const hasher = HASHERS[hashers[index]];
         const $keyCodec = this.registry.findCodec(keyId);
+        $keyCodec.assert?.(input);
+
         return hasher($keyCodec.tryEncode(input));
       });
 
