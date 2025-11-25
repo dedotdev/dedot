@@ -4,7 +4,7 @@ import type { GenericViewFunction } from '@dedot/types';
 import { assert, concatU8a, DedotError, HexString, stringCamelCase, u8aToHex, UnknownApiError } from '@dedot/utils';
 import { FrameSupportViewFunctionsViewFunctionDispatchError } from '../chaintypes/index.js';
 import { Executor, StateCallParams } from './Executor.js';
-import { buildCompatibilityError } from './validation-helpers.js';
+import { buildCompatibilityError, padArgsForOptionalParams } from './validation-helpers.js';
 
 const RUNTIME_API_NAME = 'RuntimeViewFunction';
 const METHOD_NAME = 'execute_view_function';
@@ -24,7 +24,7 @@ export class ViewFunctionExecutor extends Executor {
       const { inputs, id, output } = viewFunctionDef;
 
       // Pad args with undefined for missing trailing optional parameters
-      const paddedArgs = this.padArgsForOptionalParams(args, inputs);
+      const paddedArgs = padArgsForOptionalParams(args, inputs, this.registry);
 
       const $ParamsTuple = $.Tuple(...inputs.map((param) => this.registry.findCodec(param.typeId)));
 
@@ -34,20 +34,10 @@ export class ViewFunctionExecutor extends Executor {
       } catch (error: any) {
         // Enhance Shape assertion errors with detailed compatibility information
         if (error.name === 'ShapeAssertError') {
-          const paramSpecs = inputs.map((input, index) => ({
-            name: `param${index}`,
-            typeId: input.typeId,
-          }));
-
-          throw buildCompatibilityError(
-            error,
-            paramSpecs,
-            args,
-            {
-              apiName: `${stringCamelCase(targetPallet.name)}.${stringCamelCase(viewFunction)}`,
-              registry: this.registry,
-            },
-          );
+          throw buildCompatibilityError(error, inputs, args, {
+            apiName: `${stringCamelCase(targetPallet.name)}.${stringCamelCase(viewFunction)}`,
+            registry: this.registry,
+          });
         }
         throw error;
       }

@@ -23,7 +23,7 @@ export interface ValidationContext {
 /**
  * Check if a codec is an Option type
  */
-function isOptionCodec(codec: AnyShape): boolean {
+export function isOptionCodec(codec: AnyShape): boolean {
   try {
     const metadata = codec?.metadata?.[0];
     return metadata?.name === '$.option';
@@ -35,7 +35,7 @@ function isOptionCodec(codec: AnyShape): boolean {
 /**
  * Check if a parameter is optional (wrapped in Option)
  */
-function isOptionalParam(param: ParamSpec, registry: TypeRegistry): boolean {
+export function isOptionalParam(param: ParamSpec, registry: TypeRegistry): boolean {
   // Check direct codec first
   if (param.codec) {
     return isOptionCodec(param.codec);
@@ -52,6 +52,34 @@ function isOptionalParam(param: ParamSpec, registry: TypeRegistry): boolean {
   }
 
   return false;
+}
+
+/**
+ * Pad args array with undefined for missing trailing optional parameters.
+ * This allows users to omit optional parameters at the end of the parameter list.
+ */
+export function padArgsForOptionalParams<T extends ParamSpec>(args: any[], params: T[], registry: TypeRegistry): any[] {
+  // If args already match params length, no padding needed
+  if (args.length === params.length) {
+    return args;
+  }
+
+  // If more args than params, validation will fail later
+  if (args.length > params.length) {
+    return args;
+  }
+
+  // Check that all missing parameters are optional
+  for (let i = args.length; i < params.length; i++) {
+    const param = params[i];
+    if (!isOptionalParam(param, registry)) {
+      // Required parameter is missing, let the validation fail naturally
+      return args;
+    }
+  }
+
+  // All missing parameters are optional, pad with undefined
+  return [...args, ...Array(params.length - args.length).fill(undefined)];
 }
 
 /**

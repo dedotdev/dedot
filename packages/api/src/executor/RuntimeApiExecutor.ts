@@ -1,4 +1,4 @@
-import { RuntimeApiMethodDefLatest } from '@dedot/codecs';
+import { RuntimeApiMethodDefLatest, TypeRegistry } from '@dedot/codecs';
 import { Metadata, toRuntimeApiMethods, toRuntimeApiSpecs } from '@dedot/runtime-specs';
 import * as $ from '@dedot/shape';
 import type { AnyShape } from '@dedot/shape';
@@ -20,7 +20,7 @@ import {
   UnknownApiError,
 } from '@dedot/utils';
 import { Executor, StateCallParams } from './Executor.js';
-import { buildCompatibilityError } from './validation-helpers.js';
+import { buildCompatibilityError, padArgsForOptionalParams } from './validation-helpers.js';
 
 export const FallbackRuntimeApis: Record<string, number> = { '0x37e397fc7c91f5e4': 2 };
 
@@ -47,7 +47,14 @@ export class RuntimeApiExecutor extends Executor {
       const { params } = callSpec;
 
       // Pad args with undefined for missing trailing optional parameters
-      const paddedArgs = this.padArgsForOptionalParams(args, params);
+      const withCodecs = params.every((p) => !!p.codec);
+      const paddedArgs = padArgsForOptionalParams(
+        args,
+        params,
+        withCodecs
+          ? ({} as unknown as TypeRegistry) // intentional trick to pass-by client initialization
+          : this.registry,
+      );
 
       const $ParamsTuple = $.Tuple(
         ...params.map((param) =>
@@ -64,15 +71,10 @@ export class RuntimeApiExecutor extends Executor {
       } catch (error: any) {
         // Enhance Shape assertion errors with detailed compatibility information
         if (error.name === 'ShapeAssertError') {
-          throw buildCompatibilityError(
-            error,
-            params,
-            args,
-            {
-              apiName: `${stringCamelCase(runtimeApi)}.${stringCamelCase(method)}`,
-              registry: this.registry,
-            },
-          );
+          throw buildCompatibilityError(error, params, args, {
+            apiName: `${stringCamelCase(runtimeApi)}.${stringCamelCase(method)}`,
+            registry: this.registry,
+          });
         }
         throw error;
       }
