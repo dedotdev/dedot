@@ -124,8 +124,8 @@ describe('API Compatibility Checking', () => {
           // @ts-expect-error
           await api.call.metadata.metadataAtVersion();
         } catch (error: any) {
-          expect(error.message).toContain('This may indicate your API definitions are outdated');
-          expect(error.message).toContain('Consider regenerating chain types with:');
+          expect(error.message).toContain('This may indicate your chaintypes definitions are outdated');
+          expect(error.message).toContain('Consider regenerating chaintypes with:');
           expect(error.message).toContain('npx dedot chaintypes -w <your-chain-endpoint>');
         }
       });
@@ -525,8 +525,8 @@ describe('API Compatibility Checking', () => {
           // @ts-expect-error
           await api.call.metadata.metadataAtVersion();
         } catch (error: any) {
-          expect(error.message).toContain('This may indicate your API definitions are outdated');
-          expect(error.message).toContain('Consider regenerating chain types with:');
+          expect(error.message).toContain('This may indicate your chaintypes definitions are outdated');
+          expect(error.message).toContain('Consider regenerating chaintypes with:');
           expect(error.message).toContain('npx dedot chaintypes -w <your-chain-endpoint>');
         }
       });
@@ -1079,7 +1079,7 @@ describe('API Compatibility Checking', () => {
           expect.fail('Should have thrown ApiCompatibilityError');
         } catch (error: any) {
           expect(error).toBeInstanceOf(ApiCompatibilityError);
-          expect(error.message).toContain('This may indicate your API definitions are outdated');
+          expect(error.message).toContain('This may indicate your chaintypes definitions are outdated');
           expect(error.message).toContain('npx dedot chaintypes -w <your-chain-endpoint>');
         }
       });

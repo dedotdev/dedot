@@ -108,9 +108,7 @@ export function buildCompatibilityError(
 
   // Check parameter count mismatch
   if (args.length !== params.length) {
-    lines.push(
-      `Expected ${params.length} parameter${params.length !== 1 ? 's' : ''} but received ${args.length}`,
-    );
+    lines.push(`Expected ${params.length} parameter${params.length !== 1 ? 's' : ''} but received ${args.length}`);
     lines.push('');
   }
 
@@ -160,8 +158,8 @@ export function buildCompatibilityError(
   }
 
   // Add suggestion
-  lines.push('This may indicate your API definitions are outdated.');
-  lines.push('Consider regenerating chain types with:');
+  lines.push('This may indicate your chaintypes definitions are outdated.');
+  lines.push('Consider regenerating chaintypes with:');
   lines.push('  npx dedot chaintypes -w <your-chain-endpoint>');
 
   return new ApiCompatibilityError(lines.join('\n'));
