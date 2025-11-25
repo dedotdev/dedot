@@ -45,10 +45,8 @@ export class StorageQueryExecutor extends Executor {
     const queryFn: GenericStorageQuery = async (...args: any[]) => {
       const [inArgs, callback] = extractArgs(args);
 
-      // Validate storage inputs before encoding (only for non-subscription queries)
-      if (!callback) {
-        this.#validateStorageInputs(entry, inArgs.at(0));
-      }
+      // Validate storage inputs before encoding
+      this.#validateStorageInputs(entry, inArgs.at(0));
 
       const encodedKey = entry.encodeKey(inArgs.at(0));
 
@@ -77,6 +75,12 @@ export class StorageQueryExecutor extends Executor {
         const [inArgs, callback] = extractArgs(args);
         const multiArgs = inArgs.at(0);
         assert(Array.isArray(multiArgs), 'First param for multi query should be an array');
+
+        // Validate each argument before encoding
+        multiArgs.forEach((arg, index) => {
+          this.#validateStorageInputs(entry, arg, index);
+        });
+
         const encodedKeys = multiArgs.map((arg) => entry.encodeKey(arg));
 
         // if a callback is passed, make a storage subscription and return an unsub function
@@ -173,8 +177,9 @@ export class StorageQueryExecutor extends Executor {
    * Validate storage query inputs before encoding
    * @param entry - QueryableStorage instance
    * @param keyInput - Input keys to validate
+   * @param itemIndex - Optional index for multi query error messages
    */
-  #validateStorageInputs(entry: QueryableStorage, keyInput: any): void {
+  #validateStorageInputs(entry: QueryableStorage, keyInput: any, itemIndex?: number): void {
     const { storageType } = entry.storageEntry;
 
     // Plain storage doesn't require validation
@@ -226,6 +231,7 @@ export class StorageQueryExecutor extends Executor {
             {
               apiName: `${stringCamelCase(entry.pallet.name)}.${stringCamelCase(entry.storageEntry.name)}`,
               registry: this.registry,
+              itemIndex,
             },
           );
         }

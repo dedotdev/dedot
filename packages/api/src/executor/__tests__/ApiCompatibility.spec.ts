@@ -325,10 +325,7 @@ describe('API Compatibility Checking', () => {
         await apiWithTestApi.call.testApi.mixedParams(42);
 
         // state_call should be called since validation passed
-        expect(providerSend).toHaveBeenCalledWith('state_call', [
-          'TestApi_mixed_params',
-          expect.any(String),
-        ]);
+        expect(providerSend).toHaveBeenCalledWith('state_call', ['TestApi_mixed_params', expect.any(String)]);
       });
 
       it('should show "✗ required parameter missing" when required param is missing', async () => {
@@ -675,6 +672,280 @@ describe('API Compatibility Checking', () => {
           expect(error.message).toContain('[0] key0: ✓ valid');
           expect(error.message).toContain('[1] (unexpected) - value: "extra"');
         }
+      });
+    });
+
+    describe('.multi() Query Validation', () => {
+      describe('Single-Key Storage - Happy Path', () => {
+        it('should query multiple entries successfully', async () => {
+          const providerSend = vi.spyOn(provider, 'send');
+
+          const addresses = [
+            '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+            '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+          ];
+
+          await api.query.system.account.multi(addresses);
+
+          // Verify state_queryStorageAt was called
+          expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', expect.any(Array));
+        });
+      });
+
+      describe('Single-Key Storage - Error Cases', () => {
+        it('should throw ApiCompatibilityError for invalid type in multi array', async () => {
+          try {
+            await api.query.system.account.multi([
+              '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+              // @ts-ignore - intentionally passing wrong type
+              12345, // Invalid - number instead of AccountId
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account (item 1)');
+            expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
+            expect(error.message).toContain('npx dedot chaintypes');
+          }
+        });
+
+        it('should show item index in error message', async () => {
+          try {
+            await api.query.system.account.multi([
+              '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+              // @ts-ignore - intentionally passing wrong type
+              12345, // Invalid - number instead of AccountId
+              '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty',
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account (item 1)');
+            expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
+          }
+        });
+
+        it('should detect error in middle of array', async () => {
+          try {
+            await api.query.system.account.multi([
+              '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', // item 0 - valid
+              '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', // item 1 - valid
+              // @ts-ignore - intentionally passing undefined
+              undefined, // item 2 - invalid
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account (item 2)');
+            expect(error.message).toContain('invalid input type - value: undefined');
+          }
+        });
+      });
+
+      describe('Multi-Key Storage (Double Maps) - Happy Path', () => {
+        it('should query multiple double-map entries successfully', async () => {
+          const providerSend = vi.spyOn(provider, 'send');
+
+          await api.query.staking.claimedRewards.multi([
+            [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'],
+            [2, '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty'],
+          ]);
+
+          expect(providerSend).toHaveBeenCalledWith('state_queryStorageAt', expect.any(Array));
+        });
+      });
+
+      describe('Multi-Key Storage (Double Maps) - Error Cases', () => {
+        it('should throw error for non-array input to double map multi', async () => {
+          try {
+            await api.query.staking.claimedRewards.multi([
+              [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'], // item 0 - valid
+              // @ts-ignore - intentionally passing non-array for double map
+              123, // item 1 - invalid, not an array
+            ]);
+            expect.fail('Should have thrown error');
+          } catch (error: any) {
+            // Should hit the assertion: 'Multi-key storage requires array input'
+            expect(error.message).toContain('Multi-key storage requires array input');
+          }
+        });
+
+        it('should throw ApiCompatibilityError for missing key in array', async () => {
+          try {
+            await api.query.staking.claimedRewards.multi([
+              [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'], // item 0 - valid
+              // @ts-ignore - intentionally passing incomplete array
+              [2], // item 1 - invalid, missing second key
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards (item 1)');
+            expect(error.message).toContain('Expected 2 parameters');
+            expect(error.message).toContain('received 1');
+          }
+        });
+
+        it('should throw ApiCompatibilityError for invalid key type', async () => {
+          try {
+            await api.query.staking.claimedRewards.multi([
+              [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'], // item 0 - valid
+              // @ts-ignore - intentionally passing wrong type for second key
+              [2, 12345], // item 1 - invalid second key (number instead of AccountId)
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards (item 1)');
+            expect(error.message).toContain('[1] key1: ✗ invalid input type - value: 12345');
+          }
+        });
+
+        it('should show item index for double map errors', async () => {
+          try {
+            await api.query.staking.claimedRewards.multi([
+              [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'], // item 0 - valid
+              [2, '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty'], // item 1 - valid
+              // @ts-ignore - intentionally passing wrong type for second key
+              [3, 12345], // item 2 - invalid second key (number instead of AccountId)
+            ]);
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards (item 2)');
+            expect(error.message).toContain('[1] key1: ✗ invalid input type - value: 12345');
+          }
+        });
+      });
+    });
+
+    describe('Subscription Query Validation', () => {
+      describe('Single-Key Storage Subscription', () => {
+        it('should throw ApiCompatibilityError for invalid type in subscription', async () => {
+          try {
+            // System.Account subscription with invalid type
+            // @ts-ignore - intentionally passing wrong type
+            await api.query.system.account(12345, (_data: any) => {
+              // callback
+            });
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account');
+            expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
+            expect(error.message).toContain('npx dedot chaintypes');
+          }
+        });
+
+        it('should throw ApiCompatibilityError for undefined in subscription', async () => {
+          try {
+            // @ts-ignore - intentionally passing undefined
+            await api.query.system.account(undefined, (_data: any) => {
+              // callback
+            });
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account');
+            expect(error.message).toContain('invalid input type - value: undefined');
+          }
+        });
+      });
+
+      describe('Multi-Key Storage Subscription', () => {
+        it('should throw ApiCompatibilityError for invalid key in double-map subscription', async () => {
+          try {
+            // Staking.ClaimedRewards subscription with invalid second key
+            // @ts-ignore - intentionally passing wrong type for second key
+            await api.query.staking.claimedRewards([1, 12345], (_data: any) => {
+              // callback
+            });
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards');
+            expect(error.message).toContain('[1] key1: ✗ invalid input type - value: 12345');
+          }
+        });
+
+        it('should throw ApiCompatibilityError for missing key in double-map subscription', async () => {
+          try {
+            // @ts-ignore - intentionally passing incomplete array
+            await api.query.staking.claimedRewards([1], (_data: any) => {
+              // callback
+            });
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards');
+            expect(error.message).toContain('Expected 2 parameters');
+            expect(error.message).toContain('received 1');
+          }
+        });
+      });
+
+      describe('.multi() Subscription Validation', () => {
+        it('should throw ApiCompatibilityError with item index for invalid type in multi subscription', async () => {
+          try {
+            await api.query.system.account.multi(
+              [
+                '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', // item 0 - valid
+                // @ts-ignore - intentionally passing wrong type
+                12345, // item 1 - invalid
+                '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', // item 2 - valid
+              ],
+              (_data: any) => {
+                // callback
+              },
+            );
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account (item 1)');
+            expect(error.message).toContain('[0] key0: ✗ invalid input type - value: 12345');
+          }
+        });
+
+        it('should throw ApiCompatibilityError with item index for double-map multi subscription', async () => {
+          try {
+            await api.query.staking.claimedRewards.multi(
+              [
+                [1, '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'], // item 0 - valid
+                [2, '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty'], // item 1 - valid
+                // @ts-ignore - intentionally passing wrong type for second key
+                [3, 12345], // item 2 - invalid second key
+              ],
+              (_data: any) => {
+                // callback
+              },
+            );
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: staking.claimedRewards (item 2)');
+            expect(error.message).toContain('[1] key1: ✗ invalid input type - value: 12345');
+          }
+        });
+
+        it('should detect error at first item in multi subscription', async () => {
+          try {
+            await api.query.system.account.multi(
+              [
+                // @ts-ignore - intentionally passing undefined
+                undefined, // item 0 - invalid
+                '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', // item 1 - valid
+              ],
+              (_data: any) => {
+                // callback
+              },
+            );
+            expect.fail('Should have thrown ApiCompatibilityError');
+          } catch (error: any) {
+            expect(error).toBeInstanceOf(ApiCompatibilityError);
+            expect(error.message).toContain('API Compatibility Error: system.account (item 0)');
+            expect(error.message).toContain('invalid input type - value: undefined');
+          }
+        });
       });
     });
   });

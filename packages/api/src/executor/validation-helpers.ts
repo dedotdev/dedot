@@ -17,6 +17,7 @@ export interface ParamSpec {
 export interface ValidationContext {
   apiName: string;
   registry: TypeRegistry;
+  itemIndex?: number;
 }
 
 /**
@@ -98,7 +99,11 @@ export function buildCompatibilityError(
   const lines: string[] = [];
 
   // Header
-  lines.push(`API Compatibility Error: ${context.apiName}`);
+  if (context.itemIndex !== undefined) {
+    lines.push(`API Compatibility Error: ${context.apiName} (item ${context.itemIndex})`);
+  } else {
+    lines.push(`API Compatibility Error: ${context.apiName}`);
+  }
   lines.push('');
 
   // Check parameter count mismatch
