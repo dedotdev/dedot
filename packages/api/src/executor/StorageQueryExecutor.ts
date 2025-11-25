@@ -201,6 +201,7 @@ export class StorageQueryExecutor extends Executor {
         keys = Array.isArray(keyInput) ? keyInput : [keyInput];
       } else {
         // Multiple keys: must be array
+        assert(Array.isArray(keyInput), 'Multi-key storage requires array input');
         keys = keyInput;
       }
 
