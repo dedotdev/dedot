@@ -886,7 +886,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     try {
       this.#blockUsage.use(at);
 
-      return this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
+      return await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
     } finally {
       this.#blockUsage.release(at);
     }
