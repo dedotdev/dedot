@@ -59,7 +59,7 @@ export type ChainHeadEvent =
   | 'finalizedBlock' // new best finalized block
   | 'bestChainChanged'; // new best chain, a fork happened
 
-export const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
+const MIN_FINALIZED_QUEUE_SIZE = 16; // finalized queue size
 const CHAINHEAD_CACHE_CAPACITY = 256;
 const CHAINHEAD_CACHE_TTL = 30_000; // 30 seconds
 
@@ -82,6 +82,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #blockUsage: BlockUsage;
   #cache: LRUCache;
   #operationQueue: ThrottleQueue;
+  #minQueueSize: number;
   /**
    * Archive instance used as fallback when ChainHead blocks are not pinned.
    *
@@ -106,6 +107,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#cache = new LRUCache(CHAINHEAD_CACHE_CAPACITY, CHAINHEAD_CACHE_TTL);
     // This helps us to not accidentally putting too much stress on the JSON-RPC server, especially smoldot/light-client
     this.#operationQueue = new ThrottleQueue(this.#__unsafe__isSmoldot() ? 25 : 250);
+    this.#minQueueSize = MIN_FINALIZED_QUEUE_SIZE;
   }
 
   /**
@@ -220,6 +222,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         this.#subscriptionId = subscription!.subscriptionId;
         this.#finalizedQueue = finalizedBlockHashes;
+        if (finalizedBlockHashes.length > MIN_FINALIZED_QUEUE_SIZE) {
+          this.#minQueueSize = finalizedBlockHashes.length;
+        }
 
         this.#finalizedRuntime = this.#extractRuntime(finalizedBlockRuntime)!;
         assert(this.#finalizedRuntime, 'Invalid finalized runtime');
@@ -326,9 +331,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         const hashesToUnpin = new Set(prunedBlockHashes.filter((hash) => pinnedHashes.includes(hash)));
 
         // Unpin the oldest finalized pinned blocks to maintain the queue size
-        if (this.#finalizedQueue.length > MIN_FINALIZED_QUEUE_SIZE) {
+        if (this.#finalizedQueue.length > this.#minQueueSize) {
           const finalizedQueue = this.#finalizedQueue.slice();
-          const numOfItemsToUnpin = finalizedQueue.length - MIN_FINALIZED_QUEUE_SIZE;
+          const numOfItemsToUnpin = finalizedQueue.length - this.#minQueueSize;
           const queuedHashesToUnpin = finalizedQueue.splice(0, numOfItemsToUnpin);
 
           queuedHashesToUnpin.forEach((hash) => {
@@ -701,9 +706,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(bodyOperation, atHash));
-      this.#cache.set(cacheKey, resp);
-      return resp;
+      try {
+        this.#blockUsage.use(atHash);
+
+        const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(bodyOperation, atHash));
+        this.#cache.set(cacheKey, resp);
+        return resp;
+      } finally {
+        this.#blockUsage.release(atHash);
+      }
     };
 
     const fallback = async (archive: Archive, hash: BlockHash): Promise<Array<HexString>> => {
@@ -748,9 +759,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(callOperation, atHash));
-      this.#cache.set(cacheKey, resp);
-      return resp;
+      try {
+        this.#blockUsage.use(atHash);
+
+        const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(callOperation, atHash));
+        this.#cache.set(cacheKey, resp);
+        return resp;
+      } finally {
+        this.#blockUsage.release(atHash);
+      }
     };
 
     const fallback = (archive: Archive, hash: BlockHash) => archive.call(func, params, hash);
@@ -866,7 +883,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     const operation = () => this.#getStorageOperation(items, childTrie, this.#ensurePinnedHash(at));
 
-    return this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
+    try {
+      this.#blockUsage.use(at);
+
+      return await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
+    } finally {
+      this.#blockUsage.release(at);
+    }
   }
 
   async #getStorageOperation(
