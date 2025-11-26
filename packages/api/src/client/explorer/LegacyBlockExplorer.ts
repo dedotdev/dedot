@@ -55,9 +55,6 @@ export class LegacyBlockExplorer implements BlockExplorer {
 
     // Gap detected - backfill missing blocks
     const gapSize = currentNumber - lastNumber - 1;
-    console.warn(
-      `${blockType} block gap detected: ${gapSize} blocks missing (${lastNumber + 1} to ${currentNumber - 1})`,
-    );
 
     // Create list of missing block numbers
     const missingNums = Array.from({ length: gapSize }, (_, i) => lastNumber + 1 + i);

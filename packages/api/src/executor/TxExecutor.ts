@@ -1,4 +1,3 @@
-import * as $ from '@dedot/shape';
 import type { GenericTxCall, IRuntimeTxCall } from '@dedot/types';
 import { assert, stringCamelCase, stringPascalCase, UnknownApiError } from '@dedot/utils';
 import { SubmittableExtrinsic } from '../extrinsic/index.js';
