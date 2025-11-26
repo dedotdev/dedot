@@ -41,7 +41,7 @@ export const mockedRuntime: ChainHeadRuntimeVersion = {
   },
 };
 
-export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, initialRuntime }: SimulatorConfig) => {
+export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 16, provider, initialRuntime }: SimulatorConfig) => {
   let runtime = initialRuntime || mockedRuntime;
   let subscriptionId = stringToHex('followSubscription');
 
@@ -186,12 +186,21 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     };
   };
 
+  const timeouts: NodeJS.Timeout[] = [];
+
   const notify = (data: Error | any, timeout = 0) => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       provider.notify(subscriptionId, data);
     }, timeout);
+    timeouts.push(timeoutId);
 
     return data;
+  };
+
+  const cleanup = async () => {
+    // Clear all pending timeouts
+    timeouts.forEach(clearTimeout);
+    timeouts.length = 0;
   };
 
   let stopCounter = 0;
@@ -239,5 +248,6 @@ export const newChainHeadSimulator = ({ numOfFinalizedBlocks = 15, provider, ini
     rpcMethods,
     stop,
     blockDb,
+    cleanup,
   };
 };

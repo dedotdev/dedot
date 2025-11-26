@@ -87,14 +87,14 @@ describe('DedotClient', () => {
       it('should create new api instance', async () => {
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          '0x0e',
+          '0x0f',
           'Metadata_metadata_versions',
           '0x',
         ]);
 
         expect(providerSend).toBeCalledWith('chainHead_v1_call', [
           simulator.subscriptionId,
-          '0x0f',
+          '0x10',
           'Metadata_metadata_at_version',
           '0x10000000',
         ]);
@@ -582,7 +582,7 @@ describe('DedotClient', () => {
               'BestChainBlockIncluded',
               'Finalized',
             ]);
-            expect(finalizedBlock).toEqual({ blockHash: '0x11-1', blockNumber: 17, txIndex: 2 });
+            expect(finalizedBlock).toEqual({ blockHash: '0x12-1', blockNumber: 18, txIndex: 2 });
           });
         });
       });
@@ -707,10 +707,10 @@ describe('DedotClient', () => {
         });
 
         it('should define valid props', async () => {
-          const apiAt = await api.at('0x0f');
+          const apiAt = await api.at('0x10');
 
           expect(apiAt.rpcVersion).toEqual('v2');
-          expect(apiAt.atBlockHash).toEqual('0x0f');
+          expect(apiAt.atBlockHash).toEqual('0x10');
           expect(apiAt.options).toBeDefined();
           expect(apiAt.runtimeVersion).toBe(simulator.runtime);
           expect(apiAt.registry).toBeDefined();
@@ -723,14 +723,14 @@ describe('DedotClient', () => {
         });
 
         it('should execute rpc', async () => {
-          const apiAt = await api.at('0x0f');
+          const apiAt = await api.at('0x10');
 
           await apiAt.rpc.system_chain();
           expect(providerSend).toBeCalledWith('system_chain', []);
         });
 
         it('should maintain proxy chain independence for events', async () => {
-          const apiAt = await api.at('0x0f');
+          const apiAt = await api.at('0x10');
 
           // Access multiple events - they should be independent
           const eventRefs = [
@@ -759,7 +759,7 @@ describe('DedotClient', () => {
         });
 
         it('should maintain proxy chain independence for errors', async () => {
-          const apiAt = await api.at('0x0f');
+          const apiAt = await api.at('0x10');
 
           // Access multiple errors - they should be independent
           const errorRefs = [
@@ -780,7 +780,7 @@ describe('DedotClient', () => {
             chainHead_v1_call: () => ({ result: 'started', operationId: 'call05' }) as MethodResponse,
           });
 
-          const hash = '0x0f';
+          const hash = '0x10';
 
           const apiAt = await api.at(hash);
           const key = apiAt.query.system.number.rawKey();
