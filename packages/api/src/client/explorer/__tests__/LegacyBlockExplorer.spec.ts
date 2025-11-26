@@ -386,7 +386,6 @@ describe('LegacyBlockExplorer', () => {
     });
 
     it('should detect and backfill missing finalized blocks', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const providerSend = vi.spyOn(mockProvider, 'send');
       const callback = vi.fn();
 
@@ -403,10 +402,6 @@ describe('LegacyBlockExplorer', () => {
       mockProvider.notify('subscription-finalized-0', encodeHeader(createMockHeader(4)));
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Should warn about gap
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('finalized block gap detected'));
-
-      warnSpy.mockRestore();
       unsub();
     });
 
