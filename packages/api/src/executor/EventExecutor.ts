@@ -17,7 +17,7 @@ export class EventExecutor extends Executor {
 
     const eventDef = this.#getEventDef(eventTypeId.typeId, eventName);
 
-    const is = (event: IEventRecord | PalletEvent): event is PalletEvent => {
+    const is = (event: IEventRecord | PalletEvent): boolean => {
       if (isEventRecord(event)) {
         event = event.event;
       }
@@ -67,6 +67,7 @@ export class EventExecutor extends Executor {
     };
 
     return {
+      // @ts-ignore
       is,
       find,
       filter,
