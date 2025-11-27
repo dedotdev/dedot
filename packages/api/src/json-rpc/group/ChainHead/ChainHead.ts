@@ -972,9 +972,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(bodyOperation, atHash));
-      this.#cache.set(cacheKey, resp);
-      return resp;
+      try {
+        this.#blockUsage.use(atHash);
+
+        const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(bodyOperation, atHash));
+        this.#cache.set(cacheKey, resp);
+        return resp;
+      } finally {
+        this.#blockUsage.release(atHash);
+      }
     };
 
     const fallback = async (archive: Archive, hash: BlockHash): Promise<Array<HexString>> => {
@@ -1019,9 +1025,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         return this.#awaitOperation(resp, hash);
       };
 
-      const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(callOperation, atHash));
-      this.#cache.set(cacheKey, resp);
-      return resp;
+      try {
+        this.#blockUsage.use(atHash);
+
+        const resp = await this.#operationQueue.add(() => this.#performOperationWithRetry(callOperation, atHash));
+        this.#cache.set(cacheKey, resp);
+        return resp;
+      } finally {
+        this.#blockUsage.release(atHash);
+      }
     };
 
     const fallback = (archive: Archive, hash: BlockHash) => archive.call(func, params, hash);
@@ -1137,7 +1149,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   ): Promise<[fetchedResults: Array<StorageResult>, discardedItems: Array<StorageQuery>]> {
     const operation = () => this.#getStorageOperation(items, childTrie, this.#ensurePinnedHash(at));
 
-    return this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
+    try {
+      this.#blockUsage.use(at);
+
+      return await this.#operationQueue.add(() => this.#performOperationWithRetry(operation, at));
+    } finally {
+      this.#blockUsage.release(at);
+    }
   }
 
   async #getStorageOperation(

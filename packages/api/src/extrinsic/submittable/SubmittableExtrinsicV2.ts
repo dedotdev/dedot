@@ -247,8 +247,6 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     const { deferTx, onTxProgress } = txDefer();
 
-    // TODO handle timeout for this with the Drop status,
-    //  just in-case we somehow can't find the tx in any block
     let unsub: Unsub | undefined;
     this.#send((result) => {
       result = this.transformTxResult(result);
