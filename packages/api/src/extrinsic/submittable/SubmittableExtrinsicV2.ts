@@ -90,21 +90,23 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       searchQueue.cancel();
     };
 
-    const startSearching = (block: PinnedBlock): Promise<TxFound | undefined> => {
+    const startSearching = async (block: PinnedBlock): Promise<TxFound | undefined> => {
       const hash = block.hash;
       if (!trackedHashes.includes(hash)) {
         trackedHashes.push(hash);
         api.chainHead.holdBlock(hash);
       }
 
-      return searchQueue.enqueue(async () => {
-        const found = await checkTxIsOnChain(hash);
-        if (found) {
-          cancelPendingSearch();
-        }
+      return searchQueue
+        .enqueue(async () => {
+          const found = await checkTxIsOnChain(hash);
+          if (found) {
+            cancelPendingSearch();
+          }
 
-        return found;
-      });
+          return found;
+        })
+        .catch(() => undefined);
     };
 
     const checkBestBlockIncluded = async (block: PinnedBlock, bestChainChanged: boolean) => {
