@@ -5,10 +5,10 @@ import { IKeyringPair, InjectedSigner } from './pjs-types.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 
-export interface PayloadOptions {
+export interface PayloadOptions<AssetId extends any = any> {
   nonce?: number;
   tip?: bigint;
-  assetId?: number | object; // TODO support generic types
+  assetId?: AssetId;
   metadataHash?: HexString; // If empty -> disabled, if not empty -> enabled
 
   // TODO support customize mortality
@@ -17,7 +17,7 @@ export interface PayloadOptions {
 
   [prop: string]: any;
 }
-export interface SignerOptions extends PayloadOptions {
+export interface SignerOptions<AssetId extends any = any> extends PayloadOptions<AssetId> {
   signer?: InjectedSigner;
 }
 
@@ -53,20 +53,20 @@ export interface TxUnsub<R extends ISubmittableResult = ISubmittableResult> exte
 
 export interface TxHash<R extends ISubmittableResult = ISubmittableResult> extends PromiseWithUntil<Hash, R> {}
 
-export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult> {
-  paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo>;
+export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittableResult, AssetId extends any = any> {
+  paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions<AssetId>>): Promise<TxPaymentInfo>;
 
   send(): TxHash<R>;
 
   send(callback: Callback<R>): TxUnsub<R>;
 
-  sign(account: AddressOrPair, options?: Partial<SignerOptions>): Promise<this>;
+  sign(account: AddressOrPair, options?: Partial<SignerOptions<AssetId>>): Promise<this>;
 
-  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions>): TxHash<R>;
+  signAndSend(account: AddressOrPair, options?: Partial<SignerOptions<AssetId>>): TxHash<R>;
 
   signAndSend(account: AddressOrPair, callback: Callback<R>): TxUnsub<R>;
 
-  signAndSend(account: AddressOrPair, options: Partial<SignerOptions>, callback?: Callback<R>): TxUnsub<R>;
+  signAndSend(account: AddressOrPair, options: Partial<SignerOptions<AssetId>>, callback?: Callback<R>): TxUnsub<R>;
 }
 
 export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISubmittableResult>

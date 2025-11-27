@@ -208,6 +208,7 @@ export interface GenericChainKnownTypes {
   Signature: any;
   RuntimeCall: any;
   Extra: any[];
+  AssetId: any;
   [TypeName: string]: any;
 }
 
