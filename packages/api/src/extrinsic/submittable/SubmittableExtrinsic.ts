@@ -7,10 +7,11 @@ import {
   ISubmittableResult,
   SignerOptions,
   TxHash,
+  TxStatus,
   TxUnsub,
   Unsub,
 } from '@dedot/types';
-import { assert, HexString, isHex } from '@dedot/utils';
+import { assert, HexString, isHex, noop } from '@dedot/utils';
 import { LegacyClient } from '../../client/LegacyClient.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
@@ -52,7 +53,12 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
     const { deferTx, onTxProgress } = txDefer();
 
-    const unsub = this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+    let unsub: Unsub | undefined;
+
+    const unsubPromise = this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+      let status: TxStatus;
+      let result: ISubmittableResult;
+
       if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
         const blockHash: BlockHash = txStatus.value;
 
@@ -67,29 +73,37 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
         const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
         const blockNumber = (signedBlock as SignedBlock).block.header.number;
 
-        const status = toTxStatus(txStatus, { txIndex, blockNumber });
-        const result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
-
-        onTxProgress(result);
-
-        !isSubscription && deferTx.resolve(txHash);
-        return callback?.(result);
+        status = toTxStatus(txStatus, { txIndex, blockNumber });
+        result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
       } else {
-        const status = toTxStatus(txStatus);
-        const result = this.transformTxResult(new SubmittableResult({ status, txHash }));
+        status = toTxStatus(txStatus);
+        result = this.transformTxResult(new SubmittableResult({ status, txHash }));
+      }
 
-        onTxProgress(result);
+      onTxProgress(result);
 
-        !isSubscription && deferTx.resolve(txHash);
-        return callback?.(result);
+      if (isSubscription) {
+        callback?.(result);
+      } else {
+        deferTx.resolve(txHash);
+      }
+
+      if (
+        status.type === 'Finalized' || // --
+        status.type === 'Invalid' ||
+        status.type === 'Drop'
+      ) {
+        unsub && unsub().catch(noop);
       }
     });
 
-    if (isSubscription) {
-      unsub.then((x: Unsub) => {
+    unsubPromise.then((x: Unsub) => {
+      unsub = x;
+
+      if (isSubscription) {
         deferTx.resolve(x);
-      });
-    }
+      }
+    });
 
     return deferTx.promise;
   }
