@@ -78,10 +78,10 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     let txFound: TxFound | undefined;
     let isSearching = false;
-    let searchQueue: AsyncQueue = new AsyncQueue();
+    const searchQueue: AsyncQueue = new AsyncQueue();
+    const finalizedQueue: AsyncQueue = new AsyncQueue();
+    const trackedHashes: BlockHash[] = [];
 
-    // TODO 1. move the searching logic into a different utility
-    //      2. properly cancel the work by actually cancel the on-going operations
     const cancelPendingSearch = () => {
       searchQueue.clear();
     };
@@ -91,8 +91,14 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     };
 
     const startSearching = (block: PinnedBlock): Promise<TxFound | undefined> => {
+      const hash = block.hash;
+      if (!trackedHashes.includes(hash)) {
+        trackedHashes.push(hash);
+        api.chainHead.holdBlock(hash);
+      }
+
       return searchQueue.enqueue(async () => {
-        const found = await checkTxIsOnChain(block.hash);
+        const found = await checkTxIsOnChain(hash);
         if (found) {
           cancelPendingSearch();
         }
@@ -170,36 +176,46 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     };
 
     const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
-      const inBlock = await checkTxIsOnChain(block.hash);
-      if (inBlock) {
-        const { index: txIndex, events, blockHash, blockNumber } = inBlock;
-
-        callback(
-          new SubmittableResult<IEventRecord>({
-            status: { type: 'Finalized', value: { blockHash, blockNumber, txIndex } },
-            txHash,
-            events,
-            txIndex,
-          }),
-        );
-      } else {
-        // Revalidate the tx, just in-case it becomes invalid along the way
-        // Context: https://github.com/paritytech/json-rpc-interface-spec/pull/107#issuecomment-1906008814
-        const validation = await validateTx(block.hash);
-        if (validation.isOk) return;
-
-        callback(
-          new SubmittableResult<IEventRecord>({
-            status: {
-              type: 'Invalid',
-              value: { error: `Invalid Tx: ${validation.err.type} - ${validation.err.value.type}` },
-            },
-            txHash,
-          }),
-        );
+      const hash = block.hash;
+      if (!trackedHashes.includes(hash)) {
+        trackedHashes.push(hash);
+        api.chainHead.holdBlock(hash);
       }
 
-      txUnsub().catch(noop);
+      finalizedQueue
+        .enqueue(async () => {
+          const inBlock = await checkTxIsOnChain(hash);
+          if (inBlock) {
+            const { index: txIndex, events, blockHash, blockNumber } = inBlock;
+
+            callback(
+              new SubmittableResult<IEventRecord>({
+                status: { type: 'Finalized', value: { blockHash, blockNumber, txIndex } },
+                txHash,
+                events,
+                txIndex,
+              }),
+            );
+          } else {
+            // Revalidate the tx, just in-case it becomes invalid along the way
+            // Context: https://github.com/paritytech/json-rpc-interface-spec/pull/107#issuecomment-1906008814
+            const validation = await validateTx(hash);
+            if (validation.isOk) return;
+
+            callback(
+              new SubmittableResult<IEventRecord>({
+                status: {
+                  type: 'Invalid',
+                  value: { error: `Invalid Tx: ${validation.err.type} - ${validation.err.value.type}` },
+                },
+                txHash,
+              }),
+            );
+          }
+
+          txUnsub().catch(noop);
+        })
+        .catch(noop);
     };
 
     stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
@@ -218,6 +234,10 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
       stopFinalizedBlockTrackingFn();
 
       cancelBodySearch();
+      finalizedQueue.cancel();
+      trackedHashes.forEach((h) => {
+        api.chainHead.releaseBlock(h);
+      });
     };
 
     txUnsub = async () => {
