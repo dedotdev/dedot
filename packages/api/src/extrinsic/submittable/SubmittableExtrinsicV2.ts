@@ -93,8 +93,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const startSearching = async (block: PinnedBlock): Promise<TxFound | undefined> => {
       const hash = block.hash;
       if (!trackedHashes.includes(hash)) {
-        trackedHashes.push(hash);
         api.chainHead.holdBlock(hash);
+        trackedHashes.push(hash);
       }
 
       return searchQueue
@@ -180,8 +180,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     const checkFinalizedBlockIncluded = async (block: PinnedBlock) => {
       const hash = block.hash;
       if (!trackedHashes.includes(hash)) {
-        trackedHashes.push(hash);
         api.chainHead.holdBlock(hash);
+        trackedHashes.push(hash);
       }
 
       finalizedQueue
