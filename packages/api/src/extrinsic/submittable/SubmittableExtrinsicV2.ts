@@ -92,8 +92,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     let isSearching = false;
     let searchQueue: AsyncQueue = new AsyncQueue();
 
-    // TODO 1. move the searching logic into a different utility
-    //      2. properly cancel the work by actually cancel the on-going operations
+    const searchedHashes: BlockHash[] = [];
+
     const cancelPendingSearch = () => {
       searchQueue.clear();
     };
@@ -103,8 +103,15 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     };
 
     const startSearching = (block: PinnedBlock): Promise<TxFound | undefined> => {
+      const hash = block.hash;
+
+      if (!searchedHashes.includes(hash)) {
+        searchedHashes.push(hash);
+        api.chainHead.holdBlock(hash);
+      }
+
       return searchQueue.enqueue(async () => {
-        const found = await checkTxIsOnChain(block.hash);
+        const found = await checkTxIsOnChain(hash);
         if (found) {
           cancelPendingSearch();
         }
@@ -235,6 +242,10 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     txUnsub = async () => {
       stopTracking();
       stopBroadcast();
+
+      searchedHashes.forEach((h) => {
+        api.chainHead.releaseBlock(h);
+      });
     };
 
     return txUnsub;
