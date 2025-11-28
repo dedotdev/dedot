@@ -202,6 +202,7 @@ export interface BlockExplorer {
 
 export interface IChainSpec {
   chainName(): Promise<string>;
+  genesisHash(): Promise<HexString>;
   properties(): Promise<Properties>;
 }
 

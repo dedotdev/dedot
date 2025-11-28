@@ -16,6 +16,7 @@ export class TxGen extends ApiGen {
     this.typesGen.typeImports.addKnownType(
       'GenericChainTx',
       'GenericTxCall',
+      'GenericChainKnownTypes',
       'ISubmittableExtrinsic',
       'ISubmittableResult',
       'IRuntimeTxCall',
@@ -78,22 +79,21 @@ export class TxGen extends ApiGen {
                 '\n',
                 params.map((p) => `@param {${p.type}} ${p.normalizedName} ${p.docs}`),
                 deprecationComments,
-              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}>>`;
+              )}${functionName}: GenericTxCall<(${params.map((p) => `${p.normalizedName}: ${p.type}`).join(', ')}) => ChainSubmittableExtrinsic<${callInput}, ChainKnownTypes>>`;
             })
             .join(',\n')}
             
-          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<TxCall>,
+          ${commentBlock('Generic pallet tx call')}[callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>,
         },`;
     }
 
     const importTypes = this.typesGen.typeImports.toImports({ useSubPaths });
 
-    // TODO make explicit separate type for Extra
     const defTypes = `
-    export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}> = 
-        Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, any[]> & ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>
+    export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = ${callTypeIn}, ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> = 
+        Extrinsic<${addressTypeIn}, T, ${signatureTypeIn}, ChainKnownTypes['Extra']> & ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>, ChainKnownTypes['AssetId']>
         
-    export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;    
+    export type TxCall<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> = (...args: any[]) => ChainSubmittableExtrinsic<${callTypeIn}, ChainKnownTypes>;    
 `;
     const template = compileTemplate('chaintypes/templates/tx.hbs');
 

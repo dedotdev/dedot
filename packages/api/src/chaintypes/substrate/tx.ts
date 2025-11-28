@@ -16,6 +16,7 @@ import type {
   Perquintill,
 } from '@dedot/codecs';
 import type {
+  GenericChainKnownTypes,
   GenericChainTx,
   GenericTxCall,
   IRuntimeTxCall,
@@ -111,17 +112,18 @@ import type {
   SpWeightsWeightV2Weight,
 } from './types.js';
 
-export type ChainSubmittableExtrinsic<T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike> = Extrinsic<
-  MultiAddressLike,
-  T,
-  SpRuntimeMultiSignature,
-  any[]
-> &
-  ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>>;
+export type ChainSubmittableExtrinsic<
+  T extends IRuntimeTxCall = KitchensinkRuntimeRuntimeCallLike,
+  ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes,
+> = Extrinsic<MultiAddressLike, T, SpRuntimeMultiSignature, ChainKnownTypes['Extra']> &
+  ISubmittableExtrinsic<ISubmittableResult<FrameSystemEventRecord>, ChainKnownTypes['AssetId']>;
 
-export type TxCall = (...args: any[]) => ChainSubmittableExtrinsic;
+export type TxCall<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> = (
+  ...args: any[]
+) => ChainSubmittableExtrinsic<KitchensinkRuntimeRuntimeCallLike, ChainKnownTypes>;
 
-export interface ChainTx extends GenericChainTx<TxCall> {
+export interface ChainTx<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes>
+  extends GenericChainTx<TxCall<ChainKnownTypes>> {
   /**
    * Pallet `System`'s transaction calls
    **/
@@ -134,13 +136,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} remark
      **/
     remark: GenericTxCall<
-      (remark: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'Remark';
-          params: { remark: BytesLike };
-        };
-      }>
+      (remark: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'Remark';
+            params: { remark: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -149,13 +154,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} pages
      **/
     setHeapPages: GenericTxCall<
-      (pages: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'SetHeapPages';
-          params: { pages: bigint };
-        };
-      }>
+      (pages: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'SetHeapPages';
+            params: { pages: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -164,13 +172,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} code
      **/
     setCode: GenericTxCall<
-      (code: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'SetCode';
-          params: { code: BytesLike };
-        };
-      }>
+      (code: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'SetCode';
+            params: { code: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -182,13 +193,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} code
      **/
     setCodeWithoutChecks: GenericTxCall<
-      (code: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'SetCodeWithoutChecks';
-          params: { code: BytesLike };
-        };
-      }>
+      (code: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'SetCodeWithoutChecks';
+            params: { code: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -197,13 +211,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<[BytesLike, BytesLike]>} items
      **/
     setStorage: GenericTxCall<
-      (items: Array<[BytesLike, BytesLike]>) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'SetStorage';
-          params: { items: Array<[BytesLike, BytesLike]> };
-        };
-      }>
+      (items: Array<[BytesLike, BytesLike]>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'SetStorage';
+            params: { items: Array<[BytesLike, BytesLike]> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -212,13 +229,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<BytesLike>} keys
      **/
     killStorage: GenericTxCall<
-      (keys: Array<BytesLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'KillStorage';
-          params: { keys: Array<BytesLike> };
-        };
-      }>
+      (keys: Array<BytesLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'KillStorage';
+            params: { keys: Array<BytesLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -234,13 +254,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         prefix: BytesLike,
         subkeys: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'KillPrefix';
-          params: { prefix: BytesLike; subkeys: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'KillPrefix';
+            params: { prefix: BytesLike; subkeys: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -249,13 +272,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} remark
      **/
     remarkWithEvent: GenericTxCall<
-      (remark: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'RemarkWithEvent';
-          params: { remark: BytesLike };
-        };
-      }>
+      (remark: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'RemarkWithEvent';
+            params: { remark: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -267,13 +293,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} codeHash
      **/
     authorizeUpgrade: GenericTxCall<
-      (codeHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'AuthorizeUpgrade';
-          params: { codeHash: H256 };
-        };
-      }>
+      (codeHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'AuthorizeUpgrade';
+            params: { codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -289,13 +318,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} codeHash
      **/
     authorizeUpgradeWithoutChecks: GenericTxCall<
-      (codeHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'AuthorizeUpgradeWithoutChecks';
-          params: { codeHash: H256 };
-        };
-      }>
+      (codeHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'AuthorizeUpgradeWithoutChecks';
+            params: { codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -312,19 +344,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} code
      **/
     applyAuthorizedUpgrade: GenericTxCall<
-      (code: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'System';
-        palletCall: {
-          name: 'ApplyAuthorizedUpgrade';
-          params: { code: BytesLike };
-        };
-      }>
+      (code: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'System';
+          palletCall: {
+            name: 'ApplyAuthorizedUpgrade';
+            params: { code: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Utility`'s transaction calls
@@ -353,13 +388,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<KitchensinkRuntimeRuntimeCallLike>} calls
      **/
     batch: GenericTxCall<
-      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'Batch';
-          params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
-        };
-      }>
+      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'Batch';
+            params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -384,13 +422,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'AsDerivative';
-          params: { index: number; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'AsDerivative';
+            params: { index: number; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -411,13 +452,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<KitchensinkRuntimeRuntimeCallLike>} calls
      **/
     batchAll: GenericTxCall<
-      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'BatchAll';
-          params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
-        };
-      }>
+      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'BatchAll';
+            params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -435,13 +479,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         asOrigin: KitchensinkRuntimeOriginCaller,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'DispatchAs';
-          params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'DispatchAs';
+            params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -462,13 +509,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<KitchensinkRuntimeRuntimeCallLike>} calls
      **/
     forceBatch: GenericTxCall<
-      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'ForceBatch';
-          params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
-        };
-      }>
+      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'ForceBatch';
+            params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -486,13 +536,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         call: KitchensinkRuntimeRuntimeCallLike,
         weight: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'WithWeight';
-          params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'WithWeight';
+            params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -527,13 +580,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         main: KitchensinkRuntimeRuntimeCallLike,
         fallback: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'IfElse';
-          params: { main: KitchensinkRuntimeRuntimeCallLike; fallback: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'IfElse';
+            params: { main: KitchensinkRuntimeRuntimeCallLike; fallback: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -550,19 +606,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         asOrigin: KitchensinkRuntimeOriginCaller,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Utility';
-        palletCall: {
-          name: 'DispatchAsFallible';
-          params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Utility';
+          palletCall: {
+            name: 'DispatchAsFallible';
+            params: { asOrigin: KitchensinkRuntimeOriginCaller; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Babe`'s transaction calls
@@ -581,13 +640,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusSlotsEquivocationProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Babe';
-        palletCall: {
-          name: 'ReportEquivocation';
-          params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Babe';
+          palletCall: {
+            name: 'ReportEquivocation';
+            params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -607,13 +669,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusSlotsEquivocationProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Babe';
-        palletCall: {
-          name: 'ReportEquivocationUnsigned';
-          params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Babe';
+          palletCall: {
+            name: 'ReportEquivocationUnsigned';
+            params: { equivocationProof: SpConsensusSlotsEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -625,19 +690,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {SpConsensusBabeDigestsNextConfigDescriptor} config
      **/
     planConfigChange: GenericTxCall<
-      (config: SpConsensusBabeDigestsNextConfigDescriptor) => ChainSubmittableExtrinsic<{
-        pallet: 'Babe';
-        palletCall: {
-          name: 'PlanConfigChange';
-          params: { config: SpConsensusBabeDigestsNextConfigDescriptor };
-        };
-      }>
+      (config: SpConsensusBabeDigestsNextConfigDescriptor) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Babe';
+          palletCall: {
+            name: 'PlanConfigChange';
+            params: { config: SpConsensusBabeDigestsNextConfigDescriptor };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Timestamp`'s transaction calls
@@ -667,19 +735,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} now
      **/
     set: GenericTxCall<
-      (now: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Timestamp';
-        palletCall: {
-          name: 'Set';
-          params: { now: bigint };
-        };
-      }>
+      (now: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Timestamp';
+          palletCall: {
+            name: 'Set';
+            params: { now: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Indices`'s transaction calls
@@ -702,13 +773,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     claim: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'Claim';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'Claim';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -732,13 +806,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         new_: MultiAddressLike,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'Transfer';
-          params: { new: MultiAddressLike; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'Transfer';
+            params: { new: MultiAddressLike; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -758,13 +835,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     free: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'Free';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'Free';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -791,13 +871,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         new_: MultiAddressLike,
         index: number,
         freeze: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'ForceTransfer';
-          params: { new: MultiAddressLike; index: number; freeze: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'ForceTransfer';
+            params: { new: MultiAddressLike; index: number; freeze: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -817,13 +900,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     freeze: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'Freeze';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'Freeze';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -841,19 +927,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     pokeDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Indices';
-        palletCall: {
-          name: 'PokeDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Indices';
+          palletCall: {
+            name: 'PokeDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Balances`'s transaction calls
@@ -875,13 +964,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         dest: MultiAddressLike,
         value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'TransferAllowDeath';
-          params: { dest: MultiAddressLike; value: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'TransferAllowDeath';
+            params: { dest: MultiAddressLike; value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -897,13 +989,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         source: MultiAddressLike,
         dest: MultiAddressLike,
         value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'ForceTransfer';
-          params: { source: MultiAddressLike; dest: MultiAddressLike; value: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'ForceTransfer';
+            params: { source: MultiAddressLike; dest: MultiAddressLike; value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -921,13 +1016,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         dest: MultiAddressLike,
         value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'TransferKeepAlive';
-          params: { dest: MultiAddressLike; value: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'TransferKeepAlive';
+            params: { dest: MultiAddressLike; value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -954,13 +1052,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         dest: MultiAddressLike,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'TransferAll';
-          params: { dest: MultiAddressLike; keepAlive: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'TransferAll';
+            params: { dest: MultiAddressLike; keepAlive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -975,13 +1076,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'ForceUnreserve';
-          params: { who: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'ForceUnreserve';
+            params: { who: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -997,13 +1101,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<AccountId32Like>} who
      **/
     upgradeAccounts: GenericTxCall<
-      (who: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'UpgradeAccounts';
-          params: { who: Array<AccountId32Like> };
-        };
-      }>
+      (who: Array<AccountId32Like>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'UpgradeAccounts';
+            params: { who: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1018,13 +1125,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         newFree: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'ForceSetBalance';
-          params: { who: MultiAddressLike; newFree: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'ForceSetBalance';
+            params: { who: MultiAddressLike; newFree: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1041,13 +1151,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         direction: PalletBalancesAdjustmentDirection,
         delta: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'ForceAdjustTotalIssuance';
-          params: { direction: PalletBalancesAdjustmentDirection; delta: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'ForceAdjustTotalIssuance';
+            params: { direction: PalletBalancesAdjustmentDirection; delta: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1066,19 +1179,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         value: bigint,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Balances';
-        palletCall: {
-          name: 'Burn';
-          params: { value: bigint; keepAlive: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Balances';
+          palletCall: {
+            name: 'Burn';
+            params: { value: bigint; keepAlive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `ElectionProviderMultiPhase`'s transaction calls
@@ -1107,16 +1223,19 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         rawSolution: PalletElectionProviderMultiPhaseRawSolution,
         witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ElectionProviderMultiPhase';
-        palletCall: {
-          name: 'SubmitUnsigned';
-          params: {
-            rawSolution: PalletElectionProviderMultiPhaseRawSolution;
-            witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ElectionProviderMultiPhase';
+          palletCall: {
+            name: 'SubmitUnsigned';
+            params: {
+              rawSolution: PalletElectionProviderMultiPhaseRawSolution;
+              witness: PalletElectionProviderMultiPhaseSolutionOrSnapshotSize;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1129,13 +1248,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {SpNposElectionsElectionScore | undefined} maybeNextScore
      **/
     setMinimumUntrustedScore: GenericTxCall<
-      (maybeNextScore: SpNposElectionsElectionScore | undefined) => ChainSubmittableExtrinsic<{
-        pallet: 'ElectionProviderMultiPhase';
-        palletCall: {
-          name: 'SetMinimumUntrustedScore';
-          params: { maybeNextScore: SpNposElectionsElectionScore | undefined };
-        };
-      }>
+      (maybeNextScore: SpNposElectionsElectionScore | undefined) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ElectionProviderMultiPhase';
+          palletCall: {
+            name: 'SetMinimumUntrustedScore';
+            params: { maybeNextScore: SpNposElectionsElectionScore | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1151,13 +1273,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<[AccountId32Like, SpNposElectionsSupport]>} supports
      **/
     setEmergencyElectionResult: GenericTxCall<
-      (supports: Array<[AccountId32Like, SpNposElectionsSupport]>) => ChainSubmittableExtrinsic<{
-        pallet: 'ElectionProviderMultiPhase';
-        palletCall: {
-          name: 'SetEmergencyElectionResult';
-          params: { supports: Array<[AccountId32Like, SpNposElectionsSupport]> };
-        };
-      }>
+      (supports: Array<[AccountId32Like, SpNposElectionsSupport]>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ElectionProviderMultiPhase';
+          palletCall: {
+            name: 'SetEmergencyElectionResult';
+            params: { supports: Array<[AccountId32Like, SpNposElectionsSupport]> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1174,13 +1299,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletElectionProviderMultiPhaseRawSolution} rawSolution
      **/
     submit: GenericTxCall<
-      (rawSolution: PalletElectionProviderMultiPhaseRawSolution) => ChainSubmittableExtrinsic<{
-        pallet: 'ElectionProviderMultiPhase';
-        palletCall: {
-          name: 'Submit';
-          params: { rawSolution: PalletElectionProviderMultiPhaseRawSolution };
-        };
-      }>
+      (rawSolution: PalletElectionProviderMultiPhaseRawSolution) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ElectionProviderMultiPhase';
+          palletCall: {
+            name: 'Submit';
+            params: { rawSolution: PalletElectionProviderMultiPhaseRawSolution };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1196,19 +1324,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         maybeMaxVoters: number | undefined,
         maybeMaxTargets: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ElectionProviderMultiPhase';
-        palletCall: {
-          name: 'GovernanceFallback';
-          params: { maybeMaxVoters: number | undefined; maybeMaxTargets: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ElectionProviderMultiPhase';
+          palletCall: {
+            name: 'GovernanceFallback';
+            params: { maybeMaxVoters: number | undefined; maybeMaxTargets: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Staking`'s transaction calls
@@ -1239,13 +1370,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         value: bigint,
         payee: PalletStakingRewardDestination,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Bond';
-          params: { value: bigint; payee: PalletStakingRewardDestination };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Bond';
+            params: { value: bigint; payee: PalletStakingRewardDestination };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1267,13 +1401,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} maxAdditional
      **/
     bondExtra: GenericTxCall<
-      (maxAdditional: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'BondExtra';
-          params: { maxAdditional: bigint };
-        };
-      }>
+      (maxAdditional: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'BondExtra';
+            params: { maxAdditional: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1300,13 +1437,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} value
      **/
     unbond: GenericTxCall<
-      (value: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Unbond';
-          params: { value: bigint };
-        };
-      }>
+      (value: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Unbond';
+            params: { value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1337,13 +1477,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} numSlashingSpans
      **/
     withdrawUnbonded: GenericTxCall<
-      (numSlashingSpans: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'WithdrawUnbonded';
-          params: { numSlashingSpans: number };
-        };
-      }>
+      (numSlashingSpans: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'WithdrawUnbonded';
+            params: { numSlashingSpans: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1356,13 +1499,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletStakingValidatorPrefs} prefs
      **/
     validate: GenericTxCall<
-      (prefs: PalletStakingValidatorPrefs) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Validate';
-          params: { prefs: PalletStakingValidatorPrefs };
-        };
-      }>
+      (prefs: PalletStakingValidatorPrefs) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Validate';
+            params: { prefs: PalletStakingValidatorPrefs };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1380,13 +1526,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<MultiAddressLike>} targets
      **/
     nominate: GenericTxCall<
-      (targets: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Nominate';
-          params: { targets: Array<MultiAddressLike> };
-        };
-      }>
+      (targets: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Nominate';
+            params: { targets: Array<MultiAddressLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1403,12 +1552,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     chill: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Chill';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Chill';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1428,13 +1580,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletStakingRewardDestination} payee
      **/
     setPayee: GenericTxCall<
-      (payee: PalletStakingRewardDestination) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetPayee';
-          params: { payee: PalletStakingRewardDestination };
-        };
-      }>
+      (payee: PalletStakingRewardDestination) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetPayee';
+            params: { payee: PalletStakingRewardDestination };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1455,12 +1610,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     setController: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetController';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetController';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1474,13 +1632,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} new_
      **/
     setValidatorCount: GenericTxCall<
-      (new_: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetValidatorCount';
-          params: { new: number };
-        };
-      }>
+      (new_: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetValidatorCount';
+            params: { new: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1495,13 +1656,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} additional
      **/
     increaseValidatorCount: GenericTxCall<
-      (additional: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'IncreaseValidatorCount';
-          params: { additional: number };
-        };
-      }>
+      (additional: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'IncreaseValidatorCount';
+            params: { additional: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1516,13 +1680,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Percent} factor
      **/
     scaleValidatorCount: GenericTxCall<
-      (factor: Percent) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ScaleValidatorCount';
-          params: { factor: Percent };
-        };
-      }>
+      (factor: Percent) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ScaleValidatorCount';
+            params: { factor: Percent };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1542,12 +1709,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceNoEras: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ForceNoEras';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ForceNoEras';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1568,12 +1738,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceNewEra: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ForceNewEra';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ForceNewEra';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1584,13 +1757,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<AccountId32Like>} invulnerables
      **/
     setInvulnerables: GenericTxCall<
-      (invulnerables: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetInvulnerables';
-          params: { invulnerables: Array<AccountId32Like> };
-        };
-      }>
+      (invulnerables: Array<AccountId32Like>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetInvulnerables';
+            params: { invulnerables: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1610,13 +1786,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         stash: AccountId32Like,
         numSlashingSpans: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ForceUnstake';
-          params: { stash: AccountId32Like; numSlashingSpans: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ForceUnstake';
+            params: { stash: AccountId32Like; numSlashingSpans: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1632,12 +1811,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceNewEraAlways: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ForceNewEraAlways';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ForceNewEraAlways';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1654,13 +1836,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         era: number,
         slashIndices: Array<number>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'CancelDeferredSlash';
-          params: { era: number; slashIndices: Array<number> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'CancelDeferredSlash';
+            params: { era: number; slashIndices: Array<number> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1685,13 +1870,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         validatorStash: AccountId32Like,
         era: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'PayoutStakers';
-          params: { validatorStash: AccountId32Like; era: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'PayoutStakers';
+            params: { validatorStash: AccountId32Like; era: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1706,13 +1894,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} value
      **/
     rebond: GenericTxCall<
-      (value: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Rebond';
-          params: { value: bigint };
-        };
-      }>
+      (value: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Rebond';
+            params: { value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1742,13 +1933,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         stash: AccountId32Like,
         numSlashingSpans: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ReapStash';
-          params: { stash: AccountId32Like; numSlashingSpans: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ReapStash';
+            params: { stash: AccountId32Like; numSlashingSpans: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1767,13 +1961,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<MultiAddressLike>} who
      **/
     kick: GenericTxCall<
-      (who: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'Kick';
-          params: { who: Array<MultiAddressLike> };
-        };
-      }>
+      (who: Array<MultiAddressLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'Kick';
+            params: { who: Array<MultiAddressLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1812,21 +2009,24 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         chillThreshold: PalletStakingPalletConfigOpPercent,
         minCommission: PalletStakingPalletConfigOpPerbill,
         maxStakedRewards: PalletStakingPalletConfigOpPercent,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetStakingConfigs';
-          params: {
-            minNominatorBond: PalletStakingPalletConfigOp;
-            minValidatorBond: PalletStakingPalletConfigOp;
-            maxNominatorCount: PalletStakingPalletConfigOpU32;
-            maxValidatorCount: PalletStakingPalletConfigOpU32;
-            chillThreshold: PalletStakingPalletConfigOpPercent;
-            minCommission: PalletStakingPalletConfigOpPerbill;
-            maxStakedRewards: PalletStakingPalletConfigOpPercent;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetStakingConfigs';
+            params: {
+              minNominatorBond: PalletStakingPalletConfigOp;
+              minValidatorBond: PalletStakingPalletConfigOp;
+              maxNominatorCount: PalletStakingPalletConfigOpU32;
+              maxValidatorCount: PalletStakingPalletConfigOpU32;
+              chillThreshold: PalletStakingPalletConfigOpPercent;
+              minCommission: PalletStakingPalletConfigOpPerbill;
+              maxStakedRewards: PalletStakingPalletConfigOpPercent;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1860,13 +2060,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} stash
      **/
     chillOther: GenericTxCall<
-      (stash: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ChillOther';
-          params: { stash: AccountId32Like };
-        };
-      }>
+      (stash: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ChillOther';
+            params: { stash: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1877,13 +2080,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} validatorStash
      **/
     forceApplyMinCommission: GenericTxCall<
-      (validatorStash: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ForceApplyMinCommission';
-          params: { validatorStash: AccountId32Like };
-        };
-      }>
+      (validatorStash: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ForceApplyMinCommission';
+            params: { validatorStash: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1895,13 +2101,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Perbill} new_
      **/
     setMinCommission: GenericTxCall<
-      (new_: Perbill) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'SetMinCommission';
-          params: { new: Perbill };
-        };
-      }>
+      (new_: Perbill) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'SetMinCommission';
+            params: { new: Perbill };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1932,13 +2141,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         validatorStash: AccountId32Like,
         era: number,
         page: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'PayoutStakersByPage';
-          params: { validatorStash: AccountId32Like; era: number; page: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'PayoutStakersByPage';
+            params: { validatorStash: AccountId32Like; era: number; page: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1952,13 +2164,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} controller
      **/
     updatePayee: GenericTxCall<
-      (controller: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'UpdatePayee';
-          params: { controller: AccountId32Like };
-        };
-      }>
+      (controller: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'UpdatePayee';
+            params: { controller: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -1973,13 +2188,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<AccountId32Like>} controllers
      **/
     deprecateControllerBatch: GenericTxCall<
-      (controllers: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'DeprecateControllerBatch';
-          params: { controllers: Array<AccountId32Like> };
-        };
-      }>
+      (controllers: Array<AccountId32Like>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'DeprecateControllerBatch';
+            params: { controllers: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2006,18 +2224,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeController: AccountId32Like | undefined,
         maybeTotal: bigint | undefined,
         maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'RestoreLedger';
-          params: {
-            stash: AccountId32Like;
-            maybeController: AccountId32Like | undefined;
-            maybeTotal: bigint | undefined;
-            maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'RestoreLedger';
+            params: {
+              stash: AccountId32Like;
+              maybeController: AccountId32Like | undefined;
+              maybeTotal: bigint | undefined;
+              maybeUnlocking: Array<PalletStakingUnlockChunk> | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2032,13 +2253,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} stash
      **/
     migrateCurrency: GenericTxCall<
-      (stash: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'MigrateCurrency';
-          params: { stash: AccountId32Like };
-        };
-      }>
+      (stash: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'MigrateCurrency';
+            params: { stash: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2073,19 +2297,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         validatorStash: AccountId32Like,
         era: number,
         slashFraction: Perbill,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Staking';
-        palletCall: {
-          name: 'ManualSlash';
-          params: { validatorStash: AccountId32Like; era: number; slashFraction: Perbill };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Staking';
+          palletCall: {
+            name: 'ManualSlash';
+            params: { validatorStash: AccountId32Like; era: number; slashFraction: Perbill };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Session`'s transaction calls
@@ -2109,13 +2336,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         keys: KitchensinkRuntimeSessionKeys,
         proof: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Session';
-        palletCall: {
-          name: 'SetKeys';
-          params: { keys: KitchensinkRuntimeSessionKeys; proof: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Session';
+          palletCall: {
+            name: 'SetKeys';
+            params: { keys: KitchensinkRuntimeSessionKeys; proof: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2134,18 +2364,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     purgeKeys: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Session';
-        palletCall: {
-          name: 'PurgeKeys';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Session';
+          palletCall: {
+            name: 'PurgeKeys';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Democracy`'s transaction calls
@@ -2169,13 +2402,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         proposal: FrameSupportPreimagesBounded,
         value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Propose';
-          params: { proposal: FrameSupportPreimagesBounded; value: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Propose';
+            params: { proposal: FrameSupportPreimagesBounded; value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2189,13 +2425,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} proposal
      **/
     second: GenericTxCall<
-      (proposal: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Second';
-          params: { proposal: number };
-        };
-      }>
+      (proposal: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Second';
+            params: { proposal: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2214,13 +2453,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         refIndex: number,
         vote: PalletDemocracyVoteAccountVote,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Vote';
-          params: { refIndex: number; vote: PalletDemocracyVoteAccountVote };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Vote';
+            params: { refIndex: number; vote: PalletDemocracyVoteAccountVote };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2236,13 +2478,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} refIndex
      **/
     emergencyCancel: GenericTxCall<
-      (refIndex: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'EmergencyCancel';
-          params: { refIndex: number };
-        };
-      }>
+      (refIndex: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'EmergencyCancel';
+            params: { refIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2256,13 +2501,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FrameSupportPreimagesBounded} proposal
      **/
     externalPropose: GenericTxCall<
-      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'ExternalPropose';
-          params: { proposal: FrameSupportPreimagesBounded };
-        };
-      }>
+      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'ExternalPropose';
+            params: { proposal: FrameSupportPreimagesBounded };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2281,13 +2529,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FrameSupportPreimagesBounded} proposal
      **/
     externalProposeMajority: GenericTxCall<
-      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'ExternalProposeMajority';
-          params: { proposal: FrameSupportPreimagesBounded };
-        };
-      }>
+      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'ExternalProposeMajority';
+            params: { proposal: FrameSupportPreimagesBounded };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2306,13 +2557,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FrameSupportPreimagesBounded} proposal
      **/
     externalProposeDefault: GenericTxCall<
-      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'ExternalProposeDefault';
-          params: { proposal: FrameSupportPreimagesBounded };
-        };
-      }>
+      (proposal: FrameSupportPreimagesBounded) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'ExternalProposeDefault';
+            params: { proposal: FrameSupportPreimagesBounded };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2342,13 +2596,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposalHash: H256,
         votingPeriod: number,
         delay: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'FastTrack';
-          params: { proposalHash: H256; votingPeriod: number; delay: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'FastTrack';
+            params: { proposalHash: H256; votingPeriod: number; delay: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2365,13 +2622,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     vetoExternal: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'VetoExternal';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'VetoExternal';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2386,13 +2646,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} refIndex
      **/
     cancelReferendum: GenericTxCall<
-      (refIndex: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'CancelReferendum';
-          params: { refIndex: number };
-        };
-      }>
+      (refIndex: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'CancelReferendum';
+            params: { refIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2426,13 +2689,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         to: MultiAddressLike,
         conviction: PalletDemocracyConviction,
         balance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Delegate';
-          params: { to: MultiAddressLike; conviction: PalletDemocracyConviction; balance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Delegate';
+            params: { to: MultiAddressLike; conviction: PalletDemocracyConviction; balance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2451,12 +2717,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     undelegate: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Undelegate';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Undelegate';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2468,12 +2737,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     clearPublicProposals: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'ClearPublicProposals';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'ClearPublicProposals';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2488,13 +2760,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} target
      **/
     unlock: GenericTxCall<
-      (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Unlock';
-          params: { target: MultiAddressLike };
-        };
-      }>
+      (target: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Unlock';
+            params: { target: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2529,13 +2804,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     removeVote: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'RemoveVote';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'RemoveVote';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2562,13 +2840,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         target: MultiAddressLike,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'RemoveOtherVote';
-          params: { target: MultiAddressLike; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'RemoveOtherVote';
+            params: { target: MultiAddressLike; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2595,13 +2876,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         proposalHash: H256,
         maybeRefIndex: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'Blacklist';
-          params: { proposalHash: H256; maybeRefIndex: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'Blacklist';
+            params: { proposalHash: H256; maybeRefIndex: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2616,13 +2900,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} propIndex
      **/
     cancelProposal: GenericTxCall<
-      (propIndex: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'CancelProposal';
-          params: { propIndex: number };
-        };
-      }>
+      (propIndex: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'CancelProposal';
+            params: { propIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2649,19 +2936,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         owner: PalletDemocracyMetadataOwner,
         maybeHash: H256 | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Democracy';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { owner: PalletDemocracyMetadataOwner; maybeHash: H256 | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Democracy';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { owner: PalletDemocracyMetadataOwner; maybeHash: H256 | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Council`'s transaction calls
@@ -2702,13 +2992,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         newMembers: Array<AccountId32Like>,
         prime: AccountId32Like | undefined,
         oldCount: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'SetMembers';
-          params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'SetMembers';
+            params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2729,13 +3022,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'Execute';
-          params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Execute';
+            params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2763,13 +3059,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         threshold: number,
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'Propose';
-          params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Propose';
+            params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2792,13 +3091,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposal: H256,
         index: number,
         approve: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'Vote';
-          params: { proposal: H256; index: number; approve: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Vote';
+            params: { proposal: H256; index: number; approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2816,13 +3118,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     disapproveProposal: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'DisapproveProposal';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'DisapproveProposal';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2862,18 +3167,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         proposalWeightBound: SpWeightsWeightV2Weight,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'Close';
-          params: {
-            proposalHash: H256;
-            index: number;
-            proposalWeightBound: SpWeightsWeightV2Weight;
-            lengthBound: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Close';
+            params: {
+              proposalHash: H256;
+              index: number;
+              proposalWeightBound: SpWeightsWeightV2Weight;
+              lengthBound: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2888,13 +3196,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     kill: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'Kill';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2911,19 +3222,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     releaseProposalCost: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Council';
-        palletCall: {
-          name: 'ReleaseProposalCost';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Council';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `TechnicalCommittee`'s transaction calls
@@ -2964,13 +3278,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         newMembers: Array<AccountId32Like>,
         prime: AccountId32Like | undefined,
         oldCount: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'SetMembers';
-          params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'SetMembers';
+            params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -2991,13 +3308,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'Execute';
-          params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Execute';
+            params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3025,13 +3345,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         threshold: number,
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'Propose';
-          params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Propose';
+            params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3054,13 +3377,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposal: H256,
         index: number,
         approve: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'Vote';
-          params: { proposal: H256; index: number; approve: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Vote';
+            params: { proposal: H256; index: number; approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3078,13 +3404,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     disapproveProposal: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'DisapproveProposal';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'DisapproveProposal';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3124,18 +3453,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         proposalWeightBound: SpWeightsWeightV2Weight,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'Close';
-          params: {
-            proposalHash: H256;
-            index: number;
-            proposalWeightBound: SpWeightsWeightV2Weight;
-            lengthBound: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Close';
+            params: {
+              proposalHash: H256;
+              index: number;
+              proposalWeightBound: SpWeightsWeightV2Weight;
+              lengthBound: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3150,13 +3482,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     kill: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'Kill';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3173,19 +3508,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     releaseProposalCost: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalCommittee';
-        palletCall: {
-          name: 'ReleaseProposalCost';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalCommittee';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Elections`'s transaction calls
@@ -3219,13 +3557,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         votes: Array<AccountId32Like>,
         value: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'Vote';
-          params: { votes: Array<AccountId32Like>; value: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'Vote';
+            params: { votes: Array<AccountId32Like>; value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3237,12 +3578,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     removeVoter: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'RemoveVoter';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'RemoveVoter';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3265,13 +3609,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} candidateCount
      **/
     submitCandidacy: GenericTxCall<
-      (candidateCount: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'SubmitCandidacy';
-          params: { candidateCount: number };
-        };
-      }>
+      (candidateCount: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'SubmitCandidacy';
+            params: { candidateCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3299,13 +3646,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletElectionsPhragmenRenouncing} renouncing
      **/
     renounceCandidacy: GenericTxCall<
-      (renouncing: PalletElectionsPhragmenRenouncing) => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'RenounceCandidacy';
-          params: { renouncing: PalletElectionsPhragmenRenouncing };
-        };
-      }>
+      (renouncing: PalletElectionsPhragmenRenouncing) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'RenounceCandidacy';
+            params: { renouncing: PalletElectionsPhragmenRenouncing };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3335,13 +3685,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         who: MultiAddressLike,
         slashBond: boolean,
         rerunElection: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'RemoveMember';
-          params: { who: MultiAddressLike; slashBond: boolean; rerunElection: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'RemoveMember';
+            params: { who: MultiAddressLike; slashBond: boolean; rerunElection: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3362,19 +3715,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         numVoters: number,
         numDefunct: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Elections';
-        palletCall: {
-          name: 'CleanDefunctVoters';
-          params: { numVoters: number; numDefunct: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Elections';
+          palletCall: {
+            name: 'CleanDefunctVoters';
+            params: { numVoters: number; numDefunct: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `TechnicalMembership`'s transaction calls
@@ -3388,13 +3744,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     addMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'AddMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'AddMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3405,13 +3764,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     removeMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'RemoveMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'RemoveMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3428,13 +3790,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         remove: MultiAddressLike,
         add: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'SwapMember';
-          params: { remove: MultiAddressLike; add: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'SwapMember';
+            params: { remove: MultiAddressLike; add: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3446,13 +3811,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<AccountId32Like>} members
      **/
     resetMembers: GenericTxCall<
-      (members: Array<AccountId32Like>) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'ResetMembers';
-          params: { members: Array<AccountId32Like> };
-        };
-      }>
+      (members: Array<AccountId32Like>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'ResetMembers';
+            params: { members: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3465,13 +3833,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} new_
      **/
     changeKey: GenericTxCall<
-      (new_: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'ChangeKey';
-          params: { new: MultiAddressLike };
-        };
-      }>
+      (new_: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'ChangeKey';
+            params: { new: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3482,13 +3853,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     setPrime: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'SetPrime';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'SetPrime';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3498,18 +3872,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     clearPrime: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'TechnicalMembership';
-        palletCall: {
-          name: 'ClearPrime';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TechnicalMembership';
+          palletCall: {
+            name: 'ClearPrime';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Grandpa`'s transaction calls
@@ -3528,13 +3905,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusGrandpaEquivocationProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Grandpa';
-        palletCall: {
-          name: 'ReportEquivocation';
-          params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Grandpa';
+          palletCall: {
+            name: 'ReportEquivocation';
+            params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3555,13 +3935,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusGrandpaEquivocationProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Grandpa';
-        palletCall: {
-          name: 'ReportEquivocationUnsigned';
-          params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Grandpa';
+          palletCall: {
+            name: 'ReportEquivocationUnsigned';
+            params: { equivocationProof: SpConsensusGrandpaEquivocationProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3585,19 +3968,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         delay: number,
         bestFinalizedBlockNumber: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Grandpa';
-        palletCall: {
-          name: 'NoteStalled';
-          params: { delay: number; bestFinalizedBlockNumber: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Grandpa';
+          palletCall: {
+            name: 'NoteStalled';
+            params: { delay: number; bestFinalizedBlockNumber: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Treasury`'s transaction calls
@@ -3629,13 +4015,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         amount: bigint,
         beneficiary: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'SpendLocal';
-          params: { amount: bigint; beneficiary: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'SpendLocal';
+            params: { amount: bigint; beneficiary: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3664,13 +4053,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} proposalId
      **/
     removeApproval: GenericTxCall<
-      (proposalId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'RemoveApproval';
-          params: { proposalId: number };
-        };
-      }>
+      (proposalId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'RemoveApproval';
+            params: { proposalId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3712,18 +4104,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         amount: bigint,
         beneficiary: MultiAddressLike,
         validFrom: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'Spend';
-          params: {
-            assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            amount: bigint;
-            beneficiary: MultiAddressLike;
-            validFrom: number | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'Spend';
+            params: {
+              assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              amount: bigint;
+              beneficiary: MultiAddressLike;
+              validFrom: number | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3750,13 +4145,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     payout: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'Payout';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'Payout';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3783,13 +4181,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     checkStatus: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'CheckStatus';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'CheckStatus';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3813,19 +4214,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     voidSpend: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Treasury';
-        palletCall: {
-          name: 'VoidSpend';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Treasury';
+          palletCall: {
+            name: 'VoidSpend';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `AssetRate`'s transaction calls
@@ -3844,13 +4248,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         rate: FixedU128,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRate';
-        palletCall: {
-          name: 'Create';
-          params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRate';
+          palletCall: {
+            name: 'Create';
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3866,13 +4273,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         rate: FixedU128,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRate';
-        palletCall: {
-          name: 'Update';
-          params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRate';
+          palletCall: {
+            name: 'Update';
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId; rate: FixedU128 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3884,19 +4294,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FrameSupportTokensFungibleUnionOfNativeOrWithId} assetKind
      **/
     remove: GenericTxCall<
-      (assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRate';
-        palletCall: {
-          name: 'Remove';
-          params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId };
-        };
-      }>
+      (assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRate';
+          palletCall: {
+            name: 'Remove';
+            params: { assetKind: FrameSupportTokensFungibleUnionOfNativeOrWithId };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Contracts`'s transaction calls
@@ -3918,19 +4331,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         gasLimit: bigint,
         storageDepositLimit: bigint | undefined,
         data: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'CallOldWeight';
-          params: {
-            dest: MultiAddressLike;
-            value: bigint;
-            gasLimit: bigint;
-            storageDepositLimit: bigint | undefined;
-            data: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'CallOldWeight';
+            params: {
+              dest: MultiAddressLike;
+              value: bigint;
+              gasLimit: bigint;
+              storageDepositLimit: bigint | undefined;
+              data: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3951,20 +4367,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         code: BytesLike,
         data: BytesLike,
         salt: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'InstantiateWithCodeOldWeight';
-          params: {
-            value: bigint;
-            gasLimit: bigint;
-            storageDepositLimit: bigint | undefined;
-            code: BytesLike;
-            data: BytesLike;
-            salt: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'InstantiateWithCodeOldWeight';
+            params: {
+              value: bigint;
+              gasLimit: bigint;
+              storageDepositLimit: bigint | undefined;
+              code: BytesLike;
+              data: BytesLike;
+              salt: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -3985,20 +4404,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         codeHash: H256,
         data: BytesLike,
         salt: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'InstantiateOldWeight';
-          params: {
-            value: bigint;
-            gasLimit: bigint;
-            storageDepositLimit: bigint | undefined;
-            codeHash: H256;
-            data: BytesLike;
-            salt: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'InstantiateOldWeight';
+            params: {
+              value: bigint;
+              gasLimit: bigint;
+              storageDepositLimit: bigint | undefined;
+              codeHash: H256;
+              data: BytesLike;
+              salt: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4036,17 +4458,20 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         code: BytesLike,
         storageDepositLimit: bigint | undefined,
         determinism: PalletContractsWasmDeterminism,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'UploadCode';
-          params: {
-            code: BytesLike;
-            storageDepositLimit: bigint | undefined;
-            determinism: PalletContractsWasmDeterminism;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'UploadCode';
+            params: {
+              code: BytesLike;
+              storageDepositLimit: bigint | undefined;
+              determinism: PalletContractsWasmDeterminism;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4058,13 +4483,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} codeHash
      **/
     removeCode: GenericTxCall<
-      (codeHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'RemoveCode';
-          params: { codeHash: H256 };
-        };
-      }>
+      (codeHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'RemoveCode';
+            params: { codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4086,13 +4514,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         dest: MultiAddressLike,
         codeHash: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'SetCode';
-          params: { dest: MultiAddressLike; codeHash: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'SetCode';
+            params: { dest: MultiAddressLike; codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4126,19 +4557,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         gasLimit: SpWeightsWeightV2Weight,
         storageDepositLimit: bigint | undefined,
         data: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'Call';
-          params: {
-            dest: MultiAddressLike;
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint | undefined;
-            data: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'Call';
+            params: {
+              dest: MultiAddressLike;
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint | undefined;
+              data: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4183,20 +4617,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         code: BytesLike,
         data: BytesLike,
         salt: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'InstantiateWithCode';
-          params: {
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint | undefined;
-            code: BytesLike;
-            data: BytesLike;
-            salt: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'InstantiateWithCode';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint | undefined;
+              code: BytesLike;
+              data: BytesLike;
+              salt: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4221,20 +4658,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         codeHash: H256,
         data: BytesLike,
         salt: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'Instantiate';
-          params: {
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint | undefined;
-            codeHash: H256;
-            data: BytesLike;
-            salt: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'Instantiate';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint | undefined;
+              codeHash: H256;
+              data: BytesLike;
+              salt: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4246,19 +4686,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {SpWeightsWeightV2Weight} weightLimit
      **/
     migrate: GenericTxCall<
-      (weightLimit: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<{
-        pallet: 'Contracts';
-        palletCall: {
-          name: 'Migrate';
-          params: { weightLimit: SpWeightsWeightV2Weight };
-        };
-      }>
+      (weightLimit: SpWeightsWeightV2Weight) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Contracts';
+          palletCall: {
+            name: 'Migrate';
+            params: { weightLimit: SpWeightsWeightV2Weight };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Sudo`'s transaction calls
@@ -4270,13 +4713,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {KitchensinkRuntimeRuntimeCallLike} call
      **/
     sudo: GenericTxCall<
-      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Sudo';
-        palletCall: {
-          name: 'Sudo';
-          params: { call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Sudo';
+          palletCall: {
+            name: 'Sudo';
+            params: { call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4293,13 +4739,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         call: KitchensinkRuntimeRuntimeCallLike,
         weight: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Sudo';
-        palletCall: {
-          name: 'SudoUncheckedWeight';
-          params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Sudo';
+          palletCall: {
+            name: 'SudoUncheckedWeight';
+            params: { call: KitchensinkRuntimeRuntimeCallLike; weight: SpWeightsWeightV2Weight };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4309,13 +4758,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} new_
      **/
     setKey: GenericTxCall<
-      (new_: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Sudo';
-        palletCall: {
-          name: 'SetKey';
-          params: { new: MultiAddressLike };
-        };
-      }>
+      (new_: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Sudo';
+          palletCall: {
+            name: 'SetKey';
+            params: { new: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4331,13 +4783,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Sudo';
-        palletCall: {
-          name: 'SudoAs';
-          params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Sudo';
+          palletCall: {
+            name: 'SudoAs';
+            params: { who: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4347,18 +4802,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     removeKey: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Sudo';
-        palletCall: {
-          name: 'RemoveKey';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Sudo';
+          palletCall: {
+            name: 'RemoveKey';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `ImOnline`'s transaction calls
@@ -4376,19 +4834,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         heartbeat: PalletImOnlineHeartbeat,
         signature: PalletImOnlineSr25519AppSr25519Signature,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ImOnline';
-        palletCall: {
-          name: 'Heartbeat';
-          params: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ImOnline';
+          palletCall: {
+            name: 'Heartbeat';
+            params: { heartbeat: PalletImOnlineHeartbeat; signature: PalletImOnlineSr25519AppSr25519Signature };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Identity`'s transaction calls
@@ -4406,13 +4867,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} account
      **/
     addRegistrar: GenericTxCall<
-      (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'AddRegistrar';
-          params: { account: MultiAddressLike };
-        };
-      }>
+      (account: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'AddRegistrar';
+            params: { account: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4430,13 +4894,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletIdentityLegacyIdentityInfo} info
      **/
     setIdentity: GenericTxCall<
-      (info: PalletIdentityLegacyIdentityInfo) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetIdentity';
-          params: { info: PalletIdentityLegacyIdentityInfo };
-        };
-      }>
+      (info: PalletIdentityLegacyIdentityInfo) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetIdentity';
+            params: { info: PalletIdentityLegacyIdentityInfo };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4453,13 +4920,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<[AccountId32Like, Data]>} subs
      **/
     setSubs: GenericTxCall<
-      (subs: Array<[AccountId32Like, Data]>) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetSubs';
-          params: { subs: Array<[AccountId32Like, Data]> };
-        };
-      }>
+      (subs: Array<[AccountId32Like, Data]>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetSubs';
+            params: { subs: Array<[AccountId32Like, Data]> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4474,12 +4944,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     clearIdentity: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'ClearIdentity';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'ClearIdentity';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4507,13 +4980,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         regIndex: number,
         maxFee: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RequestJudgement';
-          params: { regIndex: number; maxFee: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RequestJudgement';
+            params: { regIndex: number; maxFee: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4531,13 +5007,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} regIndex
      **/
     cancelRequest: GenericTxCall<
-      (regIndex: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'CancelRequest';
-          params: { regIndex: number };
-        };
-      }>
+      (regIndex: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'CancelRequest';
+            params: { regIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4556,13 +5035,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         fee: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetFee';
-          params: { index: number; fee: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetFee';
+            params: { index: number; fee: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4581,13 +5063,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         new_: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetAccountId';
-          params: { index: number; new: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetAccountId';
+            params: { index: number; new: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4606,13 +5091,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         fields: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetFields';
-          params: { index: number; fields: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetFields';
+            params: { index: number; fields: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4643,13 +5131,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         target: MultiAddressLike,
         judgement: PalletIdentityJudgement,
         identity: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'ProvideJudgement';
-          params: { regIndex: number; target: MultiAddressLike; judgement: PalletIdentityJudgement; identity: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'ProvideJudgement';
+            params: { regIndex: number; target: MultiAddressLike; judgement: PalletIdentityJudgement; identity: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4669,13 +5160,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} target
      **/
     killIdentity: GenericTxCall<
-      (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'KillIdentity';
-          params: { target: MultiAddressLike };
-        };
-      }>
+      (target: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'KillIdentity';
+            params: { target: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4694,13 +5188,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         sub: MultiAddressLike,
         data: Data,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'AddSub';
-          params: { sub: MultiAddressLike; data: Data };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'AddSub';
+            params: { sub: MultiAddressLike; data: Data };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4716,13 +5213,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         sub: MultiAddressLike,
         data: Data,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RenameSub';
-          params: { sub: MultiAddressLike; data: Data };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RenameSub';
+            params: { sub: MultiAddressLike; data: Data };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4737,13 +5237,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} sub
      **/
     removeSub: GenericTxCall<
-      (sub: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RemoveSub';
-          params: { sub: MultiAddressLike };
-        };
-      }>
+      (sub: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RemoveSub';
+            params: { sub: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4760,12 +5263,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     quitSub: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'QuitSub';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'QuitSub';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4784,13 +5290,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         authority: MultiAddressLike,
         suffix: BytesLike,
         allocation: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'AddUsernameAuthority';
-          params: { authority: MultiAddressLike; suffix: BytesLike; allocation: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'AddUsernameAuthority';
+            params: { authority: MultiAddressLike; suffix: BytesLike; allocation: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4803,13 +5312,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         suffix: BytesLike,
         authority: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RemoveUsernameAuthority';
-          params: { suffix: BytesLike; authority: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RemoveUsernameAuthority';
+            params: { suffix: BytesLike; authority: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4838,18 +5350,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         username: BytesLike,
         signature: SpRuntimeMultiSignature | undefined,
         useAllocation: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetUsernameFor';
-          params: {
-            who: MultiAddressLike;
-            username: BytesLike;
-            signature: SpRuntimeMultiSignature | undefined;
-            useAllocation: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetUsernameFor';
+            params: {
+              who: MultiAddressLike;
+              username: BytesLike;
+              signature: SpRuntimeMultiSignature | undefined;
+              useAllocation: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4859,13 +5374,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     acceptUsername: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'AcceptUsername';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'AcceptUsername';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4876,13 +5394,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     removeExpiredApproval: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RemoveExpiredApproval';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RemoveExpiredApproval';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4891,13 +5412,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     setPrimaryUsername: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'SetPrimaryUsername';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'SetPrimaryUsername';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4908,13 +5432,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     unbindUsername: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'UnbindUsername';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'UnbindUsername';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4924,13 +5451,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     removeUsername: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'RemoveUsername';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'RemoveUsername';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4940,19 +5470,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} username
      **/
     killUsername: GenericTxCall<
-      (username: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Identity';
-        palletCall: {
-          name: 'KillUsername';
-          params: { username: BytesLike };
-        };
-      }>
+      (username: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Identity';
+          palletCall: {
+            name: 'KillUsername';
+            params: { username: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Society`'s transaction calls
@@ -4972,13 +5505,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} value
      **/
     bid: GenericTxCall<
-      (value: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Bid';
-          params: { value: bigint };
-        };
-      }>
+      (value: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Bid';
+            params: { value: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -4992,12 +5528,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     unbid: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Unbid';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Unbid';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5028,13 +5567,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         who: MultiAddressLike,
         value: bigint,
         tip: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Vouch';
-          params: { who: MultiAddressLike; value: bigint; tip: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Vouch';
+            params: { who: MultiAddressLike; value: bigint; tip: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5048,12 +5590,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     unvouch: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Unvouch';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Unvouch';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5073,13 +5618,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         candidate: MultiAddressLike,
         approve: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Vote';
-          params: { candidate: MultiAddressLike; approve: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Vote';
+            params: { candidate: MultiAddressLike; approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5094,13 +5642,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {boolean} approve
      **/
     defenderVote: GenericTxCall<
-      (approve: boolean) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'DefenderVote';
-          params: { approve: boolean };
-        };
-      }>
+      (approve: boolean) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'DefenderVote';
+            params: { approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5117,12 +5668,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     payout: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Payout';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Payout';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5132,13 +5686,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} amount
      **/
     waiveRepay: GenericTxCall<
-      (amount: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'WaiveRepay';
-          params: { amount: bigint };
-        };
-      }>
+      (amount: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'WaiveRepay';
+            params: { amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5175,20 +5732,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maxStrikes: number,
         candidateDeposit: bigint,
         rules: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'FoundSociety';
-          params: {
-            founder: MultiAddressLike;
-            maxMembers: number;
-            maxIntake: number;
-            maxStrikes: number;
-            candidateDeposit: bigint;
-            rules: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'FoundSociety';
+            params: {
+              founder: MultiAddressLike;
+              maxMembers: number;
+              maxIntake: number;
+              maxStrikes: number;
+              candidateDeposit: bigint;
+              rules: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5200,12 +5760,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     dissolve: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'Dissolve';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'Dissolve';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5231,13 +5794,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         forgive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'JudgeSuspendedMember';
-          params: { who: MultiAddressLike; forgive: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'JudgeSuspendedMember';
+            params: { who: MultiAddressLike; forgive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5265,13 +5831,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maxIntake: number,
         maxStrikes: number,
         candidateDeposit: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'SetParameters';
-          params: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'SetParameters';
+            params: { maxMembers: number; maxIntake: number; maxStrikes: number; candidateDeposit: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5280,12 +5849,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     punishSkeptic: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'PunishSkeptic';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'PunishSkeptic';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5294,12 +5866,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     claimMembership: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'ClaimMembership';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'ClaimMembership';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5310,13 +5885,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} candidate
      **/
     bestowMembership: GenericTxCall<
-      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'BestowMembership';
-          params: { candidate: AccountId32Like };
-        };
-      }>
+      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'BestowMembership';
+            params: { candidate: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5329,13 +5907,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} candidate
      **/
     kickCandidate: GenericTxCall<
-      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'KickCandidate';
-          params: { candidate: AccountId32Like };
-        };
-      }>
+      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'KickCandidate';
+            params: { candidate: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5345,12 +5926,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     resignCandidacy: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'ResignCandidacy';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'ResignCandidacy';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5363,13 +5947,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} candidate
      **/
     dropCandidate: GenericTxCall<
-      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'DropCandidate';
-          params: { candidate: AccountId32Like };
-        };
-      }>
+      (candidate: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'DropCandidate';
+            params: { candidate: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5384,13 +5971,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         candidate: AccountId32Like,
         max: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'CleanupCandidacy';
-          params: { candidate: AccountId32Like; max: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'CleanupCandidacy';
+            params: { candidate: AccountId32Like; max: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5405,19 +5995,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         challengeRound: number,
         max: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Society';
-        palletCall: {
-          name: 'CleanupChallenge';
-          params: { challengeRound: number; max: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Society';
+          palletCall: {
+            name: 'CleanupChallenge';
+            params: { challengeRound: number; max: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Recovery`'s transaction calls
@@ -5440,13 +6033,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         account: MultiAddressLike,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'AsRecovered';
-          params: { account: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'AsRecovered';
+            params: { account: MultiAddressLike; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5466,13 +6062,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         lost: MultiAddressLike,
         rescuer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'SetRecovered';
-          params: { lost: MultiAddressLike; rescuer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'SetRecovered';
+            params: { lost: MultiAddressLike; rescuer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5502,13 +6101,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         friends: Array<AccountId32Like>,
         threshold: number,
         delayPeriod: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'CreateRecovery';
-          params: { friends: Array<AccountId32Like>; threshold: number; delayPeriod: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'CreateRecovery';
+            params: { friends: Array<AccountId32Like>; threshold: number; delayPeriod: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5527,13 +6129,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} account
      **/
     initiateRecovery: GenericTxCall<
-      (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'InitiateRecovery';
-          params: { account: MultiAddressLike };
-        };
-      }>
+      (account: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'InitiateRecovery';
+            params: { account: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5557,13 +6162,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         lost: MultiAddressLike,
         rescuer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'VouchRecovery';
-          params: { lost: MultiAddressLike; rescuer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'VouchRecovery';
+            params: { lost: MultiAddressLike; rescuer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5580,13 +6188,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} account
      **/
     claimRecovery: GenericTxCall<
-      (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'ClaimRecovery';
-          params: { account: MultiAddressLike };
-        };
-      }>
+      (account: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'ClaimRecovery';
+            params: { account: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5605,13 +6216,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} rescuer
      **/
     closeRecovery: GenericTxCall<
-      (rescuer: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'CloseRecovery';
-          params: { rescuer: MultiAddressLike };
-        };
-      }>
+      (rescuer: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'CloseRecovery';
+            params: { rescuer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5629,12 +6243,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     removeRecovery: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'RemoveRecovery';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'RemoveRecovery';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5649,19 +6266,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} account
      **/
     cancelRecovered: GenericTxCall<
-      (account: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Recovery';
-        palletCall: {
-          name: 'CancelRecovered';
-          params: { account: MultiAddressLike };
-        };
-      }>
+      (account: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Recovery';
+          palletCall: {
+            name: 'CancelRecovered';
+            params: { account: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Vesting`'s transaction calls
@@ -5680,12 +6300,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     vest: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'Vest';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'Vest';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5704,13 +6327,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} target
      **/
     vestOther: GenericTxCall<
-      (target: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'VestOther';
-          params: { target: MultiAddressLike };
-        };
-      }>
+      (target: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'VestOther';
+            params: { target: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5735,13 +6361,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         target: MultiAddressLike,
         schedule: PalletVestingVestingInfo,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'VestedTransfer';
-          params: { target: MultiAddressLike; schedule: PalletVestingVestingInfo };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'VestedTransfer';
+            params: { target: MultiAddressLike; schedule: PalletVestingVestingInfo };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5769,13 +6398,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         source: MultiAddressLike,
         target: MultiAddressLike,
         schedule: PalletVestingVestingInfo,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'ForceVestedTransfer';
-          params: { source: MultiAddressLike; target: MultiAddressLike; schedule: PalletVestingVestingInfo };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'ForceVestedTransfer';
+            params: { source: MultiAddressLike; target: MultiAddressLike; schedule: PalletVestingVestingInfo };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5808,13 +6440,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         schedule1Index: number,
         schedule2Index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'MergeSchedules';
-          params: { schedule1Index: number; schedule2Index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'MergeSchedules';
+            params: { schedule1Index: number; schedule2Index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5832,19 +6467,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         target: MultiAddressLike,
         scheduleIndex: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Vesting';
-        palletCall: {
-          name: 'ForceRemoveVestingSchedule';
-          params: { target: MultiAddressLike; scheduleIndex: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Vesting';
+          palletCall: {
+            name: 'ForceRemoveVestingSchedule';
+            params: { target: MultiAddressLike; scheduleIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Scheduler`'s transaction calls
@@ -5864,18 +6502,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybePeriodic: [number, number] | undefined,
         priority: number,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'Schedule';
-          params: {
-            when: number;
-            maybePeriodic: [number, number] | undefined;
-            priority: number;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'Schedule';
+            params: {
+              when: number;
+              maybePeriodic: [number, number] | undefined;
+              priority: number;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5888,13 +6529,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         when: number,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'Cancel';
-          params: { when: number; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'Cancel';
+            params: { when: number; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5913,19 +6557,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybePeriodic: [number, number] | undefined,
         priority: number,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'ScheduleNamed';
-          params: {
-            id: FixedBytes<32>;
-            when: number;
-            maybePeriodic: [number, number] | undefined;
-            priority: number;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'ScheduleNamed';
+            params: {
+              id: FixedBytes<32>;
+              when: number;
+              maybePeriodic: [number, number] | undefined;
+              priority: number;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5934,13 +6581,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FixedBytes<32>} id
      **/
     cancelNamed: GenericTxCall<
-      (id: FixedBytes<32>) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'CancelNamed';
-          params: { id: FixedBytes<32> };
-        };
-      }>
+      (id: FixedBytes<32>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'CancelNamed';
+            params: { id: FixedBytes<32> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5957,18 +6607,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybePeriodic: [number, number] | undefined,
         priority: number,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'ScheduleAfter';
-          params: {
-            after: number;
-            maybePeriodic: [number, number] | undefined;
-            priority: number;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'ScheduleAfter';
+            params: {
+              after: number;
+              maybePeriodic: [number, number] | undefined;
+              priority: number;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -5987,19 +6640,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybePeriodic: [number, number] | undefined,
         priority: number,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'ScheduleNamedAfter';
-          params: {
-            id: FixedBytes<32>;
-            after: number;
-            maybePeriodic: [number, number] | undefined;
-            priority: number;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'ScheduleNamedAfter';
+            params: {
+              id: FixedBytes<32>;
+              after: number;
+              maybePeriodic: [number, number] | undefined;
+              priority: number;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6025,13 +6681,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         task: [number, number],
         retries: number,
         period: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'SetRetry';
-          params: { task: [number, number]; retries: number; period: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'SetRetry';
+            params: { task: [number, number]; retries: number; period: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6057,13 +6716,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: FixedBytes<32>,
         retries: number,
         period: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'SetRetryNamed';
-          params: { id: FixedBytes<32>; retries: number; period: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'SetRetryNamed';
+            params: { id: FixedBytes<32>; retries: number; period: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6072,13 +6734,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {[number, number]} task
      **/
     cancelRetry: GenericTxCall<
-      (task: [number, number]) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'CancelRetry';
-          params: { task: [number, number] };
-        };
-      }>
+      (task: [number, number]) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'CancelRetry';
+            params: { task: [number, number] };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6087,19 +6752,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FixedBytes<32>} id
      **/
     cancelRetryNamed: GenericTxCall<
-      (id: FixedBytes<32>) => ChainSubmittableExtrinsic<{
-        pallet: 'Scheduler';
-        palletCall: {
-          name: 'CancelRetryNamed';
-          params: { id: FixedBytes<32> };
-        };
-      }>
+      (id: FixedBytes<32>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Scheduler';
+          palletCall: {
+            name: 'CancelRetryNamed';
+            params: { id: FixedBytes<32> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Glutton`'s transaction calls
@@ -6120,13 +6788,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         newCount: number,
         witnessCount: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Glutton';
-        palletCall: {
-          name: 'InitializePallet';
-          params: { newCount: number; witnessCount: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'InitializePallet';
+            params: { newCount: number; witnessCount: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6137,13 +6808,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FixedU64} compute
      **/
     setCompute: GenericTxCall<
-      (compute: FixedU64) => ChainSubmittableExtrinsic<{
-        pallet: 'Glutton';
-        palletCall: {
-          name: 'SetCompute';
-          params: { compute: FixedU64 };
-        };
-      }>
+      (compute: FixedU64) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'SetCompute';
+            params: { compute: FixedU64 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6158,13 +6832,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FixedU64} storage
      **/
     setStorage: GenericTxCall<
-      (storage: FixedU64) => ChainSubmittableExtrinsic<{
-        pallet: 'Glutton';
-        palletCall: {
-          name: 'SetStorage';
-          params: { storage: FixedU64 };
-        };
-      }>
+      (storage: FixedU64) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'SetStorage';
+            params: { storage: FixedU64 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6173,13 +6850,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<FixedBytes<1024>>} garbage
      **/
     bloat: GenericTxCall<
-      (garbage: Array<FixedBytes<1024>>) => ChainSubmittableExtrinsic<{
-        pallet: 'Glutton';
-        palletCall: {
-          name: 'Bloat';
-          params: { garbage: Array<FixedBytes<1024>> };
-        };
-      }>
+      (garbage: Array<FixedBytes<1024>>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'Bloat';
+            params: { garbage: Array<FixedBytes<1024>> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6193,19 +6873,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {FixedU64} blockLength
      **/
     setBlockLength: GenericTxCall<
-      (blockLength: FixedU64) => ChainSubmittableExtrinsic<{
-        pallet: 'Glutton';
-        palletCall: {
-          name: 'SetBlockLength';
-          params: { blockLength: FixedU64 };
-        };
-      }>
+      (blockLength: FixedU64) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Glutton';
+          palletCall: {
+            name: 'SetBlockLength';
+            params: { blockLength: FixedU64 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Preimage`'s transaction calls
@@ -6220,13 +6903,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} bytes
      **/
     notePreimage: GenericTxCall<
-      (bytes: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Preimage';
-        palletCall: {
-          name: 'NotePreimage';
-          params: { bytes: BytesLike };
-        };
-      }>
+      (bytes: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Preimage';
+          palletCall: {
+            name: 'NotePreimage';
+            params: { bytes: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6240,13 +6926,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     unnotePreimage: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Preimage';
-        palletCall: {
-          name: 'UnnotePreimage';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Preimage';
+          palletCall: {
+            name: 'UnnotePreimage';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6258,13 +6947,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     requestPreimage: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Preimage';
-        palletCall: {
-          name: 'RequestPreimage';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Preimage';
+          palletCall: {
+            name: 'RequestPreimage';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6275,13 +6967,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     unrequestPreimage: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Preimage';
-        palletCall: {
-          name: 'UnrequestPreimage';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Preimage';
+          palletCall: {
+            name: 'UnrequestPreimage';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6292,19 +6987,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<H256>} hashes
      **/
     ensureUpdated: GenericTxCall<
-      (hashes: Array<H256>) => ChainSubmittableExtrinsic<{
-        pallet: 'Preimage';
-        palletCall: {
-          name: 'EnsureUpdated';
-          params: { hashes: Array<H256> };
-        };
-      }>
+      (hashes: Array<H256>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Preimage';
+          palletCall: {
+            name: 'EnsureUpdated';
+            params: { hashes: Array<H256> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Proxy`'s transaction calls
@@ -6330,17 +7028,20 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         real: MultiAddressLike,
         forceProxyType: KitchensinkRuntimeProxyType | undefined,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'Proxy';
-          params: {
-            real: MultiAddressLike;
-            forceProxyType: KitchensinkRuntimeProxyType | undefined;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'Proxy';
+            params: {
+              real: MultiAddressLike;
+              forceProxyType: KitchensinkRuntimeProxyType | undefined;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6363,13 +7064,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         delegate: MultiAddressLike,
         proxyType: KitchensinkRuntimeProxyType,
         delay: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'AddProxy';
-          params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'AddProxy';
+            params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6390,13 +7094,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         delegate: MultiAddressLike,
         proxyType: KitchensinkRuntimeProxyType,
         delay: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'RemoveProxy';
-          params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'RemoveProxy';
+            params: { delegate: MultiAddressLike; proxyType: KitchensinkRuntimeProxyType; delay: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6409,12 +7116,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     removeProxies: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'RemoveProxies';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'RemoveProxies';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6446,13 +7156,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proxyType: KitchensinkRuntimeProxyType,
         delay: number,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'CreatePure';
-          params: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'CreatePure';
+            params: { proxyType: KitchensinkRuntimeProxyType; delay: number; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6486,19 +7199,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         height: number,
         extIndex: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'KillPure';
-          params: {
-            spawner: MultiAddressLike;
-            proxyType: KitchensinkRuntimeProxyType;
-            index: number;
-            height: number;
-            extIndex: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'KillPure';
+            params: {
+              spawner: MultiAddressLike;
+              proxyType: KitchensinkRuntimeProxyType;
+              index: number;
+              height: number;
+              extIndex: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6525,13 +7241,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         real: MultiAddressLike,
         callHash: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'Announce';
-          params: { real: MultiAddressLike; callHash: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'Announce';
+            params: { real: MultiAddressLike; callHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6553,13 +7272,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         real: MultiAddressLike,
         callHash: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'RemoveAnnouncement';
-          params: { real: MultiAddressLike; callHash: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'RemoveAnnouncement';
+            params: { real: MultiAddressLike; callHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6581,13 +7303,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         delegate: MultiAddressLike,
         callHash: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'RejectAnnouncement';
-          params: { delegate: MultiAddressLike; callHash: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'RejectAnnouncement';
+            params: { delegate: MultiAddressLike; callHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6614,18 +7339,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         real: MultiAddressLike,
         forceProxyType: KitchensinkRuntimeProxyType | undefined,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'ProxyAnnounced';
-          params: {
-            delegate: MultiAddressLike;
-            real: MultiAddressLike;
-            forceProxyType: KitchensinkRuntimeProxyType | undefined;
-            call: KitchensinkRuntimeRuntimeCallLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'ProxyAnnounced';
+            params: {
+              delegate: MultiAddressLike;
+              real: MultiAddressLike;
+              forceProxyType: KitchensinkRuntimeProxyType | undefined;
+              call: KitchensinkRuntimeRuntimeCallLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6640,18 +7368,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     pokeDeposit: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Proxy';
-        palletCall: {
-          name: 'PokeDeposit';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Proxy';
+          palletCall: {
+            name: 'PokeDeposit';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Multisig`'s transaction calls
@@ -6678,13 +7409,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         otherSignatories: Array<AccountId32Like>,
         call: KitchensinkRuntimeRuntimeCallLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Multisig';
-        palletCall: {
-          name: 'AsMultiThreshold1';
-          params: { otherSignatories: Array<AccountId32Like>; call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'AsMultiThreshold1';
+            params: { otherSignatories: Array<AccountId32Like>; call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6741,19 +7475,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeTimepoint: PalletMultisigTimepoint | undefined,
         call: KitchensinkRuntimeRuntimeCallLike,
         maxWeight: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Multisig';
-        palletCall: {
-          name: 'AsMulti';
-          params: {
-            threshold: number;
-            otherSignatories: Array<AccountId32Like>;
-            maybeTimepoint: PalletMultisigTimepoint | undefined;
-            call: KitchensinkRuntimeRuntimeCallLike;
-            maxWeight: SpWeightsWeightV2Weight;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'AsMulti';
+            params: {
+              threshold: number;
+              otherSignatories: Array<AccountId32Like>;
+              maybeTimepoint: PalletMultisigTimepoint | undefined;
+              call: KitchensinkRuntimeRuntimeCallLike;
+              maxWeight: SpWeightsWeightV2Weight;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6801,19 +7538,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeTimepoint: PalletMultisigTimepoint | undefined,
         callHash: FixedBytes<32>,
         maxWeight: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Multisig';
-        palletCall: {
-          name: 'ApproveAsMulti';
-          params: {
-            threshold: number;
-            otherSignatories: Array<AccountId32Like>;
-            maybeTimepoint: PalletMultisigTimepoint | undefined;
-            callHash: FixedBytes<32>;
-            maxWeight: SpWeightsWeightV2Weight;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'ApproveAsMulti';
+            params: {
+              threshold: number;
+              otherSignatories: Array<AccountId32Like>;
+              maybeTimepoint: PalletMultisigTimepoint | undefined;
+              callHash: FixedBytes<32>;
+              maxWeight: SpWeightsWeightV2Weight;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6850,18 +7590,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         otherSignatories: Array<AccountId32Like>,
         timepoint: PalletMultisigTimepoint,
         callHash: FixedBytes<32>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Multisig';
-        palletCall: {
-          name: 'CancelAsMulti';
-          params: {
-            threshold: number;
-            otherSignatories: Array<AccountId32Like>;
-            timepoint: PalletMultisigTimepoint;
-            callHash: FixedBytes<32>;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'CancelAsMulti';
+            params: {
+              threshold: number;
+              otherSignatories: Array<AccountId32Like>;
+              timepoint: PalletMultisigTimepoint;
+              callHash: FixedBytes<32>;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6888,19 +7631,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         threshold: number,
         otherSignatories: Array<AccountId32Like>,
         callHash: FixedBytes<32>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Multisig';
-        palletCall: {
-          name: 'PokeDeposit';
-          params: { threshold: number; otherSignatories: Array<AccountId32Like>; callHash: FixedBytes<32> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Multisig';
+          palletCall: {
+            name: 'PokeDeposit';
+            params: { threshold: number; otherSignatories: Array<AccountId32Like>; callHash: FixedBytes<32> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Bounties`'s transaction calls
@@ -6927,13 +7673,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         value: bigint,
         description: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ProposeBounty';
-          params: { value: bigint; description: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ProposeBounty';
+            params: { value: bigint; description: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6948,13 +7697,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} bountyId
      **/
     approveBounty: GenericTxCall<
-      (bountyId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ApproveBounty';
-          params: { bountyId: number };
-        };
-      }>
+      (bountyId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ApproveBounty';
+            params: { bountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -6974,13 +7726,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         bountyId: number,
         curator: MultiAddressLike,
         fee: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ProposeCurator';
-          params: { bountyId: number; curator: MultiAddressLike; fee: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ProposeCurator';
+            params: { bountyId: number; curator: MultiAddressLike; fee: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7005,13 +7760,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} bountyId
      **/
     unassignCurator: GenericTxCall<
-      (bountyId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'UnassignCurator';
-          params: { bountyId: number };
-        };
-      }>
+      (bountyId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'UnassignCurator';
+            params: { bountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7026,13 +7784,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} bountyId
      **/
     acceptCurator: GenericTxCall<
-      (bountyId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'AcceptCurator';
-          params: { bountyId: number };
-        };
-      }>
+      (bountyId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'AcceptCurator';
+            params: { bountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7054,13 +7815,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         bountyId: number,
         beneficiary: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'AwardBounty';
-          params: { bountyId: number; beneficiary: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'AwardBounty';
+            params: { bountyId: number; beneficiary: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7076,13 +7840,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} bountyId
      **/
     claimBounty: GenericTxCall<
-      (bountyId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ClaimBounty';
-          params: { bountyId: number };
-        };
-      }>
+      (bountyId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ClaimBounty';
+            params: { bountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7099,13 +7866,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} bountyId
      **/
     closeBounty: GenericTxCall<
-      (bountyId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'CloseBounty';
-          params: { bountyId: number };
-        };
-      }>
+      (bountyId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'CloseBounty';
+            params: { bountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7126,13 +7896,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         bountyId: number,
         remark: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ExtendBountyExpiry';
-          params: { bountyId: number; remark: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ExtendBountyExpiry';
+            params: { bountyId: number; remark: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7157,19 +7930,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         bountyId: number,
         curator: MultiAddressLike,
         fee: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Bounties';
-        palletCall: {
-          name: 'ApproveBountyWithCurator';
-          params: { bountyId: number; curator: MultiAddressLike; fee: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Bounties';
+          palletCall: {
+            name: 'ApproveBountyWithCurator';
+            params: { bountyId: number; curator: MultiAddressLike; fee: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Tips`'s transaction calls
@@ -7200,13 +7976,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         reason: BytesLike,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'ReportAwesome';
-          params: { reason: BytesLike; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'ReportAwesome';
+            params: { reason: BytesLike; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7230,13 +8009,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     retractTip: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'RetractTip';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'RetractTip';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7269,13 +8051,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         reason: BytesLike,
         who: MultiAddressLike,
         tipValue: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'TipNew';
-          params: { reason: BytesLike; who: MultiAddressLike; tipValue: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'TipNew';
+            params: { reason: BytesLike; who: MultiAddressLike; tipValue: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7308,13 +8093,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         hash: H256,
         tipValue: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'Tip';
-          params: { hash: H256; tipValue: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'Tip';
+            params: { hash: H256; tipValue: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7335,13 +8123,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     closeTip: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'CloseTip';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'CloseTip';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7359,19 +8150,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} hash
      **/
     slashTip: GenericTxCall<
-      (hash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Tips';
-        palletCall: {
-          name: 'SlashTip';
-          params: { hash: H256 };
-        };
-      }>
+      (hash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Tips';
+          palletCall: {
+            name: 'SlashTip';
+            params: { hash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Assets`'s transaction calls
@@ -7407,13 +8201,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         admin: MultiAddressLike,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Create';
-          params: { id: number; admin: MultiAddressLike; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Create';
+            params: { id: number; admin: MultiAddressLike; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7448,13 +8245,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         owner: MultiAddressLike,
         isSufficient: boolean,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceCreate';
-          params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceCreate';
+            params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7474,13 +8274,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     startDestroy: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'StartDestroy';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'StartDestroy';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7500,13 +8303,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     destroyAccounts: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'DestroyAccounts';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'DestroyAccounts';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7526,13 +8332,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     destroyApprovals: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'DestroyApprovals';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'DestroyApprovals';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7550,13 +8359,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     finishDestroy: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'FinishDestroy';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'FinishDestroy';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7582,13 +8394,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         beneficiary: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Mint';
-          params: { id: number; beneficiary: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Mint';
+            params: { id: number; beneficiary: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7617,13 +8432,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         who: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Burn';
-          params: { id: number; who: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Burn';
+            params: { id: number; who: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7655,13 +8473,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         target: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Transfer';
-          params: { id: number; target: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Transfer';
+            params: { id: number; target: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7693,13 +8514,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         target: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'TransferKeepAlive';
-          params: { id: number; target: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TransferKeepAlive';
+            params: { id: number; target: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7734,13 +8558,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         source: MultiAddressLike,
         dest: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceTransfer';
-          params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceTransfer';
+            params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7764,13 +8591,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Freeze';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Freeze';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7792,13 +8622,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Thaw';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Thaw';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7815,13 +8648,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     freezeAsset: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'FreezeAsset';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'FreezeAsset';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7838,13 +8674,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     thawAsset: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ThawAsset';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ThawAsset';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7866,13 +8705,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         owner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'TransferOwnership';
-          params: { id: number; owner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TransferOwnership';
+            params: { id: number; owner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7900,13 +8742,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         issuer: MultiAddressLike,
         admin: MultiAddressLike,
         freezer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'SetTeam';
-          params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'SetTeam';
+            params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7938,13 +8783,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         name: BytesLike,
         symbol: BytesLike,
         decimals: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -7963,13 +8811,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     clearMetadata: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ClearMetadata';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ClearMetadata';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8001,13 +8852,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         symbol: BytesLike,
         decimals: number,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceSetMetadata';
-          params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceSetMetadata';
+            params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8026,13 +8880,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     forceClearMetadata: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceClearMetadata';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceClearMetadata';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8078,22 +8935,25 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         minBalance: bigint,
         isSufficient: boolean,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceAssetStatus';
-          params: {
-            id: number;
-            owner: MultiAddressLike;
-            issuer: MultiAddressLike;
-            admin: MultiAddressLike;
-            freezer: MultiAddressLike;
-            minBalance: bigint;
-            isSufficient: boolean;
-            isFrozen: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceAssetStatus';
+            params: {
+              id: number;
+              owner: MultiAddressLike;
+              issuer: MultiAddressLike;
+              admin: MultiAddressLike;
+              freezer: MultiAddressLike;
+              minBalance: bigint;
+              isSufficient: boolean;
+              isFrozen: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8127,13 +8987,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         delegate: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ApproveTransfer';
-          params: { id: number; delegate: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ApproveTransfer';
+            params: { id: number; delegate: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8158,13 +9021,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'CancelApproval';
-          params: { id: number; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'CancelApproval';
+            params: { id: number; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8191,13 +9057,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         owner: MultiAddressLike,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'ForceCancelApproval';
-          params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'ForceCancelApproval';
+            params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8231,13 +9100,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         owner: MultiAddressLike,
         destination: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'TransferApproved';
-          params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TransferApproved';
+            params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8254,13 +9126,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     touch: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Touch';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Touch';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8285,13 +9160,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         allowBurn: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Refund';
-          params: { id: number; allowBurn: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Refund';
+            params: { id: number; allowBurn: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8315,13 +9193,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'SetMinBalance';
-          params: { id: number; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'SetMinBalance';
+            params: { id: number; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8343,13 +9224,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'TouchOther';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TouchOther';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8374,13 +9258,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'RefundOther';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'RefundOther';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8402,13 +9289,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'Block';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'Block';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8438,19 +9328,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         dest: MultiAddressLike,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Assets';
-        palletCall: {
-          name: 'TransferAll';
-          params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Assets';
+          palletCall: {
+            name: 'TransferAll';
+            params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `PoolAssets`'s transaction calls
@@ -8486,13 +9379,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         admin: MultiAddressLike,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Create';
-          params: { id: number; admin: MultiAddressLike; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Create';
+            params: { id: number; admin: MultiAddressLike; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8527,13 +9423,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         owner: MultiAddressLike,
         isSufficient: boolean,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceCreate';
-          params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceCreate';
+            params: { id: number; owner: MultiAddressLike; isSufficient: boolean; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8553,13 +9452,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     startDestroy: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'StartDestroy';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'StartDestroy';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8579,13 +9481,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     destroyAccounts: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'DestroyAccounts';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'DestroyAccounts';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8605,13 +9510,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     destroyApprovals: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'DestroyApprovals';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'DestroyApprovals';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8629,13 +9537,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     finishDestroy: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'FinishDestroy';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'FinishDestroy';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8661,13 +9572,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         beneficiary: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Mint';
-          params: { id: number; beneficiary: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Mint';
+            params: { id: number; beneficiary: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8696,13 +9610,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         who: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Burn';
-          params: { id: number; who: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Burn';
+            params: { id: number; who: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8734,13 +9651,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         target: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Transfer';
-          params: { id: number; target: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Transfer';
+            params: { id: number; target: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8772,13 +9692,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         target: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'TransferKeepAlive';
-          params: { id: number; target: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TransferKeepAlive';
+            params: { id: number; target: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8813,13 +9736,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         source: MultiAddressLike,
         dest: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceTransfer';
-          params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceTransfer';
+            params: { id: number; source: MultiAddressLike; dest: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8843,13 +9769,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Freeze';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Freeze';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8871,13 +9800,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Thaw';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Thaw';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8894,13 +9826,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     freezeAsset: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'FreezeAsset';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'FreezeAsset';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8917,13 +9852,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     thawAsset: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ThawAsset';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ThawAsset';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8945,13 +9883,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         owner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'TransferOwnership';
-          params: { id: number; owner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TransferOwnership';
+            params: { id: number; owner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -8979,13 +9920,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         issuer: MultiAddressLike,
         admin: MultiAddressLike,
         freezer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'SetTeam';
-          params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'SetTeam';
+            params: { id: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9017,13 +9961,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         name: BytesLike,
         symbol: BytesLike,
         decimals: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9042,13 +9989,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     clearMetadata: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ClearMetadata';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ClearMetadata';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9080,13 +10030,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         symbol: BytesLike,
         decimals: number,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceSetMetadata';
-          params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceSetMetadata';
+            params: { id: number; name: BytesLike; symbol: BytesLike; decimals: number; isFrozen: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9105,13 +10058,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     forceClearMetadata: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceClearMetadata';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceClearMetadata';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9157,22 +10113,25 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         minBalance: bigint,
         isSufficient: boolean,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceAssetStatus';
-          params: {
-            id: number;
-            owner: MultiAddressLike;
-            issuer: MultiAddressLike;
-            admin: MultiAddressLike;
-            freezer: MultiAddressLike;
-            minBalance: bigint;
-            isSufficient: boolean;
-            isFrozen: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceAssetStatus';
+            params: {
+              id: number;
+              owner: MultiAddressLike;
+              issuer: MultiAddressLike;
+              admin: MultiAddressLike;
+              freezer: MultiAddressLike;
+              minBalance: bigint;
+              isSufficient: boolean;
+              isFrozen: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9206,13 +10165,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         delegate: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ApproveTransfer';
-          params: { id: number; delegate: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ApproveTransfer';
+            params: { id: number; delegate: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9237,13 +10199,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'CancelApproval';
-          params: { id: number; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'CancelApproval';
+            params: { id: number; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9270,13 +10235,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         owner: MultiAddressLike,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'ForceCancelApproval';
-          params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'ForceCancelApproval';
+            params: { id: number; owner: MultiAddressLike; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9310,13 +10278,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         owner: MultiAddressLike,
         destination: MultiAddressLike,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'TransferApproved';
-          params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TransferApproved';
+            params: { id: number; owner: MultiAddressLike; destination: MultiAddressLike; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9333,13 +10304,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} id
      **/
     touch: GenericTxCall<
-      (id: number) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Touch';
-          params: { id: number };
-        };
-      }>
+      (id: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Touch';
+            params: { id: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9364,13 +10338,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         allowBurn: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Refund';
-          params: { id: number; allowBurn: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Refund';
+            params: { id: number; allowBurn: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9394,13 +10371,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         minBalance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'SetMinBalance';
-          params: { id: number; minBalance: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'SetMinBalance';
+            params: { id: number; minBalance: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9422,13 +10402,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'TouchOther';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TouchOther';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9453,13 +10436,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'RefundOther';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'RefundOther';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9481,13 +10467,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         who: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'Block';
-          params: { id: number; who: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'Block';
+            params: { id: number; who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9517,19 +10506,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         id: number,
         dest: MultiAddressLike,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'PoolAssets';
-        palletCall: {
-          name: 'TransferAll';
-          params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'PoolAssets';
+          palletCall: {
+            name: 'TransferAll';
+            params: { id: number; dest: MultiAddressLike; keepAlive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Beefy`'s transaction calls
@@ -9548,13 +10540,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyDoubleVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportDoubleVoting';
-          params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportDoubleVoting';
+            params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9575,13 +10570,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyDoubleVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportDoubleVotingUnsigned';
-          params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportDoubleVotingUnsigned';
+            params: { equivocationProof: SpConsensusBeefyDoubleVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9593,13 +10591,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} delayInBlocks
      **/
     setNewGenesis: GenericTxCall<
-      (delayInBlocks: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'SetNewGenesis';
-          params: { delayInBlocks: number };
-        };
-      }>
+      (delayInBlocks: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'SetNewGenesis';
+            params: { delayInBlocks: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9614,13 +10615,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyForkVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportForkVoting';
-          params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportForkVoting';
+            params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9640,13 +10644,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyForkVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportForkVotingUnsigned';
-          params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportForkVotingUnsigned';
+            params: { equivocationProof: SpConsensusBeefyForkVotingProof; keyOwnerProof: SpSessionMembershipProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9661,16 +10668,19 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyFutureBlockVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportFutureBlockVoting';
-          params: {
-            equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
-            keyOwnerProof: SpSessionMembershipProof;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportFutureBlockVoting';
+            params: {
+              equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
+              keyOwnerProof: SpSessionMembershipProof;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9690,22 +10700,25 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         equivocationProof: SpConsensusBeefyFutureBlockVotingProof,
         keyOwnerProof: SpSessionMembershipProof,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Beefy';
-        palletCall: {
-          name: 'ReportFutureBlockVotingUnsigned';
-          params: {
-            equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
-            keyOwnerProof: SpSessionMembershipProof;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Beefy';
+          palletCall: {
+            name: 'ReportFutureBlockVotingUnsigned';
+            params: {
+              equivocationProof: SpConsensusBeefyFutureBlockVotingProof;
+              keyOwnerProof: SpSessionMembershipProof;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Lottery`'s transaction calls
@@ -9727,13 +10740,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {KitchensinkRuntimeRuntimeCallLike} call
      **/
     buyTicket: GenericTxCall<
-      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Lottery';
-        palletCall: {
-          name: 'BuyTicket';
-          params: { call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Lottery';
+          palletCall: {
+            name: 'BuyTicket';
+            params: { call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9747,13 +10763,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<KitchensinkRuntimeRuntimeCallLike>} calls
      **/
     setCalls: GenericTxCall<
-      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<{
-        pallet: 'Lottery';
-        palletCall: {
-          name: 'SetCalls';
-          params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
-        };
-      }>
+      (calls: Array<KitchensinkRuntimeRuntimeCallLike>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Lottery';
+          palletCall: {
+            name: 'SetCalls';
+            params: { calls: Array<KitchensinkRuntimeRuntimeCallLike> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9779,13 +10798,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         length: number,
         delay: number,
         repeat: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Lottery';
-        palletCall: {
-          name: 'StartLottery';
-          params: { price: bigint; length: number; delay: number; repeat: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Lottery';
+          palletCall: {
+            name: 'StartLottery';
+            params: { price: bigint; length: number; delay: number; repeat: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9796,18 +10818,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     stopRepeat: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Lottery';
-        palletCall: {
-          name: 'StopRepeat';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Lottery';
+          palletCall: {
+            name: 'StopRepeat';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Nis`'s transaction calls
@@ -9833,13 +10858,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         amount: bigint,
         duration: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'PlaceBid';
-          params: { amount: bigint; duration: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'PlaceBid';
+            params: { amount: bigint; duration: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9858,13 +10886,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         amount: bigint,
         duration: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'RetractBid';
-          params: { amount: bigint; duration: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'RetractBid';
+            params: { amount: bigint; duration: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9874,12 +10905,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     fundDeficit: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'FundDeficit';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'FundDeficit';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9899,13 +10933,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         maybeProportion: Perquintill | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'ThawPrivate';
-          params: { index: number; maybeProportion: Perquintill | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'ThawPrivate';
+            params: { index: number; maybeProportion: Perquintill | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9919,13 +10956,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     thawCommunal: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'ThawCommunal';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'ThawCommunal';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9934,13 +10974,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     communify: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'Communify';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'Communify';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -9949,19 +10992,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     privatize: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Nis';
-        palletCall: {
-          name: 'Privatize';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nis';
+          palletCall: {
+            name: 'Privatize';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Uniques`'s transaction calls
@@ -9992,13 +11038,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         admin: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Create';
-          params: { collection: number; admin: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Create';
+            params: { collection: number; admin: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10029,13 +11078,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         owner: MultiAddressLike,
         freeHolding: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ForceCreate';
-          params: { collection: number; owner: MultiAddressLike; freeHolding: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ForceCreate';
+            params: { collection: number; owner: MultiAddressLike; freeHolding: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10062,13 +11114,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         witness: PalletUniquesDestroyWitness,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Destroy';
-          params: { collection: number; witness: PalletUniquesDestroyWitness };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Destroy';
+            params: { collection: number; witness: PalletUniquesDestroyWitness };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10093,13 +11148,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         owner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Mint';
-          params: { collection: number; item: number; owner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Mint';
+            params: { collection: number; item: number; owner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10128,13 +11186,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         checkOwner: MultiAddressLike | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Burn';
-          params: { collection: number; item: number; checkOwner: MultiAddressLike | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Burn';
+            params: { collection: number; item: number; checkOwner: MultiAddressLike | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10165,13 +11226,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         dest: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Transfer';
-          params: { collection: number; item: number; dest: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Transfer';
+            params: { collection: number; item: number; dest: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10200,13 +11264,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         items: Array<number>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Redeposit';
-          params: { collection: number; items: Array<number> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Redeposit';
+            params: { collection: number; items: Array<number> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10228,13 +11295,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Freeze';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Freeze';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10256,13 +11326,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'Thaw';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'Thaw';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10279,13 +11352,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} collection
      **/
     freezeCollection: GenericTxCall<
-      (collection: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'FreezeCollection';
-          params: { collection: number };
-        };
-      }>
+      (collection: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'FreezeCollection';
+            params: { collection: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10302,13 +11378,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} collection
      **/
     thawCollection: GenericTxCall<
-      (collection: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ThawCollection';
-          params: { collection: number };
-        };
-      }>
+      (collection: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ThawCollection';
+            params: { collection: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10331,13 +11410,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         newOwner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'TransferOwnership';
-          params: { collection: number; newOwner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'TransferOwnership';
+            params: { collection: number; newOwner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10365,13 +11447,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         issuer: MultiAddressLike,
         admin: MultiAddressLike,
         freezer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetTeam';
-          params: { collection: number; issuer: MultiAddressLike; admin: MultiAddressLike; freezer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetTeam';
+            params: {
+              collection: number;
+              issuer: MultiAddressLike;
+              admin: MultiAddressLike;
+              freezer: MultiAddressLike;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10399,13 +11489,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ApproveTransfer';
-          params: { collection: number; item: number; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ApproveTransfer';
+            params: { collection: number; item: number; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10435,13 +11528,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         maybeCheckDelegate: MultiAddressLike | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'CancelApproval';
-          params: { collection: number; item: number; maybeCheckDelegate: MultiAddressLike | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'CancelApproval';
+            params: { collection: number; item: number; maybeCheckDelegate: MultiAddressLike | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10479,21 +11575,24 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         freezer: MultiAddressLike,
         freeHolding: boolean,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ForceItemStatus';
-          params: {
-            collection: number;
-            owner: MultiAddressLike;
-            issuer: MultiAddressLike;
-            admin: MultiAddressLike;
-            freezer: MultiAddressLike;
-            freeHolding: boolean;
-            isFrozen: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ForceItemStatus';
+            params: {
+              collection: number;
+              owner: MultiAddressLike;
+              issuer: MultiAddressLike;
+              admin: MultiAddressLike;
+              freezer: MultiAddressLike;
+              freeHolding: boolean;
+              isFrozen: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10526,13 +11625,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeItem: number | undefined,
         key: BytesLike,
         value: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetAttribute';
-          params: { collection: number; maybeItem: number | undefined; key: BytesLike; value: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetAttribute';
+            params: { collection: number; maybeItem: number | undefined; key: BytesLike; value: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10560,13 +11662,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         maybeItem: number | undefined,
         key: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ClearAttribute';
-          params: { collection: number; maybeItem: number | undefined; key: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ClearAttribute';
+            params: { collection: number; maybeItem: number | undefined; key: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10599,13 +11704,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         data: BytesLike,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { collection: number; item: number; data: BytesLike; isFrozen: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { collection: number; item: number; data: BytesLike; isFrozen: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10630,13 +11738,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ClearMetadata';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ClearMetadata';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10666,13 +11777,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         data: BytesLike,
         isFrozen: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetCollectionMetadata';
-          params: { collection: number; data: BytesLike; isFrozen: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetCollectionMetadata';
+            params: { collection: number; data: BytesLike; isFrozen: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10692,13 +11806,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} collection
      **/
     clearCollectionMetadata: GenericTxCall<
-      (collection: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'ClearCollectionMetadata';
-          params: { collection: number };
-        };
-      }>
+      (collection: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'ClearCollectionMetadata';
+            params: { collection: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10716,13 +11833,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number | undefined} maybeCollection
      **/
     setAcceptOwnership: GenericTxCall<
-      (maybeCollection: number | undefined) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetAcceptOwnership';
-          params: { maybeCollection: number | undefined };
-        };
-      }>
+      (maybeCollection: number | undefined) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetAcceptOwnership';
+            params: { maybeCollection: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10745,13 +11865,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         maxSupply: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetCollectionMaxSupply';
-          params: { collection: number; maxSupply: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetCollectionMaxSupply';
+            params: { collection: number; maxSupply: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10778,18 +11901,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         price: bigint | undefined,
         whitelistedBuyer: MultiAddressLike | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'SetPrice';
-          params: {
-            collection: number;
-            item: number;
-            price: bigint | undefined;
-            whitelistedBuyer: MultiAddressLike | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'SetPrice';
+            params: {
+              collection: number;
+              item: number;
+              price: bigint | undefined;
+              whitelistedBuyer: MultiAddressLike | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10812,19 +11938,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         bidPrice: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Uniques';
-        palletCall: {
-          name: 'BuyItem';
-          params: { collection: number; item: number; bidPrice: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Uniques';
+          palletCall: {
+            name: 'BuyItem';
+            params: { collection: number; item: number; bidPrice: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Nfts`'s transaction calls
@@ -10854,13 +11983,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         admin: MultiAddressLike,
         config: PalletNftsCollectionConfig,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Create';
-          params: { admin: MultiAddressLike; config: PalletNftsCollectionConfig };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Create';
+            params: { admin: MultiAddressLike; config: PalletNftsCollectionConfig };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10887,13 +12019,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         owner: MultiAddressLike,
         config: PalletNftsCollectionConfig,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ForceCreate';
-          params: { owner: MultiAddressLike; config: PalletNftsCollectionConfig };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ForceCreate';
+            params: { owner: MultiAddressLike; config: PalletNftsCollectionConfig };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10922,13 +12057,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         witness: PalletNftsDestroyWitness,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Destroy';
-          params: { collection: number; witness: PalletNftsDestroyWitness };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Destroy';
+            params: { collection: number; witness: PalletNftsDestroyWitness };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -10960,18 +12098,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         mintTo: MultiAddressLike,
         witnessData: PalletNftsMintWitness | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Mint';
-          params: {
-            collection: number;
-            item: number;
-            mintTo: MultiAddressLike;
-            witnessData: PalletNftsMintWitness | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Mint';
+            params: {
+              collection: number;
+              item: number;
+              mintTo: MultiAddressLike;
+              witnessData: PalletNftsMintWitness | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11000,13 +12141,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         mintTo: MultiAddressLike,
         itemConfig: PalletNftsItemConfig,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ForceMint';
-          params: { collection: number; item: number; mintTo: MultiAddressLike; itemConfig: PalletNftsItemConfig };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ForceMint';
+            params: { collection: number; item: number; mintTo: MultiAddressLike; itemConfig: PalletNftsItemConfig };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11029,13 +12173,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Burn';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Burn';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11063,13 +12210,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         dest: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Transfer';
-          params: { collection: number; item: number; dest: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Transfer';
+            params: { collection: number; item: number; dest: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11098,13 +12248,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         items: Array<number>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'Redeposit';
-          params: { collection: number; items: Array<number> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'Redeposit';
+            params: { collection: number; items: Array<number> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11126,13 +12279,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'LockItemTransfer';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'LockItemTransfer';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11154,13 +12310,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'UnlockItemTransfer';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'UnlockItemTransfer';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11184,13 +12343,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         lockSettings: PalletNftsBitFlags,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'LockCollection';
-          params: { collection: number; lockSettings: PalletNftsBitFlags };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'LockCollection';
+            params: { collection: number; lockSettings: PalletNftsBitFlags };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11213,13 +12375,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         newOwner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'TransferOwnership';
-          params: { collection: number; newOwner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'TransferOwnership';
+            params: { collection: number; newOwner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11251,18 +12416,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         issuer: MultiAddressLike | undefined,
         admin: MultiAddressLike | undefined,
         freezer: MultiAddressLike | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetTeam';
-          params: {
-            collection: number;
-            issuer: MultiAddressLike | undefined;
-            admin: MultiAddressLike | undefined;
-            freezer: MultiAddressLike | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetTeam';
+            params: {
+              collection: number;
+              issuer: MultiAddressLike | undefined;
+              admin: MultiAddressLike | undefined;
+              freezer: MultiAddressLike | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11284,13 +12452,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         owner: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ForceCollectionOwner';
-          params: { collection: number; owner: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ForceCollectionOwner';
+            params: { collection: number; owner: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11312,13 +12483,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         config: PalletNftsCollectionConfig,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ForceCollectionConfig';
-          params: { collection: number; config: PalletNftsCollectionConfig };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ForceCollectionConfig';
+            params: { collection: number; config: PalletNftsCollectionConfig };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11348,13 +12522,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         delegate: MultiAddressLike,
         maybeDeadline: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ApproveTransfer';
-          params: { collection: number; item: number; delegate: MultiAddressLike; maybeDeadline: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ApproveTransfer';
+            params: { collection: number; item: number; delegate: MultiAddressLike; maybeDeadline: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11382,13 +12559,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'CancelApproval';
-          params: { collection: number; item: number; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'CancelApproval';
+            params: { collection: number; item: number; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11413,13 +12593,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ClearAllTransferApprovals';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ClearAllTransferApprovals';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11452,13 +12635,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         lockMetadata: boolean,
         lockAttributes: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'LockItemProperties';
-          params: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'LockItemProperties';
+            params: { collection: number; item: number; lockMetadata: boolean; lockAttributes: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11498,19 +12684,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         namespace: PalletNftsAttributeNamespace,
         key: BytesLike,
         value: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetAttribute';
-          params: {
-            collection: number;
-            maybeItem: number | undefined;
-            namespace: PalletNftsAttributeNamespace;
-            key: BytesLike;
-            value: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetAttribute';
+            params: {
+              collection: number;
+              maybeItem: number | undefined;
+              namespace: PalletNftsAttributeNamespace;
+              key: BytesLike;
+              value: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11547,20 +12736,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         namespace: PalletNftsAttributeNamespace,
         key: BytesLike,
         value: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ForceSetAttribute';
-          params: {
-            setAs: AccountId32Like | undefined;
-            collection: number;
-            maybeItem: number | undefined;
-            namespace: PalletNftsAttributeNamespace;
-            key: BytesLike;
-            value: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ForceSetAttribute';
+            params: {
+              setAs: AccountId32Like | undefined;
+              collection: number;
+              maybeItem: number | undefined;
+              namespace: PalletNftsAttributeNamespace;
+              key: BytesLike;
+              value: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11591,18 +12783,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeItem: number | undefined,
         namespace: PalletNftsAttributeNamespace,
         key: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ClearAttribute';
-          params: {
-            collection: number;
-            maybeItem: number | undefined;
-            namespace: PalletNftsAttributeNamespace;
-            key: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ClearAttribute';
+            params: {
+              collection: number;
+              maybeItem: number | undefined;
+              namespace: PalletNftsAttributeNamespace;
+              key: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11625,13 +12820,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         delegate: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ApproveItemAttributes';
-          params: { collection: number; item: number; delegate: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ApproveItemAttributes';
+            params: { collection: number; item: number; delegate: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11657,18 +12855,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         delegate: MultiAddressLike,
         witness: PalletNftsCancelAttributesApprovalWitness,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'CancelItemAttributesApproval';
-          params: {
-            collection: number;
-            item: number;
-            delegate: MultiAddressLike;
-            witness: PalletNftsCancelAttributesApprovalWitness;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'CancelItemAttributesApproval';
+            params: {
+              collection: number;
+              item: number;
+              delegate: MultiAddressLike;
+              witness: PalletNftsCancelAttributesApprovalWitness;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11698,13 +12899,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         data: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { collection: number; item: number; data: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { collection: number; item: number; data: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11729,13 +12933,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         item: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ClearMetadata';
-          params: { collection: number; item: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ClearMetadata';
+            params: { collection: number; item: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11762,13 +12969,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         data: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetCollectionMetadata';
-          params: { collection: number; data: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetCollectionMetadata';
+            params: { collection: number; data: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11788,13 +12998,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} collection
      **/
     clearCollectionMetadata: GenericTxCall<
-      (collection: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ClearCollectionMetadata';
-          params: { collection: number };
-        };
-      }>
+      (collection: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ClearCollectionMetadata';
+            params: { collection: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11812,13 +13025,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number | undefined} maybeCollection
      **/
     setAcceptOwnership: GenericTxCall<
-      (maybeCollection: number | undefined) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetAcceptOwnership';
-          params: { maybeCollection: number | undefined };
-        };
-      }>
+      (maybeCollection: number | undefined) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetAcceptOwnership';
+            params: { maybeCollection: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11839,13 +13055,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         maxSupply: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetCollectionMaxSupply';
-          params: { collection: number; maxSupply: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetCollectionMaxSupply';
+            params: { collection: number; maxSupply: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11866,13 +13085,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         collection: number,
         mintSettings: PalletNftsMintSettings,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'UpdateMintSettings';
-          params: { collection: number; mintSettings: PalletNftsMintSettings };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'UpdateMintSettings';
+            params: { collection: number; mintSettings: PalletNftsMintSettings };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11899,18 +13121,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         item: number,
         price: bigint | undefined,
         whitelistedBuyer: MultiAddressLike | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetPrice';
-          params: {
-            collection: number;
-            item: number;
-            price: bigint | undefined;
-            whitelistedBuyer: MultiAddressLike | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetPrice';
+            params: {
+              collection: number;
+              item: number;
+              price: bigint | undefined;
+              whitelistedBuyer: MultiAddressLike | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11933,13 +13158,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         collection: number,
         item: number,
         bidPrice: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'BuyItem';
-          params: { collection: number; item: number; bidPrice: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'BuyItem';
+            params: { collection: number; item: number; bidPrice: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11954,13 +13182,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<PalletNftsItemTip>} tips
      **/
     payTips: GenericTxCall<
-      (tips: Array<PalletNftsItemTip>) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'PayTips';
-          params: { tips: Array<PalletNftsItemTip> };
-        };
-      }>
+      (tips: Array<PalletNftsItemTip>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'PayTips';
+            params: { tips: Array<PalletNftsItemTip> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -11996,20 +13227,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maybeDesiredItem: number | undefined,
         maybePrice: PalletNftsPriceWithDirection | undefined,
         duration: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'CreateSwap';
-          params: {
-            offeredCollection: number;
-            offeredItem: number;
-            desiredCollection: number;
-            maybeDesiredItem: number | undefined;
-            maybePrice: PalletNftsPriceWithDirection | undefined;
-            duration: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'CreateSwap';
+            params: {
+              offeredCollection: number;
+              offeredItem: number;
+              desiredCollection: number;
+              maybeDesiredItem: number | undefined;
+              maybePrice: PalletNftsPriceWithDirection | undefined;
+              duration: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12030,13 +13264,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         offeredCollection: number,
         offeredItem: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'CancelSwap';
-          params: { offeredCollection: number; offeredItem: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'CancelSwap';
+            params: { offeredCollection: number; offeredItem: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12066,19 +13303,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         receiveCollection: number,
         receiveItem: number,
         witnessPrice: PalletNftsPriceWithDirection | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'ClaimSwap';
-          params: {
-            sendCollection: number;
-            sendItem: number;
-            receiveCollection: number;
-            receiveItem: number;
-            witnessPrice: PalletNftsPriceWithDirection | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'ClaimSwap';
+            params: {
+              sendCollection: number;
+              sendItem: number;
+              receiveCollection: number;
+              receiveItem: number;
+              witnessPrice: PalletNftsPriceWithDirection | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12105,13 +13345,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         mintData: PalletNftsPreSignedMint,
         signature: SpRuntimeMultiSignature,
         signer: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'MintPreSigned';
-          params: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'MintPreSigned';
+            params: { mintData: PalletNftsPreSignedMint; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12138,19 +13381,26 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         data: PalletNftsPreSignedAttributes,
         signature: SpRuntimeMultiSignature,
         signer: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Nfts';
-        palletCall: {
-          name: 'SetAttributesPreSigned';
-          params: { data: PalletNftsPreSignedAttributes; signature: SpRuntimeMultiSignature; signer: AccountId32Like };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Nfts';
+          palletCall: {
+            name: 'SetAttributesPreSigned';
+            params: {
+              data: PalletNftsPreSignedAttributes;
+              signature: SpRuntimeMultiSignature;
+              signer: AccountId32Like;
+            };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `NftFractionalization`'s transaction calls
@@ -12188,19 +13438,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         assetId: number,
         beneficiary: MultiAddressLike,
         fractions: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NftFractionalization';
-        palletCall: {
-          name: 'Fractionalize';
-          params: {
-            nftCollectionId: number;
-            nftId: number;
-            assetId: number;
-            beneficiary: MultiAddressLike;
-            fractions: bigint;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NftFractionalization';
+          palletCall: {
+            name: 'Fractionalize';
+            params: {
+              nftCollectionId: number;
+              nftId: number;
+              assetId: number;
+              beneficiary: MultiAddressLike;
+              fractions: bigint;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12232,19 +13485,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         nftId: number,
         assetId: number,
         beneficiary: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NftFractionalization';
-        palletCall: {
-          name: 'Unify';
-          params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NftFractionalization';
+          palletCall: {
+            name: 'Unify';
+            params: { nftCollectionId: number; nftId: number; assetId: number; beneficiary: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Salary`'s transaction calls
@@ -12257,12 +13513,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     init: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'Init';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'Init';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12272,12 +13531,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     bump: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'Bump';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'Bump';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12285,12 +13547,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     induct: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'Induct';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'Induct';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12303,12 +13568,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     register: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'Register';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'Register';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12321,12 +13589,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     payout: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'Payout';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'Payout';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12341,13 +13612,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} beneficiary
      **/
     payoutOther: GenericTxCall<
-      (beneficiary: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'PayoutOther';
-          params: { beneficiary: AccountId32Like };
-        };
-      }>
+      (beneficiary: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'PayoutOther';
+            params: { beneficiary: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12361,18 +13635,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     checkPayment: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Salary';
-        palletCall: {
-          name: 'CheckPayment';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Salary';
+          palletCall: {
+            name: 'CheckPayment';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `CoreFellowship`'s transaction calls
@@ -12390,13 +13667,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} who
      **/
     bump: GenericTxCall<
-      (who: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Bump';
-          params: { who: AccountId32Like };
-        };
-      }>
+      (who: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Bump';
+            params: { who: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12408,13 +13688,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletCoreFellowshipParamsType} params
      **/
     setParams: GenericTxCall<
-      (params: PalletCoreFellowshipParamsType) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'SetParams';
-          params: { params: PalletCoreFellowshipParamsType };
-        };
-      }>
+      (params: PalletCoreFellowshipParamsType) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'SetParams';
+            params: { params: PalletCoreFellowshipParamsType };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12426,13 +13709,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {boolean} isActive
      **/
     setActive: GenericTxCall<
-      (isActive: boolean) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'SetActive';
-          params: { isActive: boolean };
-        };
-      }>
+      (isActive: boolean) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'SetActive';
+            params: { isActive: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12453,13 +13739,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: AccountId32Like,
         atRank: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Approve';
-          params: { who: AccountId32Like; atRank: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Approve';
+            params: { who: AccountId32Like; atRank: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12471,13 +13760,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} who
      **/
     induct: GenericTxCall<
-      (who: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Induct';
-          params: { who: AccountId32Like };
-        };
-      }>
+      (who: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Induct';
+            params: { who: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12495,13 +13787,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: AccountId32Like,
         toRank: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Promote';
-          params: { who: AccountId32Like; toRank: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Promote';
+            params: { who: AccountId32Like; toRank: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12518,13 +13813,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: AccountId32Like,
         toRank: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'PromoteFast';
-          params: { who: AccountId32Like; toRank: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'PromoteFast';
+            params: { who: AccountId32Like; toRank: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12537,13 +13835,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} who
      **/
     offboard: GenericTxCall<
-      (who: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Offboard';
-          params: { who: AccountId32Like };
-        };
-      }>
+      (who: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Offboard';
+            params: { who: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12565,13 +13866,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         wish: PalletCoreFellowshipWish,
         evidence: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'SubmitEvidence';
-          params: { wish: PalletCoreFellowshipWish; evidence: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'SubmitEvidence';
+            params: { wish: PalletCoreFellowshipWish; evidence: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12585,12 +13889,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     import: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'Import';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'Import';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12608,13 +13915,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} who
      **/
     importMember: GenericTxCall<
-      (who: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'ImportMember';
-          params: { who: AccountId32Like };
-        };
-      }>
+      (who: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'ImportMember';
+            params: { who: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12629,19 +13939,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletCoreFellowshipParamsTypeOption} partialParams
      **/
     setPartialParams: GenericTxCall<
-      (partialParams: PalletCoreFellowshipParamsTypeOption) => ChainSubmittableExtrinsic<{
-        pallet: 'CoreFellowship';
-        palletCall: {
-          name: 'SetPartialParams';
-          params: { partialParams: PalletCoreFellowshipParamsTypeOption };
-        };
-      }>
+      (partialParams: PalletCoreFellowshipParamsTypeOption) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'CoreFellowship';
+          palletCall: {
+            name: 'SetPartialParams';
+            params: { partialParams: PalletCoreFellowshipParamsTypeOption };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `TransactionStorage`'s transaction calls
@@ -12657,13 +13970,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} data
      **/
     store: GenericTxCall<
-      (data: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'TransactionStorage';
-        palletCall: {
-          name: 'Store';
-          params: { data: BytesLike };
-        };
-      }>
+      (data: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TransactionStorage';
+          palletCall: {
+            name: 'Store';
+            params: { data: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12681,13 +13997,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         block: number,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'TransactionStorage';
-        palletCall: {
-          name: 'Renew';
-          params: { block: number; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TransactionStorage';
+          palletCall: {
+            name: 'Renew';
+            params: { block: number; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12701,19 +14020,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {SpTransactionStorageProofTransactionStorageProof} proof
      **/
     checkProof: GenericTxCall<
-      (proof: SpTransactionStorageProofTransactionStorageProof) => ChainSubmittableExtrinsic<{
-        pallet: 'TransactionStorage';
-        palletCall: {
-          name: 'CheckProof';
-          params: { proof: SpTransactionStorageProofTransactionStorageProof };
-        };
-      }>
+      (proof: SpTransactionStorageProofTransactionStorageProof) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TransactionStorage';
+          palletCall: {
+            name: 'CheckProof';
+            params: { proof: SpTransactionStorageProofTransactionStorageProof };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `VoterList`'s transaction calls
@@ -12734,13 +14056,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} dislocated
      **/
     rebag: GenericTxCall<
-      (dislocated: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'VoterList';
-        palletCall: {
-          name: 'Rebag';
-          params: { dislocated: MultiAddressLike };
-        };
-      }>
+      (dislocated: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'VoterList';
+          palletCall: {
+            name: 'Rebag';
+            params: { dislocated: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12758,13 +14083,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} lighter
      **/
     putInFrontOf: GenericTxCall<
-      (lighter: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'VoterList';
-        palletCall: {
-          name: 'PutInFrontOf';
-          params: { lighter: MultiAddressLike };
-        };
-      }>
+      (lighter: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'VoterList';
+          palletCall: {
+            name: 'PutInFrontOf';
+            params: { lighter: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12779,19 +14107,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         heavier: MultiAddressLike,
         lighter: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'VoterList';
-        palletCall: {
-          name: 'PutInFrontOfOther';
-          params: { heavier: MultiAddressLike; lighter: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'VoterList';
+          palletCall: {
+            name: 'PutInFrontOfOther';
+            params: { heavier: MultiAddressLike; lighter: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `StateTrieMigration`'s transaction calls
@@ -12805,13 +14136,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletStateTrieMigrationMigrationLimits | undefined} maybeConfig
      **/
     controlAutoMigration: GenericTxCall<
-      (maybeConfig: PalletStateTrieMigrationMigrationLimits | undefined) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'ControlAutoMigration';
-          params: { maybeConfig: PalletStateTrieMigrationMigrationLimits | undefined };
-        };
-      }>
+      (maybeConfig: PalletStateTrieMigrationMigrationLimits | undefined) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'ControlAutoMigration';
+            params: { maybeConfig: PalletStateTrieMigrationMigrationLimits | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12846,17 +14180,20 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         limits: PalletStateTrieMigrationMigrationLimits,
         realSizeUpper: number,
         witnessTask: PalletStateTrieMigrationMigrationTask,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'ContinueMigrate';
-          params: {
-            limits: PalletStateTrieMigrationMigrationLimits;
-            realSizeUpper: number;
-            witnessTask: PalletStateTrieMigrationMigrationTask;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'ContinueMigrate';
+            params: {
+              limits: PalletStateTrieMigrationMigrationLimits;
+              realSizeUpper: number;
+              witnessTask: PalletStateTrieMigrationMigrationTask;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12872,13 +14209,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         keys: Array<BytesLike>,
         witnessSize: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'MigrateCustomTop';
-          params: { keys: Array<BytesLike>; witnessSize: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'MigrateCustomTop';
+            params: { keys: Array<BytesLike>; witnessSize: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12898,13 +14238,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         root: BytesLike,
         childKeys: Array<BytesLike>,
         totalSize: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'MigrateCustomChild';
-          params: { root: BytesLike; childKeys: Array<BytesLike>; totalSize: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'MigrateCustomChild';
+            params: { root: BytesLike; childKeys: Array<BytesLike>; totalSize: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12913,13 +14256,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletStateTrieMigrationMigrationLimits} limits
      **/
     setSignedMaxLimits: GenericTxCall<
-      (limits: PalletStateTrieMigrationMigrationLimits) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'SetSignedMaxLimits';
-          params: { limits: PalletStateTrieMigrationMigrationLimits };
-        };
-      }>
+      (limits: PalletStateTrieMigrationMigrationLimits) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'SetSignedMaxLimits';
+            params: { limits: PalletStateTrieMigrationMigrationLimits };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -12940,19 +14286,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         progressTop: PalletStateTrieMigrationProgress,
         progressChild: PalletStateTrieMigrationProgress,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'StateTrieMigration';
-        palletCall: {
-          name: 'ForceSetProgress';
-          params: { progressTop: PalletStateTrieMigrationProgress; progressChild: PalletStateTrieMigrationProgress };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'StateTrieMigration';
+          palletCall: {
+            name: 'ForceSetProgress';
+            params: { progressTop: PalletStateTrieMigrationProgress; progressChild: PalletStateTrieMigrationProgress };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `ChildBounties`'s transaction calls
@@ -12988,13 +14337,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         parentBountyId: number,
         value: bigint,
         description: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'AddChildBounty';
-          params: { parentBountyId: number; value: bigint; description: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'AddChildBounty';
+            params: { parentBountyId: number; value: bigint; description: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13025,13 +14377,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         childBountyId: number,
         curator: MultiAddressLike,
         fee: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'ProposeCurator';
-          params: { parentBountyId: number; childBountyId: number; curator: MultiAddressLike; fee: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'ProposeCurator';
+            params: { parentBountyId: number; childBountyId: number; curator: MultiAddressLike; fee: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13062,13 +14417,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         parentBountyId: number,
         childBountyId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'AcceptCurator';
-          params: { parentBountyId: number; childBountyId: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'AcceptCurator';
+            params: { parentBountyId: number; childBountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13114,13 +14472,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         parentBountyId: number,
         childBountyId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'UnassignCurator';
-          params: { parentBountyId: number; childBountyId: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'UnassignCurator';
+            params: { parentBountyId: number; childBountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13151,13 +14512,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         parentBountyId: number,
         childBountyId: number,
         beneficiary: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'AwardChildBounty';
-          params: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'AwardChildBounty';
+            params: { parentBountyId: number; childBountyId: number; beneficiary: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13185,13 +14549,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         parentBountyId: number,
         childBountyId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'ClaimChildBounty';
-          params: { parentBountyId: number; childBountyId: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'ClaimChildBounty';
+            params: { parentBountyId: number; childBountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13225,19 +14592,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         parentBountyId: number,
         childBountyId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ChildBounties';
-        palletCall: {
-          name: 'CloseChildBounty';
-          params: { parentBountyId: number; childBountyId: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ChildBounties';
+          palletCall: {
+            name: 'CloseChildBounty';
+            params: { parentBountyId: number; childBountyId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Referenda`'s transaction calls
@@ -13263,17 +14633,20 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposalOrigin: KitchensinkRuntimeOriginCaller,
         proposal: FrameSupportPreimagesBounded,
         enactmentMoment: FrameSupportScheduleDispatchTime,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'Submit';
-          params: {
-            proposalOrigin: KitchensinkRuntimeOriginCaller;
-            proposal: FrameSupportPreimagesBounded;
-            enactmentMoment: FrameSupportScheduleDispatchTime;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'Submit';
+            params: {
+              proposalOrigin: KitchensinkRuntimeOriginCaller;
+              proposal: FrameSupportPreimagesBounded;
+              enactmentMoment: FrameSupportScheduleDispatchTime;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13289,13 +14662,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     placeDecisionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'PlaceDecisionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'PlaceDecisionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13310,13 +14686,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     refundDecisionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'RefundDecisionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'RefundDecisionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13330,13 +14709,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     cancel: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'Cancel';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'Cancel';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13350,13 +14732,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     kill: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'Kill';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'Kill';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13368,13 +14753,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     nudgeReferendum: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'NudgeReferendum';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'NudgeReferendum';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13391,13 +14779,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} track
      **/
     oneFewerDeciding: GenericTxCall<
-      (track: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'OneFewerDeciding';
-          params: { track: number };
-        };
-      }>
+      (track: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'OneFewerDeciding';
+            params: { track: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13412,13 +14803,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     refundSubmissionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'RefundSubmissionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'RefundSubmissionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13437,19 +14831,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         maybeHash: H256 | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Referenda';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { index: number; maybeHash: H256 | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Referenda';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { index: number; maybeHash: H256 | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Remark`'s transaction calls
@@ -13461,19 +14858,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} remark
      **/
     store: GenericTxCall<
-      (remark: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Remark';
-        palletCall: {
-          name: 'Store';
-          params: { remark: BytesLike };
-        };
-      }>
+      (remark: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Remark';
+          palletCall: {
+            name: 'Store';
+            params: { remark: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `RootTesting`'s transaction calls
@@ -13485,31 +14885,37 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Perbill} ratio
      **/
     fillBlock: GenericTxCall<
-      (ratio: Perbill) => ChainSubmittableExtrinsic<{
-        pallet: 'RootTesting';
-        palletCall: {
-          name: 'FillBlock';
-          params: { ratio: Perbill };
-        };
-      }>
+      (ratio: Perbill) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RootTesting';
+          palletCall: {
+            name: 'FillBlock';
+            params: { ratio: Perbill };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      *
      **/
     triggerDefensive: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'RootTesting';
-        palletCall: {
-          name: 'TriggerDefensive';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RootTesting';
+          palletCall: {
+            name: 'TriggerDefensive';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `ConvictionVoting`'s transaction calls
@@ -13533,13 +14939,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         pollIndex: number,
         vote: PalletConvictionVotingVoteAccountVote,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'Vote';
-          params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'Vote';
+            params: { pollIndex: number; vote: PalletConvictionVotingVoteAccountVote };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13578,18 +14987,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         to: MultiAddressLike,
         conviction: PalletConvictionVotingConviction,
         balance: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'Delegate';
-          params: {
-            class: number;
-            to: MultiAddressLike;
-            conviction: PalletConvictionVotingConviction;
-            balance: bigint;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'Delegate';
+            params: {
+              class: number;
+              to: MultiAddressLike;
+              conviction: PalletConvictionVotingConviction;
+              balance: bigint;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13611,13 +15023,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} class_
      **/
     undelegate: GenericTxCall<
-      (class_: number) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'Undelegate';
-          params: { class: number };
-        };
-      }>
+      (class_: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'Undelegate';
+            params: { class: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13638,13 +15053,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         class_: number,
         target: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'Unlock';
-          params: { class: number; target: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'Unlock';
+            params: { class: number; target: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13685,13 +15103,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         class_: number | undefined,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'RemoveVote';
-          params: { class: number | undefined; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'RemoveVote';
+            params: { class: number | undefined; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13721,19 +15142,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         target: MultiAddressLike,
         class_: number,
         index: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'ConvictionVoting';
-        palletCall: {
-          name: 'RemoveOtherVote';
-          params: { target: MultiAddressLike; class: number; index: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'ConvictionVoting';
+          palletCall: {
+            name: 'RemoveOtherVote';
+            params: { target: MultiAddressLike; class: number; index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Whitelist`'s transaction calls
@@ -13744,13 +15168,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} callHash
      **/
     whitelistCall: GenericTxCall<
-      (callHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Whitelist';
-        palletCall: {
-          name: 'WhitelistCall';
-          params: { callHash: H256 };
-        };
-      }>
+      (callHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Whitelist';
+          palletCall: {
+            name: 'WhitelistCall';
+            params: { callHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13758,13 +15185,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} callHash
      **/
     removeWhitelistedCall: GenericTxCall<
-      (callHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Whitelist';
-        palletCall: {
-          name: 'RemoveWhitelistedCall';
-          params: { callHash: H256 };
-        };
-      }>
+      (callHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Whitelist';
+          palletCall: {
+            name: 'RemoveWhitelistedCall';
+            params: { callHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13778,13 +15208,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         callHash: H256,
         callEncodedLen: number,
         callWeightWitness: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Whitelist';
-        palletCall: {
-          name: 'DispatchWhitelistedCall';
-          params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Whitelist';
+          palletCall: {
+            name: 'DispatchWhitelistedCall';
+            params: { callHash: H256; callEncodedLen: number; callWeightWitness: SpWeightsWeightV2Weight };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13792,19 +15225,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {KitchensinkRuntimeRuntimeCallLike} call
      **/
     dispatchWhitelistedCallWithPreimage: GenericTxCall<
-      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Whitelist';
-        palletCall: {
-          name: 'DispatchWhitelistedCallWithPreimage';
-          params: { call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Whitelist';
+          palletCall: {
+            name: 'DispatchWhitelistedCallWithPreimage';
+            params: { call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `AllianceMotion`'s transaction calls
@@ -13845,13 +15281,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         newMembers: Array<AccountId32Like>,
         prime: AccountId32Like | undefined,
         oldCount: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'SetMembers';
-          params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'SetMembers';
+            params: { newMembers: Array<AccountId32Like>; prime: AccountId32Like | undefined; oldCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13872,13 +15311,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'Execute';
-          params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Execute';
+            params: { proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13906,13 +15348,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         threshold: number,
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'Propose';
-          params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Propose';
+            params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13935,13 +15380,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposal: H256,
         index: number,
         approve: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'Vote';
-          params: { proposal: H256; index: number; approve: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Vote';
+            params: { proposal: H256; index: number; approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -13959,13 +15407,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     disapproveProposal: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'DisapproveProposal';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'DisapproveProposal';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14005,18 +15456,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         proposalWeightBound: SpWeightsWeightV2Weight,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'Close';
-          params: {
-            proposalHash: H256;
-            index: number;
-            proposalWeightBound: SpWeightsWeightV2Weight;
-            lengthBound: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Close';
+            params: {
+              proposalHash: H256;
+              index: number;
+              proposalWeightBound: SpWeightsWeightV2Weight;
+              lengthBound: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14031,13 +15485,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     kill: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'Kill';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'Kill';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14054,19 +15511,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} proposalHash
      **/
     releaseProposalCost: GenericTxCall<
-      (proposalHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'AllianceMotion';
-        palletCall: {
-          name: 'ReleaseProposalCost';
-          params: { proposalHash: H256 };
-        };
-      }>
+      (proposalHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AllianceMotion';
+          palletCall: {
+            name: 'ReleaseProposalCost';
+            params: { proposalHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Alliance`'s transaction calls
@@ -14086,13 +15546,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         threshold: number,
         proposal: KitchensinkRuntimeRuntimeCallLike,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Propose';
-          params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Propose';
+            params: { threshold: number; proposal: KitchensinkRuntimeRuntimeCallLike; lengthBound: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14109,13 +15572,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposal: H256,
         index: number,
         approve: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Vote';
-          params: { proposal: H256; index: number; approve: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Vote';
+            params: { proposal: H256; index: number; approve: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14132,13 +15598,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         fellows: Array<AccountId32Like>,
         allies: Array<AccountId32Like>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'InitMembers';
-          params: { fellows: Array<AccountId32Like>; allies: Array<AccountId32Like> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'InitMembers';
+            params: { fellows: Array<AccountId32Like>; allies: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14149,13 +15618,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletAllianceDisbandWitness} witness
      **/
     disband: GenericTxCall<
-      (witness: PalletAllianceDisbandWitness) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Disband';
-          params: { witness: PalletAllianceDisbandWitness };
-        };
-      }>
+      (witness: PalletAllianceDisbandWitness) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Disband';
+            params: { witness: PalletAllianceDisbandWitness };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14164,13 +15636,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletAllianceCid} rule
      **/
     setRule: GenericTxCall<
-      (rule: PalletAllianceCid) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'SetRule';
-          params: { rule: PalletAllianceCid };
-        };
-      }>
+      (rule: PalletAllianceCid) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'SetRule';
+            params: { rule: PalletAllianceCid };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14179,13 +15654,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletAllianceCid} announcement
      **/
     announce: GenericTxCall<
-      (announcement: PalletAllianceCid) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Announce';
-          params: { announcement: PalletAllianceCid };
-        };
-      }>
+      (announcement: PalletAllianceCid) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Announce';
+            params: { announcement: PalletAllianceCid };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14194,13 +15672,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletAllianceCid} announcement
      **/
     removeAnnouncement: GenericTxCall<
-      (announcement: PalletAllianceCid) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'RemoveAnnouncement';
-          params: { announcement: PalletAllianceCid };
-        };
-      }>
+      (announcement: PalletAllianceCid) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'RemoveAnnouncement';
+            params: { announcement: PalletAllianceCid };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14208,12 +15689,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     joinAlliance: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'JoinAlliance';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'JoinAlliance';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14223,13 +15707,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     nominateAlly: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'NominateAlly';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'NominateAlly';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14238,13 +15725,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} ally
      **/
     elevateAlly: GenericTxCall<
-      (ally: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'ElevateAlly';
-          params: { ally: MultiAddressLike };
-        };
-      }>
+      (ally: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'ElevateAlly';
+            params: { ally: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14253,12 +15743,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     giveRetirementNotice: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'GiveRetirementNotice';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'GiveRetirementNotice';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14269,12 +15762,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     retire: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Retire';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Retire';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14283,13 +15779,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     kickMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'KickMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'KickMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14298,13 +15797,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<PalletAllianceUnscrupulousItem>} items
      **/
     addUnscrupulousItems: GenericTxCall<
-      (items: Array<PalletAllianceUnscrupulousItem>) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'AddUnscrupulousItems';
-          params: { items: Array<PalletAllianceUnscrupulousItem> };
-        };
-      }>
+      (items: Array<PalletAllianceUnscrupulousItem>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'AddUnscrupulousItems';
+            params: { items: Array<PalletAllianceUnscrupulousItem> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14313,13 +15815,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<PalletAllianceUnscrupulousItem>} items
      **/
     removeUnscrupulousItems: GenericTxCall<
-      (items: Array<PalletAllianceUnscrupulousItem>) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'RemoveUnscrupulousItems';
-          params: { items: Array<PalletAllianceUnscrupulousItem> };
-        };
-      }>
+      (items: Array<PalletAllianceUnscrupulousItem>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'RemoveUnscrupulousItems';
+            params: { items: Array<PalletAllianceUnscrupulousItem> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14338,18 +15843,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         proposalWeightBound: SpWeightsWeightV2Weight,
         lengthBound: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'Close';
-          params: {
-            proposalHash: H256;
-            index: number;
-            proposalWeightBound: SpWeightsWeightV2Weight;
-            lengthBound: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'Close';
+            params: {
+              proposalHash: H256;
+              index: number;
+              proposalWeightBound: SpWeightsWeightV2Weight;
+              lengthBound: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14359,18 +15867,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     abdicateFellowStatus: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Alliance';
-        palletCall: {
-          name: 'AbdicateFellowStatus';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Alliance';
+          palletCall: {
+            name: 'AbdicateFellowStatus';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `NominationPools`'s transaction calls
@@ -14401,13 +15912,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         amount: bigint,
         poolId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'Join';
-          params: { amount: bigint; poolId: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'Join';
+            params: { amount: bigint; poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14422,13 +15936,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletNominationPoolsBondExtra} extra
      **/
     bondExtra: GenericTxCall<
-      (extra: PalletNominationPoolsBondExtra) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'BondExtra';
-          params: { extra: PalletNominationPoolsBondExtra };
-        };
-      }>
+      (extra: PalletNominationPoolsBondExtra) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'BondExtra';
+            params: { extra: PalletNominationPoolsBondExtra };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14443,12 +15960,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     claimPayout: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'ClaimPayout';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'ClaimPayout';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14491,13 +16011,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         memberAccount: MultiAddressLike,
         unbondingPoints: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'Unbond';
-          params: { memberAccount: MultiAddressLike; unbondingPoints: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'Unbond';
+            params: { memberAccount: MultiAddressLike; unbondingPoints: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14515,13 +16038,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         numSlashingSpans: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'PoolWithdrawUnbonded';
-          params: { poolId: number; numSlashingSpans: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'PoolWithdrawUnbonded';
+            params: { poolId: number; numSlashingSpans: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14555,13 +16081,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         memberAccount: MultiAddressLike,
         numSlashingSpans: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'WithdrawUnbonded';
-          params: { memberAccount: MultiAddressLike; numSlashingSpans: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'WithdrawUnbonded';
+            params: { memberAccount: MultiAddressLike; numSlashingSpans: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14594,13 +16123,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         root: MultiAddressLike,
         nominator: MultiAddressLike,
         bouncer: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'Create';
-          params: { amount: bigint; root: MultiAddressLike; nominator: MultiAddressLike; bouncer: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'Create';
+            params: { amount: bigint; root: MultiAddressLike; nominator: MultiAddressLike; bouncer: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14624,19 +16156,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         nominator: MultiAddressLike,
         bouncer: MultiAddressLike,
         poolId: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'CreateWithPoolId';
-          params: {
-            amount: bigint;
-            root: MultiAddressLike;
-            nominator: MultiAddressLike;
-            bouncer: MultiAddressLike;
-            poolId: number;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'CreateWithPoolId';
+            params: {
+              amount: bigint;
+              root: MultiAddressLike;
+              nominator: MultiAddressLike;
+              bouncer: MultiAddressLike;
+              poolId: number;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14660,13 +16195,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         validators: Array<AccountId32Like>,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'Nominate';
-          params: { poolId: number; validators: Array<AccountId32Like> };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'Nominate';
+            params: { poolId: number; validators: Array<AccountId32Like> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14688,13 +16226,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         state: PalletNominationPoolsPoolState,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetState';
-          params: { poolId: number; state: PalletNominationPoolsPoolState };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetState';
+            params: { poolId: number; state: PalletNominationPoolsPoolState };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14710,13 +16251,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         metadata: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { poolId: number; metadata: BytesLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { poolId: number; metadata: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14747,20 +16291,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         maxMembers: PalletNominationPoolsConfigOpU32,
         maxMembersPerPool: PalletNominationPoolsConfigOpU32,
         globalMaxCommission: PalletNominationPoolsConfigOpPerbill,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetConfigs';
-          params: {
-            minJoinBond: PalletNominationPoolsConfigOp;
-            minCreateBond: PalletNominationPoolsConfigOp;
-            maxPools: PalletNominationPoolsConfigOpU32;
-            maxMembers: PalletNominationPoolsConfigOpU32;
-            maxMembersPerPool: PalletNominationPoolsConfigOpU32;
-            globalMaxCommission: PalletNominationPoolsConfigOpPerbill;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetConfigs';
+            params: {
+              minJoinBond: PalletNominationPoolsConfigOp;
+              minCreateBond: PalletNominationPoolsConfigOp;
+              maxPools: PalletNominationPoolsConfigOpU32;
+              maxMembers: PalletNominationPoolsConfigOpU32;
+              maxMembersPerPool: PalletNominationPoolsConfigOpU32;
+              globalMaxCommission: PalletNominationPoolsConfigOpPerbill;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14783,18 +16330,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         newRoot: PalletNominationPoolsConfigOp004,
         newNominator: PalletNominationPoolsConfigOp004,
         newBouncer: PalletNominationPoolsConfigOp004,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'UpdateRoles';
-          params: {
-            poolId: number;
-            newRoot: PalletNominationPoolsConfigOp004;
-            newNominator: PalletNominationPoolsConfigOp004;
-            newBouncer: PalletNominationPoolsConfigOp004;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'UpdateRoles';
+            params: {
+              poolId: number;
+              newRoot: PalletNominationPoolsConfigOp004;
+              newNominator: PalletNominationPoolsConfigOp004;
+              newBouncer: PalletNominationPoolsConfigOp004;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14819,13 +16369,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} poolId
      **/
     chill: GenericTxCall<
-      (poolId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'Chill';
-          params: { poolId: number };
-        };
-      }>
+      (poolId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'Chill';
+            params: { poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14846,13 +16399,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         member: MultiAddressLike,
         extra: PalletNominationPoolsBondExtra,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'BondExtraOther';
-          params: { member: MultiAddressLike; extra: PalletNominationPoolsBondExtra };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'BondExtraOther';
+            params: { member: MultiAddressLike; extra: PalletNominationPoolsBondExtra };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14867,13 +16423,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletNominationPoolsClaimPermission} permission
      **/
     setClaimPermission: GenericTxCall<
-      (permission: PalletNominationPoolsClaimPermission) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetClaimPermission';
-          params: { permission: PalletNominationPoolsClaimPermission };
-        };
-      }>
+      (permission: PalletNominationPoolsClaimPermission) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetClaimPermission';
+            params: { permission: PalletNominationPoolsClaimPermission };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14885,13 +16444,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {AccountId32Like} other
      **/
     claimPayoutOther: GenericTxCall<
-      (other: AccountId32Like) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'ClaimPayoutOther';
-          params: { other: AccountId32Like };
-        };
-      }>
+      (other: AccountId32Like) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'ClaimPayoutOther';
+            params: { other: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14908,13 +16470,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         newCommission: [Perbill, AccountId32Like] | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetCommission';
-          params: { poolId: number; newCommission: [Perbill, AccountId32Like] | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetCommission';
+            params: { poolId: number; newCommission: [Perbill, AccountId32Like] | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14931,13 +16496,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         maxCommission: Perbill,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetCommissionMax';
-          params: { poolId: number; maxCommission: Perbill };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetCommissionMax';
+            params: { poolId: number; maxCommission: Perbill };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14953,13 +16521,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         changeRate: PalletNominationPoolsCommissionChangeRate,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetCommissionChangeRate';
-          params: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetCommissionChangeRate';
+            params: { poolId: number; changeRate: PalletNominationPoolsCommissionChangeRate };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -14983,13 +16554,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} poolId
      **/
     claimCommission: GenericTxCall<
-      (poolId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'ClaimCommission';
-          params: { poolId: number };
-        };
-      }>
+      (poolId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'ClaimCommission';
+            params: { poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15004,13 +16578,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} poolId
      **/
     adjustPoolDeposit: GenericTxCall<
-      (poolId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'AdjustPoolDeposit';
-          params: { poolId: number };
-        };
-      }>
+      (poolId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'AdjustPoolDeposit';
+            params: { poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15026,13 +16603,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         permission: PalletNominationPoolsCommissionClaimPermission | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'SetCommissionClaimPermission';
-          params: { poolId: number; permission: PalletNominationPoolsCommissionClaimPermission | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'SetCommissionClaimPermission';
+            params: { poolId: number; permission: PalletNominationPoolsCommissionClaimPermission | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15049,13 +16629,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} memberAccount
      **/
     applySlash: GenericTxCall<
-      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'ApplySlash';
-          params: { memberAccount: MultiAddressLike };
-        };
-      }>
+      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'ApplySlash';
+            params: { memberAccount: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15072,13 +16655,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} memberAccount
      **/
     migrateDelegation: GenericTxCall<
-      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'MigrateDelegation';
-          params: { memberAccount: MultiAddressLike };
-        };
-      }>
+      (memberAccount: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'MigrateDelegation';
+            params: { memberAccount: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15095,19 +16681,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} poolId
      **/
     migratePoolToDelegateStake: GenericTxCall<
-      (poolId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'NominationPools';
-        palletCall: {
-          name: 'MigratePoolToDelegateStake';
-          params: { poolId: number };
-        };
-      }>
+      (poolId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'NominationPools';
+          palletCall: {
+            name: 'MigratePoolToDelegateStake';
+            params: { poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `RankedPolls`'s transaction calls
@@ -15133,17 +16722,20 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         proposalOrigin: KitchensinkRuntimeOriginCaller,
         proposal: FrameSupportPreimagesBounded,
         enactmentMoment: FrameSupportScheduleDispatchTime,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'Submit';
-          params: {
-            proposalOrigin: KitchensinkRuntimeOriginCaller;
-            proposal: FrameSupportPreimagesBounded;
-            enactmentMoment: FrameSupportScheduleDispatchTime;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'Submit';
+            params: {
+              proposalOrigin: KitchensinkRuntimeOriginCaller;
+              proposal: FrameSupportPreimagesBounded;
+              enactmentMoment: FrameSupportScheduleDispatchTime;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15159,13 +16751,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     placeDecisionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'PlaceDecisionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'PlaceDecisionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15180,13 +16775,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     refundDecisionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'RefundDecisionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'RefundDecisionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15200,13 +16798,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     cancel: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'Cancel';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'Cancel';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15220,13 +16821,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     kill: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'Kill';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'Kill';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15238,13 +16842,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     nudgeReferendum: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'NudgeReferendum';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'NudgeReferendum';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15261,13 +16868,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} track
      **/
     oneFewerDeciding: GenericTxCall<
-      (track: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'OneFewerDeciding';
-          params: { track: number };
-        };
-      }>
+      (track: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'OneFewerDeciding';
+            params: { track: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15282,13 +16892,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} index
      **/
     refundSubmissionDeposit: GenericTxCall<
-      (index: number) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'RefundSubmissionDeposit';
-          params: { index: number };
-        };
-      }>
+      (index: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'RefundSubmissionDeposit';
+            params: { index: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15307,19 +16920,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         index: number,
         maybeHash: H256 | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedPolls';
-        palletCall: {
-          name: 'SetMetadata';
-          params: { index: number; maybeHash: H256 | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedPolls';
+          palletCall: {
+            name: 'SetMetadata';
+            params: { index: number; maybeHash: H256 | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `RankedCollective`'s transaction calls
@@ -15336,13 +16952,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     addMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'AddMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'AddMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15356,13 +16975,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     promoteMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'PromoteMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'PromoteMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15377,13 +16999,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {MultiAddressLike} who
      **/
     demoteMember: GenericTxCall<
-      (who: MultiAddressLike) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'DemoteMember';
-          params: { who: MultiAddressLike };
-        };
-      }>
+      (who: MultiAddressLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'DemoteMember';
+            params: { who: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15402,13 +17027,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         minRank: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'RemoveMember';
-          params: { who: MultiAddressLike; minRank: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'RemoveMember';
+            params: { who: MultiAddressLike; minRank: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15431,13 +17059,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poll: number,
         aye: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'Vote';
-          params: { poll: number; aye: boolean };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'Vote';
+            params: { poll: number; aye: boolean };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15459,13 +17090,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         pollIndex: number,
         max: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'CleanupPoll';
-          params: { pollIndex: number; max: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'CleanupPoll';
+            params: { pollIndex: number; max: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15482,19 +17116,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         who: MultiAddressLike,
         newWho: MultiAddressLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'RankedCollective';
-        palletCall: {
-          name: 'ExchangeMember';
-          params: { who: MultiAddressLike; newWho: MultiAddressLike };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'RankedCollective';
+          palletCall: {
+            name: 'ExchangeMember';
+            params: { who: MultiAddressLike; newWho: MultiAddressLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `AssetConversion`'s transaction calls
@@ -15513,16 +17150,19 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'CreatePool';
-          params: {
-            asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'CreatePool';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15558,21 +17198,24 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         amount1Min: bigint,
         amount2Min: bigint,
         mintTo: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'AddLiquidity';
-          params: {
-            asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            amount1Desired: bigint;
-            amount2Desired: bigint;
-            amount1Min: bigint;
-            amount2Min: bigint;
-            mintTo: AccountId32Like;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'AddLiquidity';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              amount1Desired: bigint;
+              amount2Desired: bigint;
+              amount1Min: bigint;
+              amount2Min: bigint;
+              mintTo: AccountId32Like;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15595,20 +17238,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         amount1MinReceive: bigint,
         amount2MinReceive: bigint,
         withdrawTo: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'RemoveLiquidity';
-          params: {
-            asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            lpTokenBurn: bigint;
-            amount1MinReceive: bigint;
-            amount2MinReceive: bigint;
-            withdrawTo: AccountId32Like;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'RemoveLiquidity';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              lpTokenBurn: bigint;
+              amount1MinReceive: bigint;
+              amount2MinReceive: bigint;
+              withdrawTo: AccountId32Like;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15632,19 +17278,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         amountOutMin: bigint,
         sendTo: AccountId32Like,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'SwapExactTokensForTokens';
-          params: {
-            path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
-            amountIn: bigint;
-            amountOutMin: bigint;
-            sendTo: AccountId32Like;
-            keepAlive: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'SwapExactTokensForTokens';
+            params: {
+              path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
+              amountIn: bigint;
+              amountOutMin: bigint;
+              sendTo: AccountId32Like;
+              keepAlive: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15668,19 +17317,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         amountInMax: bigint,
         sendTo: AccountId32Like,
         keepAlive: boolean,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'SwapTokensForExactTokens';
-          params: {
-            path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
-            amountOut: bigint;
-            amountInMax: bigint;
-            sendTo: AccountId32Like;
-            keepAlive: boolean;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'SwapTokensForExactTokens';
+            params: {
+              path: Array<FrameSupportTokensFungibleUnionOfNativeOrWithId>;
+              amountOut: bigint;
+              amountInMax: bigint;
+              sendTo: AccountId32Like;
+              keepAlive: boolean;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15703,22 +17355,25 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversion';
-        palletCall: {
-          name: 'Touch';
-          params: {
-            asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversion';
+          palletCall: {
+            name: 'Touch';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `FastUnstake`'s transaction calls
@@ -15754,12 +17409,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     registerFastUnstake: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'FastUnstake';
-        palletCall: {
-          name: 'RegisterFastUnstake';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'FastUnstake';
+          palletCall: {
+            name: 'RegisterFastUnstake';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15784,12 +17442,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     deregister: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'FastUnstake';
-        palletCall: {
-          name: 'Deregister';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'FastUnstake';
+          palletCall: {
+            name: 'Deregister';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15810,19 +17471,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} erasToCheck
      **/
     control: GenericTxCall<
-      (erasToCheck: number) => ChainSubmittableExtrinsic<{
-        pallet: 'FastUnstake';
-        palletCall: {
-          name: 'Control';
-          params: { erasToCheck: number };
-        };
-      }>
+      (erasToCheck: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'FastUnstake';
+          palletCall: {
+            name: 'Control';
+            params: { erasToCheck: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `MessageQueue`'s transaction calls
@@ -15838,13 +17502,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         messageOrigin: number,
         pageIndex: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'MessageQueue';
-        palletCall: {
-          name: 'ReapPage';
-          params: { messageOrigin: number; pageIndex: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MessageQueue';
+          palletCall: {
+            name: 'ReapPage';
+            params: { messageOrigin: number; pageIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15873,19 +17540,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         page: number,
         index: number,
         weightLimit: SpWeightsWeightV2Weight,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'MessageQueue';
-        palletCall: {
-          name: 'ExecuteOverweight';
-          params: { messageOrigin: number; page: number; index: number; weightLimit: SpWeightsWeightV2Weight };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MessageQueue';
+          palletCall: {
+            name: 'ExecuteOverweight';
+            params: { messageOrigin: number; page: number; index: number; weightLimit: SpWeightsWeightV2Weight };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Pov`'s transaction calls
@@ -15895,26 +17565,32 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     emitEvent: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Pov';
-        palletCall: 'EmitEvent';
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Pov';
+          palletCall: 'EmitEvent';
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      *
      **/
     noop: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Pov';
-        palletCall: 'Noop';
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Pov';
+          palletCall: 'Noop';
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `TxPause`'s transaction calls
@@ -15929,13 +17605,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {[BytesLike, BytesLike]} fullName
      **/
     pause: GenericTxCall<
-      (fullName: [BytesLike, BytesLike]) => ChainSubmittableExtrinsic<{
-        pallet: 'TxPause';
-        palletCall: {
-          name: 'Pause';
-          params: { fullName: [BytesLike, BytesLike] };
-        };
-      }>
+      (fullName: [BytesLike, BytesLike]) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TxPause';
+          palletCall: {
+            name: 'Pause';
+            params: { fullName: [BytesLike, BytesLike] };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15947,19 +17626,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {[BytesLike, BytesLike]} ident
      **/
     unpause: GenericTxCall<
-      (ident: [BytesLike, BytesLike]) => ChainSubmittableExtrinsic<{
-        pallet: 'TxPause';
-        palletCall: {
-          name: 'Unpause';
-          params: { ident: [BytesLike, BytesLike] };
-        };
-      }>
+      (ident: [BytesLike, BytesLike]) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'TxPause';
+          palletCall: {
+            name: 'Unpause';
+            params: { ident: [BytesLike, BytesLike] };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `SafeMode`'s transaction calls
@@ -15975,12 +17657,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     enter: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'Enter';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'Enter';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -15993,12 +17678,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceEnter: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ForceEnter';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ForceEnter';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16016,12 +17704,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     extend: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'Extend';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'Extend';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16034,12 +17725,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceExtend: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ForceExtend';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ForceExtend';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16055,12 +17749,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceExit: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ForceExit';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ForceExit';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16081,13 +17778,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         account: AccountId32Like,
         block: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ForceSlashDeposit';
-          params: { account: AccountId32Like; block: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ForceSlashDeposit';
+            params: { account: AccountId32Like; block: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16111,13 +17811,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         account: AccountId32Like,
         block: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ReleaseDeposit';
-          params: { account: AccountId32Like; block: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ReleaseDeposit';
+            params: { account: AccountId32Like; block: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16140,19 +17843,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         account: AccountId32Like,
         block: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'SafeMode';
-        palletCall: {
-          name: 'ForceReleaseDeposit';
-          params: { account: AccountId32Like; block: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'SafeMode';
+          palletCall: {
+            name: 'ForceReleaseDeposit';
+            params: { account: AccountId32Like; block: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `MultiBlockMigrations`'s transaction calls
@@ -16168,13 +17874,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletMigrationsMigrationCursor | undefined} cursor
      **/
     forceSetCursor: GenericTxCall<
-      (cursor: PalletMigrationsMigrationCursor | undefined) => ChainSubmittableExtrinsic<{
-        pallet: 'MultiBlockMigrations';
-        palletCall: {
-          name: 'ForceSetCursor';
-          params: { cursor: PalletMigrationsMigrationCursor | undefined };
-        };
-      }>
+      (cursor: PalletMigrationsMigrationCursor | undefined) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MultiBlockMigrations';
+          palletCall: {
+            name: 'ForceSetCursor';
+            params: { cursor: PalletMigrationsMigrationCursor | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16194,13 +17903,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         index: number,
         innerCursor: BytesLike | undefined,
         startedAt: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'MultiBlockMigrations';
-        palletCall: {
-          name: 'ForceSetActiveCursor';
-          params: { index: number; innerCursor: BytesLike | undefined; startedAt: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MultiBlockMigrations';
+          palletCall: {
+            name: 'ForceSetActiveCursor';
+            params: { index: number; innerCursor: BytesLike | undefined; startedAt: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16211,12 +17923,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     forceOnboardMbms: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'MultiBlockMigrations';
-        palletCall: {
-          name: 'ForceOnboardMbms';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MultiBlockMigrations';
+          palletCall: {
+            name: 'ForceOnboardMbms';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16229,19 +17944,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletMigrationsHistoricCleanupSelector} selector
      **/
     clearHistoric: GenericTxCall<
-      (selector: PalletMigrationsHistoricCleanupSelector) => ChainSubmittableExtrinsic<{
-        pallet: 'MultiBlockMigrations';
-        palletCall: {
-          name: 'ClearHistoric';
-          params: { selector: PalletMigrationsHistoricCleanupSelector };
-        };
-      }>
+      (selector: PalletMigrationsHistoricCleanupSelector) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MultiBlockMigrations';
+          palletCall: {
+            name: 'ClearHistoric';
+            params: { selector: PalletMigrationsHistoricCleanupSelector };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Broker`'s transaction calls
@@ -16256,13 +17974,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletBrokerConfigRecord} config
      **/
     configure: GenericTxCall<
-      (config: PalletBrokerConfigRecord) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Configure';
-          params: { config: PalletBrokerConfigRecord };
-        };
-      }>
+      (config: PalletBrokerConfigRecord) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Configure';
+            params: { config: PalletBrokerConfigRecord };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16277,13 +17998,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {Array<PalletBrokerScheduleItem>} workload
      **/
     reserve: GenericTxCall<
-      (workload: Array<PalletBrokerScheduleItem>) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Reserve';
-          params: { workload: Array<PalletBrokerScheduleItem> };
-        };
-      }>
+      (workload: Array<PalletBrokerScheduleItem>) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Reserve';
+            params: { workload: Array<PalletBrokerScheduleItem> };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16298,13 +18022,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} itemIndex
      **/
     unreserve: GenericTxCall<
-      (itemIndex: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Unreserve';
-          params: { itemIndex: number };
-        };
-      }>
+      (itemIndex: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Unreserve';
+            params: { itemIndex: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16325,13 +18052,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         task: number,
         until: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'SetLease';
-          params: { task: number; until: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'SetLease';
+            params: { task: number; until: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16352,13 +18082,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         endPrice: bigint,
         extraCores: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'StartSales';
-          params: { endPrice: bigint; extraCores: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'StartSales';
+            params: { endPrice: bigint; extraCores: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16371,13 +18104,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {bigint} priceLimit
      **/
     purchase: GenericTxCall<
-      (priceLimit: bigint) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Purchase';
-          params: { priceLimit: bigint };
-        };
-      }>
+      (priceLimit: bigint) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Purchase';
+            params: { priceLimit: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16390,13 +18126,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} core
      **/
     renew: GenericTxCall<
-      (core: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Renew';
-          params: { core: number };
-        };
-      }>
+      (core: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Renew';
+            params: { core: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16413,13 +18152,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         regionId: PalletBrokerRegionId,
         newOwner: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Transfer';
-          params: { regionId: PalletBrokerRegionId; newOwner: AccountId32Like };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Transfer';
+            params: { regionId: PalletBrokerRegionId; newOwner: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16437,13 +18179,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         regionId: PalletBrokerRegionId,
         pivot: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Partition';
-          params: { regionId: PalletBrokerRegionId; pivot: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Partition';
+            params: { regionId: PalletBrokerRegionId; pivot: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16463,13 +18208,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         regionId: PalletBrokerRegionId,
         pivot: PalletBrokerCoreMask,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Interlace';
-          params: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Interlace';
+            params: { regionId: PalletBrokerRegionId; pivot: PalletBrokerCoreMask };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16491,13 +18239,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         regionId: PalletBrokerRegionId,
         task: number,
         finality: PalletBrokerFinality,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Assign';
-          params: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Assign';
+            params: { regionId: PalletBrokerRegionId; task: number; finality: PalletBrokerFinality };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16517,13 +18268,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         regionId: PalletBrokerRegionId,
         payee: AccountId32Like,
         finality: PalletBrokerFinality,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'Pool';
-          params: { regionId: PalletBrokerRegionId; payee: AccountId32Like; finality: PalletBrokerFinality };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'Pool';
+            params: { regionId: PalletBrokerRegionId; payee: AccountId32Like; finality: PalletBrokerFinality };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16543,13 +18297,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         regionId: PalletBrokerRegionId,
         maxTimeslices: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'ClaimRevenue';
-          params: { regionId: PalletBrokerRegionId; maxTimeslices: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'ClaimRevenue';
+            params: { regionId: PalletBrokerRegionId; maxTimeslices: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16567,13 +18324,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         amount: bigint,
         beneficiary: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'PurchaseCredit';
-          params: { amount: bigint; beneficiary: AccountId32Like };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'PurchaseCredit';
+            params: { amount: bigint; beneficiary: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16585,13 +18345,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletBrokerRegionId} regionId
      **/
     dropRegion: GenericTxCall<
-      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'DropRegion';
-          params: { regionId: PalletBrokerRegionId };
-        };
-      }>
+      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DropRegion';
+            params: { regionId: PalletBrokerRegionId };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16603,13 +18366,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletBrokerRegionId} regionId
      **/
     dropContribution: GenericTxCall<
-      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'DropContribution';
-          params: { regionId: PalletBrokerRegionId };
-        };
-      }>
+      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DropContribution';
+            params: { regionId: PalletBrokerRegionId };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16621,13 +18387,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} when
      **/
     dropHistory: GenericTxCall<
-      (when: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'DropHistory';
-          params: { when: number };
-        };
-      }>
+      (when: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DropHistory';
+            params: { when: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16644,13 +18413,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         core: number,
         when: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'DropRenewal';
-          params: { core: number; when: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DropRenewal';
+            params: { core: number; when: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16662,13 +18434,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} coreCount
      **/
     requestCoreCount: GenericTxCall<
-      (coreCount: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'RequestCoreCount';
-          params: { coreCount: number };
-        };
-      }>
+      (coreCount: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'RequestCoreCount';
+            params: { coreCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16676,13 +18451,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} coreCount
      **/
     notifyCoreCount: GenericTxCall<
-      (coreCount: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'NotifyCoreCount';
-          params: { coreCount: number };
-        };
-      }>
+      (coreCount: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'NotifyCoreCount';
+            params: { coreCount: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16690,13 +18468,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletBrokerOnDemandRevenueRecord} revenue
      **/
     notifyRevenue: GenericTxCall<
-      (revenue: PalletBrokerOnDemandRevenueRecord) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'NotifyRevenue';
-          params: { revenue: PalletBrokerOnDemandRevenueRecord };
-        };
-      }>
+      (revenue: PalletBrokerOnDemandRevenueRecord) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'NotifyRevenue';
+            params: { revenue: PalletBrokerOnDemandRevenueRecord };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16721,13 +18502,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         core: number,
         task: number,
         workloadEndHint: number | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'EnableAutoRenew';
-          params: { core: number; task: number; workloadEndHint: number | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'EnableAutoRenew';
+            params: { core: number; task: number; workloadEndHint: number | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16746,13 +18530,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         core: number,
         task: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'DisableAutoRenew';
-          params: { core: number; task: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'DisableAutoRenew';
+            params: { core: number; task: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16776,13 +18563,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         workload: Array<PalletBrokerScheduleItem>,
         core: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'ForceReserve';
-          params: { workload: Array<PalletBrokerScheduleItem>; core: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'ForceReserve';
+            params: { workload: Array<PalletBrokerScheduleItem>; core: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16794,13 +18584,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} task
      **/
     removeLease: GenericTxCall<
-      (task: number) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'RemoveLease';
-          params: { task: number };
-        };
-      }>
+      (task: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'RemoveLease';
+            params: { task: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16812,13 +18605,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletBrokerRegionId} regionId
      **/
     removeAssignment: GenericTxCall<
-      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'RemoveAssignment';
-          params: { regionId: PalletBrokerRegionId };
-        };
-      }>
+      (regionId: PalletBrokerRegionId) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'RemoveAssignment';
+            params: { regionId: PalletBrokerRegionId };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16830,19 +18626,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         id: number,
         other: number,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Broker';
-        palletCall: {
-          name: 'SwapLeases';
-          params: { id: number; other: number };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Broker';
+          palletCall: {
+            name: 'SwapLeases';
+            params: { id: number; other: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Mixnet`'s transaction calls
@@ -16858,19 +18657,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         registration: PalletMixnetRegistration,
         signature: SpMixnetAppSignature,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Mixnet';
-        palletCall: {
-          name: 'Register';
-          params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Mixnet';
+          palletCall: {
+            name: 'Register';
+            params: { registration: PalletMixnetRegistration; signature: SpMixnetAppSignature };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Parameters`'s transaction calls
@@ -16885,19 +18687,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {KitchensinkRuntimeRuntimeParameters} keyValue
      **/
     setParameter: GenericTxCall<
-      (keyValue: KitchensinkRuntimeRuntimeParameters) => ChainSubmittableExtrinsic<{
-        pallet: 'Parameters';
-        palletCall: {
-          name: 'SetParameter';
-          params: { keyValue: KitchensinkRuntimeRuntimeParameters };
-        };
-      }>
+      (keyValue: KitchensinkRuntimeRuntimeParameters) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Parameters';
+          palletCall: {
+            name: 'SetParameter';
+            params: { keyValue: KitchensinkRuntimeRuntimeParameters };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `AssetConversionMigration`'s transaction calls
@@ -16916,22 +18721,25 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId,
         asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetConversionMigration';
-        palletCall: {
-          name: 'MigrateToNewAccount';
-          params: {
-            asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetConversionMigration';
+          palletCall: {
+            name: 'MigrateToNewAccount';
+            params: {
+              asset1: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              asset2: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `Revive`'s transaction calls
@@ -16957,13 +18765,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {BytesLike} payload
      **/
     ethTransact: GenericTxCall<
-      (payload: BytesLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'EthTransact';
-          params: { payload: BytesLike };
-        };
-      }>
+      (payload: BytesLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'EthTransact';
+            params: { payload: BytesLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -16997,19 +18808,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         gasLimit: SpWeightsWeightV2Weight,
         storageDepositLimit: bigint,
         data: BytesLike,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'Call';
-          params: {
-            dest: H160;
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint;
-            data: BytesLike;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'Call';
+            params: {
+              dest: H160;
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              data: BytesLike;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17034,20 +18848,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         codeHash: H256,
         data: BytesLike,
         salt: FixedBytes<32> | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'Instantiate';
-          params: {
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint;
-            codeHash: H256;
-            data: BytesLike;
-            salt: FixedBytes<32> | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'Instantiate';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              codeHash: H256;
+              data: BytesLike;
+              salt: FixedBytes<32> | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17094,20 +18911,23 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         code: BytesLike,
         data: BytesLike,
         salt: FixedBytes<32> | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'InstantiateWithCode';
-          params: {
-            value: bigint;
-            gasLimit: SpWeightsWeightV2Weight;
-            storageDepositLimit: bigint;
-            code: BytesLike;
-            data: BytesLike;
-            salt: FixedBytes<32> | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'InstantiateWithCode';
+            params: {
+              value: bigint;
+              gasLimit: SpWeightsWeightV2Weight;
+              storageDepositLimit: bigint;
+              code: BytesLike;
+              data: BytesLike;
+              salt: FixedBytes<32> | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17131,13 +18951,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         code: BytesLike,
         storageDepositLimit: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'UploadCode';
-          params: { code: BytesLike; storageDepositLimit: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'UploadCode';
+            params: { code: BytesLike; storageDepositLimit: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17149,13 +18972,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {H256} codeHash
      **/
     removeCode: GenericTxCall<
-      (codeHash: H256) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'RemoveCode';
-          params: { codeHash: H256 };
-        };
-      }>
+      (codeHash: H256) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'RemoveCode';
+            params: { codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17177,13 +19003,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         dest: H160,
         codeHash: H256,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'SetCode';
-          params: { dest: H160; codeHash: H256 };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'SetCode';
+            params: { dest: H160; codeHash: H256 };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17194,12 +19023,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     mapAccount: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'MapAccount';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'MapAccount';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17210,12 +19042,15 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      *
      **/
     unmapAccount: GenericTxCall<
-      () => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'UnmapAccount';
-        };
-      }>
+      () => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'UnmapAccount';
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17228,19 +19063,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {KitchensinkRuntimeRuntimeCallLike} call
      **/
     dispatchAsFallbackAccount: GenericTxCall<
-      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<{
-        pallet: 'Revive';
-        palletCall: {
-          name: 'DispatchAsFallbackAccount';
-          params: { call: KitchensinkRuntimeRuntimeCallLike };
-        };
-      }>
+      (call: KitchensinkRuntimeRuntimeCallLike) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'Revive';
+          palletCall: {
+            name: 'DispatchAsFallbackAccount';
+            params: { call: KitchensinkRuntimeRuntimeCallLike };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `AssetRewards`'s transaction calls
@@ -17273,19 +19111,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         rewardRatePerBlock: bigint,
         expiry: FrameSupportScheduleDispatchTime,
         admin: AccountId32Like | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'CreatePool';
-          params: {
-            stakedAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            rewardAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
-            rewardRatePerBlock: bigint;
-            expiry: FrameSupportScheduleDispatchTime;
-            admin: AccountId32Like | undefined;
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'CreatePool';
+            params: {
+              stakedAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              rewardAssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+              rewardRatePerBlock: bigint;
+              expiry: FrameSupportScheduleDispatchTime;
+              admin: AccountId32Like | undefined;
+            };
           };
-        };
-      }>
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17300,13 +19141,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'Stake';
-          params: { poolId: number; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'Stake';
+            params: { poolId: number; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17329,13 +19173,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
         poolId: number,
         amount: bigint,
         staker: AccountId32Like | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'Unstake';
-          params: { poolId: number; amount: bigint; staker: AccountId32Like | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'Unstake';
+            params: { poolId: number; amount: bigint; staker: AccountId32Like | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17353,13 +19200,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         staker: AccountId32Like | undefined,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'HarvestRewards';
-          params: { poolId: number; staker: AccountId32Like | undefined };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'HarvestRewards';
+            params: { poolId: number; staker: AccountId32Like | undefined };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17376,13 +19226,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         newRewardRatePerBlock: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'SetPoolRewardRatePerBlock';
-          params: { poolId: number; newRewardRatePerBlock: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolRewardRatePerBlock';
+            params: { poolId: number; newRewardRatePerBlock: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17397,13 +19250,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         newAdmin: AccountId32Like,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'SetPoolAdmin';
-          params: { poolId: number; newAdmin: AccountId32Like };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolAdmin';
+            params: { poolId: number; newAdmin: AccountId32Like };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17420,13 +19276,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         newExpiry: FrameSupportScheduleDispatchTime,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'SetPoolExpiryBlock';
-          params: { poolId: number; newExpiry: FrameSupportScheduleDispatchTime };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'SetPoolExpiryBlock';
+            params: { poolId: number; newExpiry: FrameSupportScheduleDispatchTime };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17443,13 +19302,16 @@ export interface ChainTx extends GenericChainTx<TxCall> {
       (
         poolId: number,
         amount: bigint,
-      ) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'DepositRewardTokens';
-          params: { poolId: number; amount: bigint };
-        };
-      }>
+      ) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'DepositRewardTokens';
+            params: { poolId: number; amount: bigint };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
@@ -17463,19 +19325,22 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {number} poolId
      **/
     cleanupPool: GenericTxCall<
-      (poolId: number) => ChainSubmittableExtrinsic<{
-        pallet: 'AssetRewards';
-        palletCall: {
-          name: 'CleanupPool';
-          params: { poolId: number };
-        };
-      }>
+      (poolId: number) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'AssetRewards';
+          palletCall: {
+            name: 'CleanupPool';
+            params: { poolId: number };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
   /**
    * Pallet `MetaTx`'s transaction calls
@@ -17490,18 +19355,21 @@ export interface ChainTx extends GenericChainTx<TxCall> {
      * @param {PalletMetaTxMetaTx} metaTx
      **/
     dispatch: GenericTxCall<
-      (metaTx: PalletMetaTxMetaTx) => ChainSubmittableExtrinsic<{
-        pallet: 'MetaTx';
-        palletCall: {
-          name: 'Dispatch';
-          params: { metaTx: PalletMetaTxMetaTx };
-        };
-      }>
+      (metaTx: PalletMetaTxMetaTx) => ChainSubmittableExtrinsic<
+        {
+          pallet: 'MetaTx';
+          palletCall: {
+            name: 'Dispatch';
+            params: { metaTx: PalletMetaTxMetaTx };
+          };
+        },
+        ChainKnownTypes
+      >
     >;
 
     /**
      * Generic pallet tx call
      **/
-    [callName: string]: GenericTxCall<TxCall>;
+    [callName: string]: GenericTxCall<TxCall<ChainKnownTypes>>;
   };
 }

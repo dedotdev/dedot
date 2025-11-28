@@ -11,6 +11,7 @@ import { RuntimeApis } from './runtime.js';
 import { ChainTx } from './tx.js';
 import type {
   FrameMetadataHashExtensionCheckMetadataHash,
+  FrameSupportTokensFungibleUnionOfNativeOrWithId,
   FrameSystemExtensionsCheckGenesis,
   FrameSystemExtensionsCheckMortality,
   FrameSystemExtensionsCheckNonZeroSender,
@@ -43,6 +44,7 @@ interface ChainKnownTypes extends GenericChainKnownTypes {
     FrameMetadataHashExtensionCheckMetadataHash,
     FrameSystemExtensionsWeightReclaim,
   ];
+  AssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
 }
 
 /**
@@ -57,7 +59,7 @@ export interface SubstrateApi extends GenericSubstrateApi {
   events: ChainEvents;
   call: RuntimeApis;
   view: ChainViewFunctions;
-  tx: ChainTx;
+  tx: ChainTx<ChainKnownTypes>;
 
   types: ChainKnownTypes;
 }

@@ -10,7 +10,7 @@ const fetchChainSpec = async (rpcVersion: RpcVersion) => {
 
   console.log('chain name', await client.chainSpec.chainName());
   console.log('chain props', await client.chainSpec.properties());
-  console.log('chain genesisHash', client.genesisHash);
+  console.log('chain genesisHash', await client.chainSpec.genesisHash());
 
   await client.disconnect();
 };

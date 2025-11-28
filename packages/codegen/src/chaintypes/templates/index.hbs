@@ -17,6 +17,7 @@ interface ChainKnownTypes extends GenericChainKnownTypes {
   Signature: {{{signatureType}}};
   RuntimeCall: {{{runtimeCallType}}};
   Extra: {{{extraType}}};
+  AssetId: {{{assetIdType}}};
 }
 
 {{interfaceDocs}}export interface {{{interfaceName}}} extends GenericSubstrateApi {
@@ -27,7 +28,7 @@ interface ChainKnownTypes extends GenericChainKnownTypes {
   events: ChainEvents;
   call: RuntimeApis;
   view: ChainViewFunctions;
-  tx: ChainTx;
+  tx: ChainTx<ChainKnownTypes>;
   
   types: ChainKnownTypes;
 }

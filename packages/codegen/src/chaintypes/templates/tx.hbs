@@ -4,6 +4,6 @@
 
 {{{ defTypes }}}
 
-export interface ChainTx extends GenericChainTx<TxCall> {
+export interface ChainTx<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes> extends GenericChainTx<TxCall<ChainKnownTypes>> {
   {{{ txDefsOut }}}
 }

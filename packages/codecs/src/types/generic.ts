@@ -190,7 +190,10 @@ export interface GenericPalletEvent<
   EventName extends string = string,
   Data extends any = any,
 > {
-  is: (event: IEventRecord | PalletEvent) => event is PalletEvent<Pallet, EventName, Data>;
+  is: {
+    (event: IEventRecord): event is IEventRecord<PalletEvent<Pallet, EventName, Data>>;
+    (event: PalletEvent): event is PalletEvent<Pallet, EventName, Data>;
+  };
   find: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data> | undefined;
   filter: (events: IEventRecord[] | PalletEvent[]) => PalletEvent<Pallet, EventName, Data>[];
   watch: (callback: (events: PalletEvent<Pallet, EventName, Data>[]) => void) => Promise<Unsub>;
@@ -208,6 +211,7 @@ export interface GenericChainKnownTypes {
   Signature: any;
   RuntimeCall: any;
   Extra: any[];
+  AssetId: any;
   [TypeName: string]: any;
 }
 

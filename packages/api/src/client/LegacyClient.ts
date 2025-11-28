@@ -345,6 +345,9 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
       chainName: (): Promise<string> => {
         return this.rpc.system_chain();
       },
+      genesisHash: (): Promise<HexString> => {
+        return Promise.resolve(this.genesisHash);
+      },
       properties: (): Promise<ChainProperties> => {
         return this.rpc.system_properties();
       },
