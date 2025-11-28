@@ -220,6 +220,9 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         .catch(noop);
     };
 
+    const stopBestBlockTrackingFn = api.on('bestBlock', checkBestBlockIncluded);
+    const stopFinalizedBlockTrackingFn = api.on('finalizedBlock', checkFinalizedBlockIncluded);
+
     stopBroadcastFn = await api.txBroadcaster.broadcastTx(txHex);
     callback(
       new SubmittableResult<IEventRecord>({
@@ -227,9 +230,6 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
         txHash,
       }),
     );
-
-    const stopBestBlockTrackingFn = api.on('bestBlock', checkBestBlockIncluded);
-    const stopFinalizedBlockTrackingFn = api.on('finalizedBlock', checkFinalizedBlockIncluded);
 
     const stopTracking = () => {
       stopBestBlockTrackingFn();
