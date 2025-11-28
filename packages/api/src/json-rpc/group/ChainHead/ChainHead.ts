@@ -960,4 +960,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     this.#cache.clear();
     this.#archive?.clearCache();
   }
+
+  holdBlock(hash: BlockHash) {
+    this.#ensurePinnedHash(hash);
+    this.#blockUsage.use(hash);
+  }
+
+  releaseBlock(hash: BlockHash) {
+    this.#blockUsage.release(hash);
+  }
 }
