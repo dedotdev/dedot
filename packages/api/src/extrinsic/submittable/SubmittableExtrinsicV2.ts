@@ -257,37 +257,58 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
 
     const { deferTx, onTxProgress } = txDefer();
 
-    // TODO handle timeout for this with the Drop status,
-    //  just in-case we somehow can't find the tx in any block
+    let trackingTimer: NodeJS.Timeout | undefined;
+
     let unsub: Unsub | undefined;
-    this.#send((result) => {
+
+    const onProgress = (result: ISubmittableResult) => {
       result = this.transformTxResult(result);
 
       onTxProgress(result);
+
+      const { status, txHash } = result;
+
+      if (trackingTimer) {
+        clearTimeout(trackingTimer);
+        trackingTimer = undefined;
+      }
+
+      if (
+        status.type === 'Validated' || // --
+        status.type === 'Broadcasting'
+      ) {
+        trackingTimer = setTimeout(() => {
+          onProgress(
+            new SubmittableResult<IEventRecord>({
+              status: { type: 'Drop', value: { error: 'Unable to track the transaction’s progress' } },
+              txHash,
+            }),
+          );
+        }, 60_000 * 2);
+      }
 
       if (isSubscription) {
         try {
           callback?.(result);
         } catch {}
-
-        return;
       }
 
-      const { status, txHash } = result;
       if (
         status.type === 'BestChainBlockIncluded' ||
         status.type === 'Finalized' ||
         status.type === 'Invalid' ||
         status.type === 'Drop'
       ) {
-        deferTx.resolve(txHash);
+        !isSubscription && deferTx.resolve(txHash);
 
         // Unsub the subscription if we're at the final states
         if (status.type !== 'BestChainBlockIncluded') {
           unsub?.().catch(noop);
         }
       }
-    })
+    };
+
+    this.#send(onProgress)
       .then((x) => {
         unsub = x;
 
