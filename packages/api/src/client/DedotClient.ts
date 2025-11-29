@@ -56,6 +56,15 @@ export type ClientOptions = ApiOptions & {
  * const provider = new WsProvider('wss://rpc.polkadot.io');
  * const client = await DedotClient.new<PolkadotApi>(provider);
  *
+ * // Get the current best block
+ * const bestBlock = await client.block.best();
+ * console.log('Best block:', bestBlock.number, bestBlock.hash);
+ *
+ * // Subscribe to finalized blocks
+ * const unsub = client.block.finalized((block) => {
+ *   console.log('Finalized:', block.number);
+ * });
+ *
  * // Query on-chain storage
  * const balance = await client.query.system.account('14...');
  * console.log('Balance:', balance);
@@ -65,8 +74,10 @@ export type ClientOptions = ApiOptions & {
  *   console.log('Runtime upgraded to:', version.specVersion, 'at block:', block.number);
  * });
  *
- * // Make transactions
- * const tx = client.tx.balances.transferKeepAlive('15...', 1000000000000n);
+ * // Sending transactions
+ * await client.tx.balances.transferKeepAlive('15...', 1000000000000n)
+ *             .signAndSend(signer)
+ *             .untilFinalized();
  *
  * // Disconnect when done
  * await client.disconnect();
