@@ -28,6 +28,7 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 
 ### Features
 
+- ✅ Fully support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#smoldot) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
 - ✅ Small bundle size, tree-shakable (no more bn.js or wasm-blob tight dependencies)
 - ✅ Types & APIs suggestions for each individual Polkadot SDK-based blockchain
   network ([@dedot/chaintypes](https://github.com/dedotdev/chaintypes))
@@ -38,7 +39,6 @@ Delightful JavaScript/TypeScript client for [Polkadot](https://polkadot.com/) & 
 - ✅ Built-in metadata optimization ([caching](https://docs.dedot.dev/getting-started/connect-to-network#caching-metadata))
 - ✅ Build on top of both the [new](https://paritytech.github.io/json-rpc-interface-spec/introduction.html) & [legacy](https://github.com/w3f/PSPs/blob/master/PSPs/drafts/psp-6.md) (
   deprecated soon) JSON-RPC APIs
-- ✅ Support [light clients](https://docs.dedot.dev/getting-started/connect-to-network#initializing-dedotclient-and-interact-with-polkadot-network) (e.g: [smoldot](https://www.npmjs.com/package/smoldot))
 - ✅ [Unified Typesafe Contract APIs](https://docs.dedot.dev/smart-contracts/intro) for ink! v5 (WASM, pallet-contracts), ink! v6 and solidity contracts (PVM, pallet-revive)
 - ✅ Fully-typed low-level [JSON-RPC client](https://docs.dedot.dev/clients-and-providers/clients#jsonrpcclient)
 
@@ -63,19 +63,19 @@ npm i -D @dedot/chaintypes
 ```
 2. Connect to the network
 ```typescript
-import { DedotClient, WsProvider, PinnedBlock } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import type { PolkadotApi } from '@dedot/chaintypes';
 
 const provider = new WsProvider('wss://rpc.polkadot.io');
 const client = await DedotClient.new<PolkadotApi>(provider);
 
-// Call rpc `state_getMetadata` to fetch raw scale-encoded metadata and decode it.
-const metadata = await client.rpc.state_getMetadata();
-console.log('Metadata:', metadata);
+// Get current best block
+const bestBlock = await client.block.best();
+console.log('Best block:', bestBlock.number, bestBlock.hash);
 
-// Listen to best blocks
-client.on('bestBlock', (block: PinnedBlock) => { // or 'finalizedBlock'
-  console.log(`Current best block number: ${block.number}, hash: ${block.hash}`);
+// Subscribe to finalized blocks
+const unsub = client.block.finalized((block) => {
+  console.log('Finalized block:', block.number);
 });
 
 // Query on-chain storage
@@ -87,8 +87,12 @@ const ss58Prefix = client.consts.system.ss58Prefix;
 console.log('Polkadot ss58Prefix:', ss58Prefix);
 
 // Call runtime api
-const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<address>)
+const pendingRewards = await client.call.nominationPoolsApi.pendingRewards(<address>);
 console.log('Pending rewards:', pendingRewards);
+
+// Sign and send transaction
+const result = await client.tx.balances.transferKeepAlive(<dest>, 1_000_000_000_000n)
+                           .signAndSend(signer).untilFinalized();
 
 // Disconnect
 await client.disconnect();
