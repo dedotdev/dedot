@@ -207,42 +207,135 @@ export class DedotClient<
     return this.#client.registry;
   }
 
-  /** Access to pallet constants */
+  /**
+   * Access to pallet constants.
+   *
+   * @example
+   * ```typescript
+   * const existentialDeposit = client.consts.balances.existentialDeposit;
+   * const ss58Prefix = client.consts.system.ss58Prefix;
+   * ```
+   */
   get consts(): ChainApi['consts'] {
     return this.#client.consts;
   }
 
-  /** Storage query interface */
+  /**
+   * Storage query interface for reading on-chain state.
+   *
+   * @example
+   * ```typescript
+   * // One-time query
+   * const account = await client.query.system.account(address);
+   *
+   * // Subscribe to storage changes
+   * const unsub = await client.query.system.number((blockNumber) => {
+   *   console.log('Current block:', blockNumber);
+   * });
+   * ```
+   */
   get query(): ChainApi['query'] {
     return this.#client.query;
   }
 
-  /** Runtime API call interface */
+  /**
+   * Runtime API call interface.
+   *
+   * @example
+   * ```typescript
+   * const rawMetadata = await client.call.metadata.metadataAtVersion(16);
+   * const version = await client.call.core.version();
+   * ```
+   */
   get call(): ChainApi['call'] {
     return this.#client.call;
   }
 
-  /** Event type definitions and utilities */
+  /**
+   * Event type definitions and utilities.
+   *
+   * @example
+   * ```typescript
+   * // Check if an event matches a specific type
+   * if (client.events.balances.Transfer.is(event)) {
+   *   console.log('Transfer event:', event.data);
+   * }
+   * ```
+   */
   get events(): ChainApi['events'] {
     return this.#client.events;
   }
 
-  /** Error type definitions and utilities */
+  /**
+   * Error type definitions and utilities.
+   *
+   * @example
+   * ```typescript
+   * // Check if an error matches a specific type
+   * if (client.errors.balances.InsufficientBalance.is(dispatchError)) {
+   *   console.log('Insufficient balance error');
+   * }
+   * ```
+   */
   get errors(): ChainApi['errors'] {
     return this.#client.errors;
   }
 
-  /** View functions interface */
+  /**
+   * View functions interface (requires Metadata V16+).
+   *
+   * @example
+   * ```typescript
+   * // Call a view function
+   * const result = await client.view.voterList.scores(ALICE_ADDRESS);
+   * ```
+   */
   get view(): ChainApi['view'] {
     return this.#client.view;
   }
 
-  /** Block explorer interface */
+  /**
+   * Block explorer interface for accessing block data.
+   *
+   * Provides methods to get/subscribe to best and finalized blocks,
+   * as well as retrieve block headers and bodies.
+   *
+   * @example
+   * ```typescript
+   * // Get the current best block
+   * const bestBlock = await client.block.best();
+   * console.log('Best block:', bestBlock.number, bestBlock.hash);
+   *
+   * // Subscribe to finalized blocks
+   * const unsub = client.block.finalized((block) => {
+   *   console.log('Finalized block:', block.number);
+   * });
+   *
+   * // Get block header and body
+   * const header = await client.block.header(blockHash);
+   * const body = await client.block.body(blockHash);
+   * ```
+   */
   get block(): BlockExplorer {
     return this.#client.block;
   }
 
-  /** Chain specification interface */
+  /**
+   * Chain specification interface for accessing chain information.
+   *
+   * Provides methods to get chain name, genesis hash, and chain properties.
+   *
+   * @example
+   * ```typescript
+   * const chainName = await client.chainSpec.chainName();
+   * const genesisHash = await client.chainSpec.genesisHash();
+   * const properties = await client.chainSpec.properties();
+   *
+   * console.log(`Connected to ${chainName}`);
+   * console.log('Token symbol:', properties.tokenSymbol);
+   * console.log('Token decimals:', properties.tokenDecimals);
+   * ```
+   */
   get chainSpec(): IChainSpec {
     return this.#client.chainSpec;
   }
@@ -381,7 +474,7 @@ export class DedotClient<
   }
 
   /**
-   * Broadcast a transaction to the network
+   * Broadcast a transaction to the network and track its status.
    *
    * @param tx - The transaction (hex string or Extrinsic instance)
    * @param callback - Optional callback for transaction status updates
@@ -392,9 +485,12 @@ export class DedotClient<
    * // Wait for finalization
    * const result = await client.sendTx(txHex).untilFinalized();
    *
-   * // With status callback
+   * // With status callback to track progress
    * const unsub = await client.sendTx(txHex, (result) => {
    *   console.log('Status:', result.status);
+   *   if (result.dispatchError) {
+   *     console.error('Transaction failed:', result.dispatchError);
+   *   }
    * });
    * ```
    */
