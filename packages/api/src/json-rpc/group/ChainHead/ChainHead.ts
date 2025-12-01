@@ -849,7 +849,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           let queryItems = items;
           while (queryItems.length > 0) {
             const [newBatch, newDiscardedItems] = await this.#getStorage(queryItems, childTrie ?? null, hash);
-            results.push(...newBatch);
+            results = results.concat(newBatch);
             queryItems = newDiscardedItems;
           }
         }
