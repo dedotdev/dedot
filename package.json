@@ -44,7 +44,7 @@
     "vitest": "^2.1.9"
   },
   "resolutions": {
-    "@polkadot/types-support": "^16.4.6"
+    "@polkadot/types-support": "^16.5.3"
   },
   "engines": {
     "node": ">=18"
