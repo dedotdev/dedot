@@ -1,6 +1,6 @@
 {
   "name": "@dedot/runtime-specs",
-  "version": "0.18.7",
+  "version": "0.18.8",
   "description": "Known specs runtime apis",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
