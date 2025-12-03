@@ -87,8 +87,7 @@ export type ClientOptions = ApiOptions & {
  */
 export class DedotClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
-> implements ISubstrateClient<ChainApi, ApiEvent>
-{
+> implements ISubstrateClient<ChainApi, ApiEvent> {
   #client: ISubstrateClient<ChainApi, ApiEvent>;
   /** The JSON-RPC version being used ('v2' or 'legacy') */
   rpcVersion: RpcVersion;
@@ -398,7 +397,7 @@ export class DedotClient<
    * @param handler - The handler function to remove (optional, removes all handlers if not provided)
    * @returns This client instance for method chaining
    */
-  off(event: ApiEvent, handler?: ((...args: any[]) => void) | undefined): this {
+  off<Event extends ApiEvent = ApiEvent>(event: Event, handler?: EventHandlerFn<Event>): this {
     this.#client.off(event, handler);
     return this;
   }
