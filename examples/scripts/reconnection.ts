@@ -1,4 +1,4 @@
-import { waitFor } from '@dedot/utils/dist/index.js';
+import { waitFor } from '@dedot/utils';
 import { DedotClient, WsProvider } from 'dedot';
 
 const provider = new WsProvider({
