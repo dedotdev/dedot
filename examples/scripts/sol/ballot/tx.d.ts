@@ -8,27 +8,20 @@ import type {
   GenericContractTxCall,
   MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
-  extends GenericContractTx<ChainApi, Type> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
   /**
    * @param {H160} to
    * @param {ContractTxOptions} options
    **/
-  delegate: GenericContractTxCall<
-    ChainApi,
-    (to: H160, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
-    Type
-  >;
+  delegate: GenericContractTxCall<(to: H160, options?: ContractTxOptions) => ContractSubmittableExtrinsic, Type>;
 
   /**
    * @param {H160} voter
    * @param {ContractTxOptions} options
    **/
   giveRightToVote: GenericContractTxCall<
-    ChainApi,
-    (voter: H160, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (voter: H160, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -36,9 +29,5 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {bigint} proposal
    * @param {ContractTxOptions} options
    **/
-  vote: GenericContractTxCall<
-    ChainApi,
-    (proposal: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
-    Type
-  >;
+  vote: GenericContractTxCall<(proposal: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic, Type>;
 }

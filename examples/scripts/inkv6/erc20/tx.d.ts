@@ -8,10 +8,8 @@ import type {
   GenericContractTxCall,
   MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
-  extends GenericContractTx<ChainApi, Type> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
   /**
    * Transfers `value` amount of tokens from the caller's account to account `to`.
    *
@@ -29,8 +27,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @selector 0x84a15da1
    **/
   transfer: GenericContractTxCall<
-    ChainApi,
-    (to: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (to: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -50,8 +47,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @selector 0x681266a0
    **/
   approve: GenericContractTxCall<
-    ChainApi,
-    (spender: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -79,8 +75,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @selector 0x0b396f18
    **/
   transferFrom: GenericContractTxCall<
-    ChainApi,
-    (from: H160, to: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (from: H160, to: H160, value: U256, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 }

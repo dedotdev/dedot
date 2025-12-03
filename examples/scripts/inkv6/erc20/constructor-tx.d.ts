@@ -9,13 +9,11 @@ import type {
   InkGenericContractApi,
   MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
-  ChainApi extends GenericSubstrateApi,
   ContractApi extends InkGenericContractApi,
   Type extends MetadataType,
-> extends GenericConstructorTx<ChainApi, Type> {
+> extends GenericConstructorTx<Type> {
   /**
    * Creates a new ERC-20 contract with the specified initial supply.
    *
@@ -25,11 +23,7 @@ export interface ConstructorTx<
    * @selector 0x9bae9d5e
    **/
   new: GenericConstructorTxCall<
-    ChainApi,
-    (
-      totalSupply: U256,
-      options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    (totalSupply: U256, options?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ContractApi>,
     Type
   >;
 }

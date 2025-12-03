@@ -34,6 +34,6 @@ export class ConstructorQueryGen extends QueryGen {
     // Unwrap langError result
     const typeOut = typeOutRaw.match(/^(\w+)<(.*), (.*)>$/)!.at(2);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<${typeOut}, ContractInstantiateResult>>, Type>`;
+    return `GenericConstructorQueryCall<(${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<${typeOut}, ContractInstantiateResult>>, Type>`;
   }
 }

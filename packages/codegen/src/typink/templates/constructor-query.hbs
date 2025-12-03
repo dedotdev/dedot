@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ConstructorQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType> extends GenericConstructorQuery<ChainApi, Type> {  
+export interface ConstructorQuery<Type extends MetadataType> extends GenericConstructorQuery<Type> {
     {{{ constructorsOut }}}
 }

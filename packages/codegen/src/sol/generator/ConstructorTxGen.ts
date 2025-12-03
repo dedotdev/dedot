@@ -28,6 +28,6 @@ export class ConstructorTxGen extends ConstructorQueryGen {
   override generateMethodDef(abiItem: SolAbiConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `GenericConstructorTxCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>, Type>`;
+    return `GenericConstructorTxCall<(${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorTxOptions) => GenericInstantiateSubmittableExtrinsic<ContractApi>, Type>`;
   }
 }

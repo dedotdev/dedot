@@ -62,7 +62,7 @@ export class QueryGen {
     // If there is only one output, we don't need to wrap it in a tuple, for user-friendly
     const typeOut = outputs.length === 1 ? typeOutInner : `[${typeOutInner}]`;
 
-    return `GenericContractQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult>>, Type>`;
+    return `GenericContractQueryCall<(${paramsOut && `${paramsOut},`} ${optionsParamName}?: ContractCallOptions) => Promise<GenericContractCallResult<${typeOut}, ContractCallResult>>, Type>`;
   }
 
   generateParamsOut(abiItem: SolAbiFunction): string {

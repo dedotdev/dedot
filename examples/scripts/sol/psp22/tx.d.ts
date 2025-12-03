@@ -8,18 +8,15 @@ import type {
   GenericContractTxCall,
   MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
-  extends GenericContractTx<ChainApi, Type> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
   /**
    * @param {H160} spender
    * @param {bigint} value
    * @param {ContractTxOptions} options
    **/
   approve: GenericContractTxCall<
-    ChainApi,
-    (spender: H160, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -29,8 +26,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   decreaseAllowance: GenericContractTxCall<
-    ChainApi,
-    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -40,8 +36,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   increaseAllowance: GenericContractTxCall<
-    ChainApi,
-    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (spender: H160, delta_value: bigint, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -52,8 +47,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   transfer: GenericContractTxCall<
-    ChainApi,
-    (to: H160, value: bigint, _data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>,
+    (to: H160, value: bigint, _data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -65,14 +59,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   transferFrom: GenericContractTxCall<
-    ChainApi,
-    (
-      from: H160,
-      to: H160,
-      value: bigint,
-      _data: number[],
-      options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>,
+    (from: H160, to: H160, value: bigint, _data: number[], options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 }

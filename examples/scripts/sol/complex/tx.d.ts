@@ -8,11 +8,9 @@ import type {
   GenericContractTxCall,
   MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 import type { ProcessEverythingMixedEverythingInput } from './types.js';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
-  extends GenericContractTx<ChainApi, Type> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
   /**
    * @param {number} u8
    * @param {number[]} u16s
@@ -23,7 +21,6 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   processIntegers: GenericContractTxCall<
-    ChainApi,
     (
       u8: number,
       u16s: number[],
@@ -32,7 +29,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
       i64s_2x2: FixedArray<FixedArray<bigint, 2>, 2>,
       bigMatrix: FixedArray<FixedArray<FixedArray<bigint, 2>, 3>, 2>,
       options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>,
+    ) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -45,7 +42,6 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   processStringsAndAddresses: GenericContractTxCall<
-    ChainApi,
     (
       title: string,
       tags: string[],
@@ -53,7 +49,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
       signers: FixedArray<H160, 2>,
       ok: boolean[],
       options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>,
+    ) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -66,7 +62,6 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   processFixedPoint: GenericContractTxCall<
-    ChainApi,
     (
       ufDefault: UFixed<128, 18>,
       fDefault: Fixed<128, 18>,
@@ -74,7 +69,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
       f_64x10_pair: FixedArray<Fixed<64, 10>, 2>,
       uf_32x5_cube: FixedArray<FixedArray<FixedArray<UFixed<32, 5>, 2>, 2>, 2>,
       options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>,
+    ) => ContractSubmittableExtrinsic,
     Type
   >;
 
@@ -83,11 +78,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends M
    * @param {ContractTxOptions} options
    **/
   processEverythingMixed: GenericContractTxCall<
-    ChainApi,
-    (
-      everything: ProcessEverythingMixedEverythingInput,
-      options?: ContractTxOptions,
-    ) => ContractSubmittableExtrinsic<ChainApi>,
+    (everything: ProcessEverythingMixedEverythingInput, options?: ContractTxOptions) => ContractSubmittableExtrinsic,
     Type
   >;
 }

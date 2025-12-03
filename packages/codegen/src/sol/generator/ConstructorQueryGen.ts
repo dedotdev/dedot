@@ -54,7 +54,7 @@ export class ConstructorQueryGen {
   generateMethodDef(abiItem: SolAbiConstructor, optionsParamName = 'options'): string {
     const paramsOut = this.generateParamsOut(abiItem);
 
-    return `GenericConstructorQueryCall<ChainApi, (${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult>>, Type>`;
+    return `GenericConstructorQueryCall<(${paramsOut && `${paramsOut},`} ${optionsParamName}?: ConstructorCallOptions) => Promise<GenericConstructorCallResult<[], ContractInstantiateResult>>, Type>`;
   }
 
   generateParamsOut(abiItem: SolAbiConstructor): string {
