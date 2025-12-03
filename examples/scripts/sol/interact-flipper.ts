@@ -1,6 +1,6 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { LegacyClient, WsProvider } from 'dedot';
-import { Contract, ContractDeployer } from 'dedot/contracts';
+import { DedotClient, WsProvider } from 'dedot';
+import { ContractDeployer } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
 import { flipper } from './abi.js';
 import { FlipperContractApi } from './flipper/index.js';
@@ -8,7 +8,7 @@ import { FlipperContractApi } from './flipper/index.js';
 await cryptoWaitReady();
 
 const { alice } = await devPairs();
-const client = await LegacyClient.new(new WsProvider('ws://localhost:9944'));
+const client = await DedotClient.legacy(new WsProvider('ws://localhost:9944'));
 const [code, abi] = flipper();
 
 await client.tx.revive.mapAccount().signAndSend(alice).untilFinalized();

@@ -37,13 +37,13 @@ export class StorageQueryExecutorV2 extends StorageQueryExecutor {
 
     const pagedKeys = () => {
       throw new DedotError(
-        'The pagedKeys method is not yet available via the new JSON-RPC specification. Please use the LegacyClient instead.',
+        'The pagedKeys method is not yet available via the new JSON-RPC (v2) specification. Please use the legacy client instead.',
       );
     };
 
     const pagedEntries = () => {
       throw new DedotError(
-        'The pagedEntries method is not yet available via the new JSON-RPC specification. Please use the LegacyClient instead.',
+        'The pagedEntries method is not yet available via the new JSON-RPC (v2) specification. Please use the legacy client instead.',
       );
     };
 

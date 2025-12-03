@@ -1,5 +1,5 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { FixedBytes } from 'dedot/codecs';
 import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { hexToString } from 'dedot/utils';
@@ -10,7 +10,7 @@ import { BallotContractApi } from './ballot/index.js';
 await cryptoWaitReady();
 
 const { alice, bob } = await devPairs();
-const client = await LegacyClient.new(new WsProvider('ws://localhost:9944'));
+const client = await DedotClient.legacy(new WsProvider('ws://localhost:9944'));
 const [code, abi] = ballot();
 
 // Map accounts for Alice and Bob
