@@ -1,5 +1,5 @@
 import { cryptoWaitReady } from '@polkadot/util-crypto';
-import { LegacyClient, WsProvider } from 'dedot';
+import { DedotClient, WsProvider } from 'dedot';
 import { ContractDeployer, toEvmAddress } from 'dedot/contracts';
 import { devPairs } from '../keyring.js';
 import { psp22 } from './abi.js';
@@ -7,7 +7,7 @@ import { Psp22ContractApi } from './psp22/index.js';
 
 await cryptoWaitReady();
 const { alice, bob, charlie } = await devPairs();
-const client = await LegacyClient.new(new WsProvider('ws://localhost:9944'));
+const client = await DedotClient.legacy(new WsProvider('ws://localhost:9944'));
 
 const [code, abi] = psp22();
 
