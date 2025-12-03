@@ -16,9 +16,10 @@ if (!block) {
 }
 
 console.log(client.registry.hashAsHex($SignedBlock.tryEncode(block)));
+const clientAt = await client.at(blockHash);
 
 block.block.extrinsics.forEach((ex, idx) => {
-  const tx = client.registry.$Extrinsic.tryDecode(ex);
+  const tx = clientAt.registry.$Extrinsic.tryDecode(ex);
   console.log(`===TX${idx}=== `);
   tx.signature && console.log('SIGNED', tx.signature.address.type, tx.signature!.signature.type, tx.signature!.extra);
   console.log(tx.call);
