@@ -21,7 +21,7 @@ export class QueryExecutor extends ContractExecutor {
     const meta = this.findMessage(message);
     assert(meta, `Query message not found: ${message}`);
 
-    const callFn: GenericContractQueryCall<any, any, 'ink'> = async (...params: any[]) => {
+    const callFn: GenericContractQueryCall<any, 'ink'> = async (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

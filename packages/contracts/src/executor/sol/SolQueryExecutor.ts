@@ -21,7 +21,7 @@ export class SolQueryExecutor extends SolContractExecutor {
     const abiFunction = this.registry.findAbiFunction(name);
     assert(abiFunction, `Abi item not found: ${name}`);
 
-    const callFn: GenericContractQueryCall<any, any, 'sol'> = async (...params: any[]) => {
+    const callFn: GenericContractQueryCall<any, 'sol'> = async (...params: any[]) => {
       const { inputs } = abiFunction;
 
       ensureParamsLength(inputs.length, params.length);

@@ -18,7 +18,7 @@ export class ConstructorTxExecutor extends DeployerExecutor {
     assert(meta, `Constructor message not found: ${constructor}`);
 
     // @ts-ignore
-    const callFn: GenericConstructorTxCall<ChainApi, any, 'ink'> = (...params: any[]) => {
+    const callFn: GenericConstructorTxCall<any, 'ink'> = (...params: any[]) => {
       const { args } = meta;
       ensureParamsLength(args.length, params.length);
 

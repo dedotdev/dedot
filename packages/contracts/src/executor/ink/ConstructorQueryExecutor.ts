@@ -17,7 +17,7 @@ export class ConstructorQueryExecutor extends DeployerExecutor {
     const meta = this.findConstructorMeta(constructor);
     assert(meta, `Constructor message not found: ${constructor}`);
 
-    const callFn: GenericConstructorQueryCall<any, any, 'ink'> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<any, 'ink'> = async (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

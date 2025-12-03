@@ -16,7 +16,7 @@ export class SolConstructorQueryExecutor extends SolDeployerExecutor {
   doExecute(_: string) {
     const abiConstructor = this.registry.findAbiConstructor();
 
-    const callFn: GenericConstructorQueryCall<any, any, 'sol'> = async (...params: any[]) => {
+    const callFn: GenericConstructorQueryCall<any, 'sol'> = async (...params: any[]) => {
       const { inputs } = abiConstructor;
 
       ensureParamsLength(inputs.length, params.length);

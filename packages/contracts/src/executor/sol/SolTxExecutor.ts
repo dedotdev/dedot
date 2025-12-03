@@ -11,7 +11,7 @@ export class SolTxExecutor extends SolContractExecutor {
     const txAbiFunction = this.registry.findTxAbiFunction(name);
     assert(txAbiFunction, `Abi item not found: ${name}`);
 
-    const callFn: GenericContractTxCall<any, any, 'sol'> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<any, 'sol'> = (...params: any[]) => {
       const { inputs } = txAbiFunction;
 
       ensureParamsLength(inputs.length, params.length);
