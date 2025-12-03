@@ -6,10 +6,10 @@ import type {
   ContractTxOptions,
   GenericContractTx,
   GenericContractTxCall,
+  MetadataType,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi> extends GenericContractTx<ChainApi> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
   /**
    * Flips the current value, value based on seed.
    *
@@ -18,10 +18,7 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    *
    * @selector 0x847d0968
    **/
-  flipWithSeed: GenericContractTxCall<
-    ChainApi,
-    (seed: Hash, options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>
-  >;
+  flipWithSeed: GenericContractTxCall<(seed: Hash, options?: ContractTxOptions) => ContractSubmittableExtrinsic, Type>;
 
   /**
    * Flips the current value of the Flipper's boolean.
@@ -30,5 +27,5 @@ export interface ContractTx<ChainApi extends GenericSubstrateApi> extends Generi
    *
    * @selector 0x633aa551
    **/
-  flip: GenericContractTxCall<ChainApi, (options?: ContractTxOptions) => ContractSubmittableExtrinsic<ChainApi>>;
+  flip: GenericContractTxCall<(options?: ContractTxOptions) => ContractSubmittableExtrinsic, Type>;
 }
