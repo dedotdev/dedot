@@ -10,7 +10,7 @@ export class TxExecutor extends ContractExecutor {
     const meta = this.findTxMessage(message);
     assert(meta, `Tx message not found: ${message}`);
 
-    const callFn: GenericContractTxCall<any, any, 'ink'> = (...params: any[]) => {
+    const callFn: GenericContractTxCall<any, 'ink'> = (...params: any[]) => {
       const { args } = meta;
 
       ensureParamsLength(args.length, params.length);

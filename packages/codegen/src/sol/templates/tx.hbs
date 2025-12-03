@@ -2,6 +2,6 @@
 
 {{{ importTypes }}}
 
-export interface ContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType> extends GenericContractTx<ChainApi, Type> {
+export interface ContractTx<Type extends MetadataType> extends GenericContractTx<Type> {
     {{{ txCallsOut }}}
 }

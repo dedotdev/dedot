@@ -9,13 +9,11 @@ import type {
   MetadataType,
   SolGenericContractApi,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 
 export interface ConstructorTx<
-  ChainApi extends GenericSubstrateApi,
   ContractApi extends SolGenericContractApi,
   Type extends MetadataType,
-> extends GenericConstructorTx<ChainApi, Type> {
+> extends GenericConstructorTx<Type> {
   /**
    * @param {H160} owner
    * @param {FixedBytes<32>} salt
@@ -25,7 +23,6 @@ export interface ConstructorTx<
    * @param {ConstructorTxOptions} options
    **/
   new: GenericConstructorTxCall<
-    ChainApi,
     (
       owner: H160,
       salt: FixedBytes<32>,
@@ -33,7 +30,7 @@ export interface ConstructorTx<
       flags: FixedArray<boolean, 3>,
       bootData: BytesLike,
       options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    ) => GenericInstantiateSubmittableExtrinsic<ContractApi>,
     Type
   >;
 }

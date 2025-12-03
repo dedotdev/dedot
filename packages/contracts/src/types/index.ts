@@ -25,9 +25,9 @@ export * from './ink/index.js';
 export * from './sol/index.js';
 export * from './shared.js';
 
-type SubmittableExtrinsic<R extends ISubmittableResult> = ISubmittableExtrinsic<R> & Extrinsic;
-
-export type ContractSubmittableExtrinsic<_ extends GenericSubstrateApi> = SubmittableExtrinsic<ISubmittableResult>;
+export type ContractSubmittableExtrinsic<
+  R extends ISubmittableResult = ISubmittableResult, // --
+> = ISubmittableExtrinsic<R> & Extrinsic;
 
 export interface IContractInstantiateSubmittableResult<
   ContractApi extends GenericContractApi = GenericContractApi, // --
@@ -44,9 +44,8 @@ export interface IContractInstantiateSubmittableResult<
 }
 
 export type GenericInstantiateSubmittableExtrinsic<
-  _ extends GenericSubstrateApi,
-  ContractApi extends GenericContractApi = GenericContractApi,
-> = SubmittableExtrinsic<IContractInstantiateSubmittableResult<ContractApi>>;
+  ContractApi extends GenericContractApi = GenericContractApi, // --
+> = ContractSubmittableExtrinsic<IContractInstantiateSubmittableResult<ContractApi>>;
 
 export interface LooseContractMetadata {
   version: number | string;
@@ -57,7 +56,6 @@ export interface LooseContractMetadata {
 export type LooseSolAbi = Array<{ type: string; [prop: string]: any }>;
 
 export type GenericContractQueryCall<
-  ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult>>,
   Type extends MetadataType = MetadataType,
 > = F & {
@@ -65,15 +63,13 @@ export type GenericContractQueryCall<
 };
 
 export type GenericContractTxCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>,
+  F extends AnyFunc = (...args: any[]) => ContractSubmittableExtrinsic,
   Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractCallMessage : SolAbiFunction;
 };
 
 export type GenericConstructorQueryCall<
-  ChainApi extends GenericSubstrateApi,
   F extends AsyncMethod = (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult>>,
   Type extends MetadataType = MetadataType,
 > = F & {
@@ -81,42 +77,32 @@ export type GenericConstructorQueryCall<
 };
 
 export type GenericConstructorTxCall<
-  ChainApi extends GenericSubstrateApi,
-  F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
+  F extends AnyFunc = (...args: any[]) => GenericInstantiateSubmittableExtrinsic,
   Type extends MetadataType = MetadataType,
 > = F & {
   meta: Type extends 'ink' ? ContractConstructorMessage : SolAbiConstructor;
 };
 
-export interface GenericContractQuery<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
+export interface GenericContractQuery<Type extends MetadataType = MetadataType> {
   [method: string]: GenericContractQueryCall<
-    ChainApi,
     (...args: any[]) => Promise<GenericContractCallResult<any, ContractCallResult>>,
     Type
   >;
 }
 
-export interface GenericContractTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
-  [method: string]: GenericContractTxCall<ChainApi, (...args: any[]) => ContractSubmittableExtrinsic<ChainApi>, Type>;
+export interface GenericContractTx<Type extends MetadataType = MetadataType> {
+  [method: string]: GenericContractTxCall<(...args: any[]) => ContractSubmittableExtrinsic, Type>;
 }
 
-export interface GenericConstructorQuery<
-  ChainApi extends GenericSubstrateApi,
-  Type extends MetadataType = MetadataType,
-> {
+export interface GenericConstructorQuery<Type extends MetadataType = MetadataType> {
   [method: string]: GenericConstructorQueryCall<
-    ChainApi,
     (...args: any[]) => Promise<GenericConstructorCallResult<any, ContractInstantiateResult>>,
     Type
   >;
 }
 
-export interface GenericConstructorTx<ChainApi extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
-  [method: string]: GenericConstructorTxCall<
-    ChainApi,
-    (...args: any[]) => GenericInstantiateSubmittableExtrinsic<ChainApi>,
-    Type
-  >;
+export interface GenericConstructorTx<Type extends MetadataType = MetadataType> {
+  [method: string]: GenericConstructorTxCall<(...args: any[]) => GenericInstantiateSubmittableExtrinsic, Type>;
 }
 
 export type ContractEvent<EventName extends string = string, Data extends any = any> = Data extends undefined
@@ -140,7 +126,7 @@ export interface GenericContractEvent<
   meta: Type extends 'ink' ? ContractEventMeta : SolAbiEvent;
 }
 
-export interface GenericContractEvents<_ extends GenericSubstrateApi, Type extends MetadataType = MetadataType> {
+export interface GenericContractEvents<Type extends MetadataType = MetadataType> {
   [event: string]: GenericContractEvent<string, any, Type>;
 }
 
@@ -156,11 +142,11 @@ export interface GenericContractApi<
   Type extends MetadataType = MetadataType,
 > {
   metadataType: Type;
-  query: GenericContractQuery<ChainApi, Type>;
-  tx: GenericContractTx<ChainApi, Type>;
-  constructorQuery: GenericConstructorQuery<ChainApi, Type>;
-  constructorTx: GenericConstructorTx<ChainApi, Type>;
-  events: GenericContractEvents<ChainApi, Type>;
+  query: GenericContractQuery<Type>;
+  tx: GenericContractTx<Type>;
+  constructorQuery: GenericConstructorQuery<Type>;
+  constructorTx: GenericConstructorTx<Type>;
+  events: GenericContractEvents<Type>;
   storage: AB<
     Type,
     {

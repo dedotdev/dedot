@@ -9,13 +9,13 @@ import { ContractEvents } from './events.js';
 
 export * from './types.js';
 
-{{{interfaceDocs}}}export interface {{{interfaceName}}}< ChainApi extends GenericSubstrateApi = SubstrateApi> extends InkGenericContractApi<ChainApi> {
+{{{interfaceDocs}}}export interface {{{interfaceName}}}<ChainApi extends GenericSubstrateApi = SubstrateApi> extends InkGenericContractApi<ChainApi> {
     metadataType: 'ink';
-    query: ContractQuery<ChainApi, 'ink'>;
-    tx: ContractTx<ChainApi, 'ink'>;
-    constructorQuery: ConstructorQuery<ChainApi, 'ink'>;
-    constructorTx: ConstructorTx<ChainApi, {{{interfaceName}}}, 'ink'>;
-    events: ContractEvents<ChainApi, 'ink'>;
+    query: ContractQuery<'ink'>;
+    tx: ContractTx<'ink'>;
+    constructorQuery: ConstructorQuery<'ink'>;
+    constructorTx: ConstructorTx<{{{interfaceName}}}, 'ink'>;
+    events: ContractEvents<'ink'>;
     storage: {
       root(): Promise<{{{rootStorageName}}}>;
       lazy(): {{{lazyStorageName}}};

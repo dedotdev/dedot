@@ -18,7 +18,7 @@ export class SolConstructorTxExecutor extends SolDeployerExecutor {
     const abiConstructor = this.registry.findAbiConstructor();
 
     // @ts-ignore
-    const callFn: GenericConstructorTxCall<ChainApi, any, 'sol'> = (...params: any[]) => {
+    const callFn: GenericConstructorTxCall<any, 'sol'> = (...params: any[]) => {
       const { inputs } = abiConstructor;
 
       ensureParamsLength(inputs.length, params.length);

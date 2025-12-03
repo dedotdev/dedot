@@ -2,11 +2,9 @@
 
 import type { BytesLike, FixedArray, FixedBytes, H160 } from 'dedot/codecs';
 import type { GenericContractEvent, GenericContractEvents, MetadataType } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 import type { EverythingLoggedMetaInput } from './types.js';
 
-export interface ContractEvents<ChainApi extends GenericSubstrateApi, Type extends MetadataType>
-  extends GenericContractEvents<ChainApi, Type> {
+export interface ContractEvents<Type extends MetadataType> extends GenericContractEvents<Type> {
   EverythingLogged: GenericContractEvent<
     'EverythingLogged',
     {

@@ -8,14 +8,12 @@ import type {
   MetadataType,
   SolGenericContractApi,
 } from 'dedot/contracts';
-import type { GenericSubstrateApi } from 'dedot/types';
 import type { NameInput, SymbolInput } from './types.js';
 
 export interface ConstructorTx<
-  ChainApi extends GenericSubstrateApi,
   ContractApi extends SolGenericContractApi,
   Type extends MetadataType,
-> extends GenericConstructorTx<ChainApi, Type> {
+> extends GenericConstructorTx<Type> {
   /**
    * @param {bigint} supply
    * @param {NameInput} name
@@ -24,14 +22,13 @@ export interface ConstructorTx<
    * @param {ConstructorTxOptions} options
    **/
   new: GenericConstructorTxCall<
-    ChainApi,
     (
       supply: bigint,
       name: NameInput,
       symbol: SymbolInput,
       decimals: number,
       options?: ConstructorTxOptions,
-    ) => GenericInstantiateSubmittableExtrinsic<ChainApi, ContractApi>,
+    ) => GenericInstantiateSubmittableExtrinsic<ContractApi>,
     Type
   >;
 }
