@@ -362,7 +362,7 @@ __metadata:
     "@dedot/types": "workspace:*"
     "@dedot/utils": "workspace:*"
     handlebars: "npm:^4.7.8"
-    prettier: "npm:^3.7.3"
+    prettier: "npm:^3.7.4"
   languageName: unknown
   linkType: soft
 
@@ -3512,7 +3512,7 @@ __metadata:
     happy-dom: "npm:^15.11.7"
     husky: "npm:^9.1.4"
     lerna: "npm:7.4.2"
-    prettier: "npm:^3.7.3"
+    prettier: "npm:^3.7.4"
     prettier-plugin-organize-imports: "npm:^3.2.4"
     tsc-esm-fix: "npm:^2.20.27"
     tsx: "npm:^4.20.5"
@@ -7388,12 +7388,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.7.3":
-  version: 3.7.3
-  resolution: "prettier@npm:3.7.3"
+"prettier@npm:^3.7.4":
+  version: 3.7.4
+  resolution: "prettier@npm:3.7.4"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/ee86bb06121c74dadc54f30b6f99aff6288966d9b842ce501d6991e20d20c6ce2d45028651b3b0955ca6e5fa89c1bee1e72b6f810243a93cef8bc69737972ef7
+  checksum: 10c0/9675d2cd08eacb1faf1d1a2dbfe24bfab6a912b059fc9defdb380a408893d88213e794a40a2700bd29b140eb3172e0b07c852853f6e22f16f3374659a1a13389
   languageName: node
   linkType: hard
 
