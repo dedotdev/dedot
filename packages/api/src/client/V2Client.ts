@@ -10,7 +10,7 @@ import {
 } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, TxUnsub } from '@dedot/types';
+import { Callback, GenericStorageQuery, GenericSubstrateApi, ISubmittableResult, TxUnsub } from '@dedot/types';
 import { assert, concatU8a, DedotError, HashFn, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -394,7 +394,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     return new NewStorageQuery(this);
   }
 
-  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+  sendTx(
+    tx: HexString | Extrinsic,
+    callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
+  ): TxUnsub {
     return SubmittableExtrinsicV2.fromTx(this, tx) // --
       .send((result) => {
         callback && callback(result);

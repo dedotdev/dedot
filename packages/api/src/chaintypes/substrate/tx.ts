@@ -122,8 +122,9 @@ export type TxCall<ChainKnownTypes extends GenericChainKnownTypes = GenericChain
   ...args: any[]
 ) => ChainSubmittableExtrinsic<KitchensinkRuntimeRuntimeCallLike, ChainKnownTypes>;
 
-export interface ChainTx<ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes>
-  extends GenericChainTx<TxCall<ChainKnownTypes>> {
+export interface ChainTx<
+  ChainKnownTypes extends GenericChainKnownTypes = GenericChainKnownTypes,
+> extends GenericChainTx<TxCall<ChainKnownTypes>> {
   /**
    * Pallet `System`'s transaction calls
    **/

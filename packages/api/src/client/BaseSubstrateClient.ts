@@ -15,6 +15,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  ISubmittableResult,
   Query,
   QueryFnResult,
   RpcVersion,
@@ -65,9 +66,9 @@ export function ensurePresence<T>(value: T): NonNullable<T> {
  * @description Base & shared abstraction for Substrate API Clients
  */
 export abstract class BaseSubstrateClient<
-    ChainApi extends GenericSubstrateApi = SubstrateApi,
-    Events extends string = ApiEvent,
-  >
+  ChainApi extends GenericSubstrateApi = SubstrateApi,
+  Events extends string = ApiEvent,
+>
   extends JsonRpcClient<ChainApi, Events>
   implements ISubstrateClient<ChainApi, Events>
 {
@@ -567,7 +568,10 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+  sendTx(
+    tx: HexString | Extrinsic,
+    callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
+  ): TxUnsub {
     throw new Error('Unimplemented!');
   }
 

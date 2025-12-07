@@ -31,7 +31,11 @@ const signedTx = await client.tx.system
   .remarkWithEvent('Hello') // -
   .sign(alice.address, { signer, tip: 1_000_0000n });
 
-const result = await client.sendTx(signedTx.toHex(), console.log).untilBestChainBlockIncluded();
+const result = await client
+  .sendTx(signedTx.toHex(), (progress) => {
+    console.log(progress);
+  })
+  .untilBestChainBlockIncluded();
 
 console.log('result', result);
 

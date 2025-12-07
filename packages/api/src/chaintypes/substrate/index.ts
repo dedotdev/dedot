@@ -12,6 +12,7 @@ import { ChainTx } from './tx.js';
 import type {
   FrameMetadataHashExtensionCheckMetadataHash,
   FrameSupportTokensFungibleUnionOfNativeOrWithId,
+  FrameSystemEventRecord,
   FrameSystemExtensionsCheckGenesis,
   FrameSystemExtensionsCheckMortality,
   FrameSystemExtensionsCheckNonZeroSender,
@@ -45,6 +46,7 @@ interface ChainKnownTypes extends GenericChainKnownTypes {
     FrameSystemExtensionsWeightReclaim,
   ];
   AssetId: FrameSupportTokensFungibleUnionOfNativeOrWithId;
+  EventRecord: FrameSystemEventRecord;
 }
 
 /**
