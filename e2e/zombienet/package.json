@@ -6,7 +6,7 @@
     "gen-flipper-typink": "yarn cli typink -m ./e2e/zombienet/flipper_v5.json -o ./e2e/zombienet/src/contracts"
   },
   "dependencies": {
-    "@dedot/chaintypes": "^0.189.0",
+    "@dedot/chaintypes": "^0.195.0",
     "@polkadot/keyring": "^13.5.9",
     "dedot": "workspace:*"
   },
