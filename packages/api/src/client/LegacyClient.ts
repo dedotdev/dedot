@@ -1,6 +1,6 @@
 import { BlockHash, type Extrinsic, Hash, Header, Metadata, PortableRegistry } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
-import { Callback, GenericSubstrateApi, TxUnsub } from '@dedot/types';
+import { Callback, GenericSubstrateApi, ISubmittableResult, TxUnsub } from '@dedot/types';
 import { ChainProperties } from '@dedot/types/json-rpc';
 import { assert, HashFn, HexString, noop } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
@@ -423,7 +423,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     }
   }
 
-  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+  sendTx(
+    tx: HexString | Extrinsic,
+    callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
+  ): TxUnsub {
     return SubmittableExtrinsic.fromTx(this, tx) // --
       .send((result) => {
         callback && callback(result);

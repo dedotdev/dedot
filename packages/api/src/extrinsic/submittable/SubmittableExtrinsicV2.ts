@@ -263,8 +263,8 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
   }
 
   send(): TxHash;
-  send(callback: Callback): TxUnsub;
-  send(callback?: Callback | undefined) {
+  send(callback: Callback<ISubmittableResult>): TxUnsub;
+  send(callback?: Callback<ISubmittableResult> | undefined) {
     const isSubscription = !!callback;
 
     const { deferTx, onTxProgress } = txDefer();

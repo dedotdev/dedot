@@ -7,6 +7,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  ISubmittableResult,
   Query,
   QueryFnResult,
   RpcVersion,
@@ -212,8 +213,8 @@ export interface IChainSpec {
 export interface ISubstrateClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
   Events extends string = ApiEvent,
-> extends IJsonRpcClient<ChainApi, Events>,
-    IGenericSubstrateClient<ChainApi> {
+>
+  extends IJsonRpcClient<ChainApi, Events>, IGenericSubstrateClient<ChainApi> {
   options: ApiOptions;
   tx: ChainApi['tx'];
 
@@ -275,7 +276,7 @@ export interface ISubstrateClient<
    * const result = await client.sendTx(rawTxHex).untilFinalized();
    * console.log('Transaction finalized:', result);
    */
-  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub;
+  sendTx(tx: HexString | Extrinsic, callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>): TxUnsub;
 
   /**
    * Query multiple storage items in a single call or subscribe to multiple storage items

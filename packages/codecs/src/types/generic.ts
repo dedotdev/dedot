@@ -212,6 +212,7 @@ export interface GenericChainKnownTypes {
   RuntimeCall: any;
   Extra: any[];
   AssetId: any;
+  EventRecord: IEventRecord;
   [TypeName: string]: any;
 }
 

@@ -5,6 +5,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  ISubmittableResult,
   Query,
   QueryFnResult,
   RpcVersion,
@@ -504,7 +505,10 @@ export class DedotClient<
    * });
    * ```
    */
-  sendTx(tx: HexString | Extrinsic, callback?: Callback): TxUnsub {
+  sendTx(
+    tx: HexString | Extrinsic,
+    callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
+  ): TxUnsub {
     return this.#client.sendTx(tx, callback);
   }
 
