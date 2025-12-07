@@ -458,16 +458,10 @@ export class WsProvider extends SubscriptionProvider {
         this.#ws.close(1000); // Normal closure
         this._setStatus('disconnected');
 
-        // Reject the recovering promise if it exists
         if (this.#recovering) {
-          this.#recovering.reject(new DedotError('disconnected'));
+          this.#recovering.resolve();
           this.#recovering = undefined;
         }
-
-        // Reject all pending requests on normal disconnect
-        Object.values(this._handlers).forEach(({ defer }) => {
-          defer.reject(new DedotError('disconnected'));
-        });
 
         this._cleanUp();
       }
