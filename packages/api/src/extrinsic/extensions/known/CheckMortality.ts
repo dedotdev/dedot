@@ -43,9 +43,8 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   }
 
   async #getSigningHeaderRpcV2(): Promise<SigningHeader> {
-    const api = this.client as V2Client;
     // TODO similar to the legacy, we should account for the case finality is lagging behind
-    const finalizedBlock = await api.chainHead.finalizedBlock();
+    const finalizedBlock = await this.client.block.finalized();
 
     return {
       hash: finalizedBlock.hash,
