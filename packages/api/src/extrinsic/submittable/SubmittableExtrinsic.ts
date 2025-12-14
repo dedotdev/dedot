@@ -7,13 +7,13 @@ import {
   ISubmittableResult,
   SignerOptions,
   TxHash,
+  TxStatus,
   TxUnsub,
   Unsub,
 } from '@dedot/types';
-import { assert, isHex } from '@dedot/utils';
+import { assert, isHex, noop } from '@dedot/utils';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { RejectedTxError } from './errors.js';
 import { toTxStatus, txDefer } from './utils.js';
 
 /**
@@ -41,44 +41,58 @@ export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements IS
 
     const { deferTx, onTxProgress } = txDefer();
 
-    const unsub = this.client.rpc.author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
-      if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
-        const blockHash: BlockHash = txStatus.value;
+    let unsub: Unsub | undefined;
 
-        const [signedBlock, blockEvents] = await Promise.all([
-          this.client.rpc.chain_getBlock(blockHash),
-          this.getSystemEventsAt(blockHash),
-        ]);
+    this.client.rpc
+      .author_submitAndWatchExtrinsic(txHex, async (txStatus: TransactionStatus) => {
+        let status: TxStatus;
+        let result: ISubmittableResult;
 
-        const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
-        assert(txIndex >= 0, 'Extrinsic not found!');
+        if (txStatus.type === 'InBlock' || txStatus.type === 'Finalized') {
+          const blockHash: BlockHash = txStatus.value;
 
-        const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
-        const blockNumber = (signedBlock as SignedBlock).block.header.number;
+          const [signedBlock, blockEvents] = await Promise.all([
+            this.client.rpc.chain_getBlock(blockHash),
+            this.getSystemEventsAt(blockHash),
+          ]);
 
-        const status = toTxStatus(txStatus, { txIndex, blockNumber });
-        const result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
+          const txIndex = (signedBlock as SignedBlock).block.extrinsics.indexOf(txHex);
+          assert(txIndex >= 0, 'Extrinsic not found!');
+
+          const events = blockEvents.filter(({ phase }) => phase.type === 'ApplyExtrinsic' && phase.value === txIndex);
+          const blockNumber = (signedBlock as SignedBlock).block.header.number;
+
+          status = toTxStatus(txStatus, { txIndex, blockNumber });
+          result = this.transformTxResult(new SubmittableResult({ status, txHash, events, txIndex }));
+        } else {
+          status = toTxStatus(txStatus);
+          result = this.transformTxResult(new SubmittableResult({ status, txHash }));
+        }
 
         onTxProgress(result);
 
-        !isSubscription && deferTx.resolve(txHash);
-        return callback?.(result);
-      } else {
-        const status = toTxStatus(txStatus);
-        const result = this.transformTxResult(new SubmittableResult({ status, txHash }));
+        if (isSubscription) {
+          callback?.(result);
+        } else {
+          deferTx.resolve(txHash);
+        }
 
-        onTxProgress(result);
+        if (
+          status.type === 'Finalized' || // --
+          status.type === 'Invalid' ||
+          status.type === 'Drop'
+        ) {
+          unsub?.().catch(noop);
+        }
+      })
+      .then((x: Unsub) => {
+        unsub = x;
 
-        !isSubscription && deferTx.resolve(txHash);
-        return callback?.(result);
-      }
-    });
-
-    if (isSubscription) {
-      unsub.then((x: Unsub) => {
-        deferTx.resolve(x);
-      });
-    }
+        if (isSubscription) {
+          deferTx.resolve(x);
+        }
+      })
+      .catch(deferTx.reject);
 
     return deferTx.promise;
   }
