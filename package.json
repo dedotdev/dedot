@@ -29,12 +29,12 @@
   },
   "devDependencies": {
     "@mxssfd/typedoc-theme": "^1.1.7",
-    "@polkadot/types-support": "^16.5.3",
+    "@polkadot/types-support": "^16.5.4",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "happy-dom": "^15.11.7",
     "husky": "^9.1.4",
     "lerna": "7.4.2",
-    "prettier": "^3.7.3",
+    "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^3.2.4",
     "tsc-esm-fix": "^2.20.27",
     "tsx": "^4.20.5",
@@ -44,7 +44,7 @@
     "vitest": "^2.1.9"
   },
   "resolutions": {
-    "@polkadot/types-support": "^16.5.3"
+    "@polkadot/types-support": "^16.5.4"
   },
   "engines": {
     "node": ">=18"
