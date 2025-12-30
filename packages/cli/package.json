@@ -26,12 +26,12 @@
     "@dedot/codecs": "workspace:*",
     "@dedot/codegen": "workspace:*",
     "@dedot/wasm": "^0.1.0",
-    "@polkadot/types-support": "^16.5.3",
-    "ora": "^8.2.0",
+    "@polkadot/types-support": "^16.5.4",
+    "ora": "^9.0.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.33"
+    "@types/yargs": "^17.0.35"
   },
   "publishConfig": {
     "access": "public",
