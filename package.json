@@ -47,7 +47,7 @@
     "@polkadot/types-support": "^16.5.4"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "license": "Apache-2.0"
 }
