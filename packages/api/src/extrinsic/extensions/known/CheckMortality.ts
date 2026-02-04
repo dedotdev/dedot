@@ -1,13 +1,12 @@
 import { BlockHash, EraLike, Hash, Header } from '@dedot/codecs';
 import { SignerPayloadJSON } from '@dedot/types';
 import { assert, bnMin, hexToNumber, isZeroHex, numberToHex, u8aToHex } from '@dedot/utils';
-import { V2Client } from '../../../client/V2Client.js';
 import { SignedExtension } from '../SignedExtension.js';
 
 export const MAX_FINALITY_LAG: number = 5;
 export const FALLBACK_MAX_HASH_COUNT: number = 250;
 export const FALLBACK_PERIOD: number = 6 * 1000;
-export const MORTAL_PERIOD: number = 5 * 60 * 1000;
+export const MORTAL_PERIOD: number = 12 * 60 * 1000;
 
 interface SigningHeader {
   hash: BlockHash;
@@ -43,7 +42,6 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   }
 
   async #getSigningHeaderRpcV2(): Promise<SigningHeader> {
-    // TODO similar to the legacy, we should account for the case finality is lagging behind
     const finalizedBlock = await this.client.block.finalized();
 
     return {
