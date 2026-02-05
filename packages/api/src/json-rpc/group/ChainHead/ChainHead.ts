@@ -335,11 +335,12 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         // Build initial pinned blocks
         this.#finalizedHash = finalizedBlockHashes.at(-1);
-        if (!this.#bestHash) {
-          this.#bestHash = this.#finalizedHash;
-        }
-
         this.#pinnedBlocks = this.#buildInitialPinnedBlocks(finalizedBlockHashes, this.#finalizedRuntime);
+
+        if (!this.#bestHash || (this.#bestHash && !this.findBlock(this.#bestHash))) {
+          this.#bestHash = this.#finalizedHash;
+          this.#lastBestBlockNumber = undefined; // Reset to avoid stale gap detection after recovery
+        }
 
         await this.#updateBlockNumbersAndParents(finalizedBlockHashes, prevPinnedBlocks);
 
