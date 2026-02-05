@@ -339,6 +339,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         if (!this.#bestHash || (this.#bestHash && !this.findBlock(this.#bestHash))) {
           this.#bestHash = this.#finalizedHash;
+          this.#lastBestBlockNumber = undefined; // Reset to avoid stale gap detection after recovery
         }
 
         await this.#updateBlockNumbersAndParents(finalizedBlockHashes, prevPinnedBlocks);
