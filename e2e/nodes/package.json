@@ -7,7 +7,7 @@
     "e2e:test": "npx vitest --watch=false --no-file-parallelism"
   },
   "dependencies": {
-    "@dedot/chaintypes": "^0.203.0",
+    "@dedot/chaintypes": "^0.244.0",
     "@polkadot/keyring": "^14.0.1",
     "dedot": "workspace:*"
   },

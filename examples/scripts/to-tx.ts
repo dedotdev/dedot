@@ -1,3 +1,4 @@
+import { PolkadotApi } from '@dedot/chaintypes';
 import { DedotClient, WsProvider } from 'dedot';
 import { devPairs } from './keyring.js';
 
@@ -13,7 +14,7 @@ import { devPairs } from './keyring.js';
 const { alice } = await devPairs();
 
 console.log('Connecting to local dev node...');
-const client = await DedotClient.new(new WsProvider('ws://127.0.0.1:9944'));
+const client = await DedotClient.new<PolkadotApi>(new WsProvider('ws://127.0.0.1:9944'));
 console.log(`Connected to ${client.runtimeVersion.specName} v${client.runtimeVersion.specVersion}`);
 
 // Build and sign a remark extrinsic to get a raw hex string

@@ -12,9 +12,9 @@ import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
 import {
   Callback,
+  ChainSubmittableExtrinsic,
   GenericStorageQuery,
   GenericSubstrateApi,
-  ISubmittableExtrinsic,
   ISubmittableResult,
   TxUnsub,
 } from '@dedot/types';
@@ -411,7 +411,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       });
   }
 
-  toTx(tx: HexString | Extrinsic): Extrinsic & ISubmittableExtrinsic {
+  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi> {
     return SubmittableExtrinsicV2.fromTx(this, tx);
   }
 }

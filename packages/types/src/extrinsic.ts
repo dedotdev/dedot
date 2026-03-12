@@ -1,5 +1,13 @@
-import { ApplyExtrinsicResult, BlockHash, DispatchError, DispatchInfo, Hash, RuntimeDispatchInfo } from '@dedot/codecs';
-import { Callback, IEventRecord, Unsub } from '@dedot/codecs/types';
+import {
+  ApplyExtrinsicResult,
+  BlockHash,
+  DispatchError,
+  DispatchInfo,
+  Extrinsic,
+  Hash,
+  RuntimeDispatchInfo,
+} from '@dedot/codecs';
+import { Callback, GenericSubstrateApi, IEventRecord, Unsub } from '@dedot/codecs/types';
 import { HexString } from '@dedot/utils';
 import { IKeyringPair, InjectedSigner } from './pjs-types.js';
 
@@ -69,8 +77,9 @@ export interface ISubmittableExtrinsic<R extends ISubmittableResult = ISubmittab
   signAndSend(account: AddressOrPair, options: Partial<SignerOptions<AssetId>>, callback?: Callback<R>): TxUnsub<R>;
 }
 
-export interface ISubmittableExtrinsicLegacy<R extends ISubmittableResult = ISubmittableResult>
-  extends ISubmittableExtrinsic<R> {
+export interface ISubmittableExtrinsicLegacy<
+  R extends ISubmittableResult = ISubmittableResult,
+> extends ISubmittableExtrinsic<R> {
   dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult>;
 }
 
@@ -83,3 +92,12 @@ export type TxStatus =
   | { type: 'Finalized'; value: { blockHash: HexString; blockNumber: number; txIndex: number } }
   | { type: 'Invalid'; value: { error: string } }
   | { type: 'Drop'; value: { error: string } };
+
+export type ChainSubmittableExtrinsic<ChainApi extends GenericSubstrateApi = GenericSubstrateApi> = // --
+  Extrinsic<
+    ChainApi['types']['Address'],
+    ChainApi['types']['RuntimeCall'],
+    ChainApi['types']['Signature'],
+    ChainApi['types']['Extra']
+  > &
+    ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>>;
