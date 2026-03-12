@@ -5,6 +5,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  ISubmittableExtrinsic,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -510,6 +511,34 @@ export class DedotClient<
     callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
   ): TxUnsub {
     return this.#client.sendTx(tx, callback);
+  }
+
+  /**
+   * Convert a raw hex-encoded transaction or an Extrinsic instance into a submittable extrinsic
+   * with `sign`, `signAndSend`, `send`, and `paymentInfo` methods.
+   *
+   * @param tx - A hex-encoded transaction string or an Extrinsic instance
+   * @returns A submittable extrinsic instance
+   *
+   * @example
+   * ```typescript
+   * // Convert a raw hex transaction to a submittable extrinsic
+   * const submittable = client.toTx(rawTxHex);
+   *
+   * // Sign and send
+   * const unsub = await submittable.signAndSend(alice, (result) => {
+   *   console.log('Status:', result.status);
+   * });
+   *
+   * // Or query payment info
+   * const paymentInfo = await submittable.paymentInfo(alice);
+   * console.log('Estimated fee:', paymentInfo.partialFee);
+   * ```
+   */
+  toTx(
+    tx: HexString | Extrinsic,
+  ): Extrinsic & ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>> {
+    return this.#client.toTx(tx);
   }
 
   /**

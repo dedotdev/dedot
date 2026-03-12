@@ -10,7 +10,14 @@ import {
 } from '@dedot/codecs';
 import type { JsonRpcProvider } from '@dedot/providers';
 import { u32 } from '@dedot/shape';
-import { Callback, GenericStorageQuery, GenericSubstrateApi, ISubmittableResult, TxUnsub } from '@dedot/types';
+import {
+  Callback,
+  GenericStorageQuery,
+  GenericSubstrateApi,
+  ISubmittableExtrinsic,
+  ISubmittableResult,
+  TxUnsub,
+} from '@dedot/types';
 import { assert, concatU8a, DedotError, HashFn, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
@@ -402,5 +409,9 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       .send((result) => {
         callback && callback(result);
       });
+  }
+
+  toTx(tx: HexString | Extrinsic): Extrinsic & ISubmittableExtrinsic {
+    return SubmittableExtrinsicV2.fromTx(this, tx);
   }
 }
