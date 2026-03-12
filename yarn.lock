@@ -313,12 +313,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dedot/chaintypes@npm:^0.203.0":
-  version: 0.203.0
-  resolution: "@dedot/chaintypes@npm:0.203.0"
+"@dedot/chaintypes@npm:^0.244.0":
+  version: 0.244.0
+  resolution: "@dedot/chaintypes@npm:0.244.0"
   peerDependencies:
     dedot: ">=1.0.1"
-  checksum: 10c0/6e6c84414d615a4841ce2d30a98734b4858cdae3db9f13fd776d33986a70ae06a9b2e97864c83584cd895f8642d8ca6b23f65f1994c1765c403b726c43fba164
+  checksum: 10c0/7e2e6cfa2d020e52ebedc6a833fe1f20069a20f609eb2c37a2030fd54e2fc8ec15da9879010aad69a4f0b32e3c9ff6309e91f934116f75af449784ac09b140b2
   languageName: node
   linkType: hard
 
@@ -3452,7 +3452,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "dapp@workspace:examples/dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.203.0"
+    "@dedot/chaintypes": "npm:^0.244.0"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -3705,7 +3705,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-nodes@workspace:e2e/nodes"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.203.0"
+    "@dedot/chaintypes": "npm:^0.244.0"
     "@polkadot/keyring": "npm:^14.0.1"
     dedot: "workspace:*"
   languageName: unknown
@@ -4220,7 +4220,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "example-scripts@workspace:examples/scripts"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.203.0"
+    "@dedot/chaintypes": "npm:^0.244.0"
     "@polkadot/keyring": "npm:^14.0.1"
     "@substrate/connect-known-chains": "npm:^1.10.3"
     dedot: "workspace:*"
@@ -8111,7 +8111,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "smoldot-dapp@workspace:examples/smoldot-dapp"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.203.0"
+    "@dedot/chaintypes": "npm:^0.244.0"
     "@substrate/connect-known-chains": "npm:^1.10.3"
     "@types/react": "npm:^18.3.3"
     "@types/react-dom": "npm:^18.3.0"
@@ -9577,7 +9577,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "zombienet@workspace:e2e/zombienet"
   dependencies:
-    "@dedot/chaintypes": "npm:^0.203.0"
+    "@dedot/chaintypes": "npm:^0.244.0"
     "@polkadot/keyring": "npm:^14.0.1"
     dedot: "workspace:*"
   languageName: unknown

@@ -4,10 +4,10 @@ import type { AnyShape } from '@dedot/shape';
 import type { IStorage } from '@dedot/storage';
 import {
   Callback,
+  ChainSubmittableExtrinsic,
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
-  ISubmittableExtrinsic,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -301,9 +301,7 @@ export interface ISubstrateClient<
    * console.log('Estimated fee:', paymentInfo.partialFee);
    * ```
    */
-  toTx(
-    tx: HexString | Extrinsic,
-  ): Extrinsic & ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>>;
+  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi>;
 
   /**
    * Query multiple storage items in a single call or subscribe to multiple storage items

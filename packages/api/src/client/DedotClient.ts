@@ -2,10 +2,10 @@ import { type Extrinsic, Metadata, PortableRegistry } from '@dedot/codecs';
 import { ConnectionStatus, JsonRpcProvider } from '@dedot/providers';
 import {
   Callback,
+  ChainSubmittableExtrinsic,
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
-  ISubmittableExtrinsic,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -535,9 +535,7 @@ export class DedotClient<
    * console.log('Estimated fee:', paymentInfo.partialFee);
    * ```
    */
-  toTx(
-    tx: HexString | Extrinsic,
-  ): Extrinsic & ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>> {
+  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi> {
     return this.#client.toTx(tx);
   }
 

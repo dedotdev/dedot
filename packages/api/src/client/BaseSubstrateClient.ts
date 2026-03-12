@@ -12,10 +12,10 @@ import { type JsonRpcProvider, WsProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
   Callback,
+  ChainSubmittableExtrinsic,
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
-  ISubmittableExtrinsic,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -576,9 +576,7 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  toTx(
-    tx: HexString | Extrinsic,
-  ): Extrinsic & ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>> {
+  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi> {
     throw new Error('Unimplemented!');
   }
 
