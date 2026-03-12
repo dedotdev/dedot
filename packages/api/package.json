@@ -1,6 +1,6 @@
 {
   "name": "@dedot/api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A delightful JavaScript/TypeScript client for Polkadot & Substrate",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -13,13 +13,13 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
-    "@dedot/codecs": "workspace:*",
-    "@dedot/providers": "workspace:*",
-    "@dedot/runtime-specs": "workspace:*",
-    "@dedot/shape": "workspace:*",
-    "@dedot/storage": "workspace:*",
-    "@dedot/types": "workspace:*",
-    "@dedot/utils": "workspace:*"
+    "@dedot/codecs": "^1.1.1",
+    "@dedot/providers": "^1.1.1",
+    "@dedot/runtime-specs": "^1.1.1",
+    "@dedot/shape": "^1.1.1",
+    "@dedot/storage": "^1.1.1",
+    "@dedot/types": "^1.1.1",
+    "@dedot/utils": "^1.1.1"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",
@@ -45,5 +45,6 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "gitHead": "7993a90491771e8e2b726519c3e0e471e9eb2af5"
 }

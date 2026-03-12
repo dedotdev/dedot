@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codegen",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Generate types",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -19,14 +19,14 @@
     "copy": "cp -R ./src/chaintypes/templates ./dist/chaintypes && cp -R ./src/chaintypes/templates ./dist/cjs/chaintypes && cp -R ./src/typink/templates ./dist/typink && cp -R ./src/typink/templates ./dist/cjs/typink && cp -R ./src/sol/templates ./dist/sol && cp -R ./src/sol/templates ./dist/cjs/sol"
   },
   "dependencies": {
-    "@dedot/api": "workspace:*",
-    "@dedot/codecs": "workspace:*",
-    "@dedot/contracts": "workspace:*",
-    "@dedot/providers": "workspace:*",
-    "@dedot/runtime-specs": "workspace:*",
-    "@dedot/shape": "workspace:*",
-    "@dedot/types": "workspace:*",
-    "@dedot/utils": "workspace:*",
+    "@dedot/api": "^1.1.1",
+    "@dedot/codecs": "^1.1.1",
+    "@dedot/contracts": "^1.1.1",
+    "@dedot/providers": "^1.1.1",
+    "@dedot/runtime-specs": "^1.1.1",
+    "@dedot/shape": "^1.1.1",
+    "@dedot/types": "^1.1.1",
+    "@dedot/utils": "^1.1.1",
     "handlebars": "^4.7.8",
     "prettier": "^3.7.4"
   },
@@ -37,5 +37,6 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "gitHead": "7993a90491771e8e2b726519c3e0e471e9eb2af5"
 }

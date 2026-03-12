@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
   "repository": {
@@ -22,9 +22,9 @@
     "test": "npx vitest --watch=false"
   },
   "dependencies": {
-    "@dedot/api": "workspace:*",
-    "@dedot/codecs": "workspace:*",
-    "@dedot/codegen": "workspace:*",
+    "@dedot/api": "^1.1.1",
+    "@dedot/codecs": "^1.1.1",
+    "@dedot/codegen": "^1.1.1",
     "@dedot/wasm": "^0.1.0",
     "@polkadot/types-support": "^16.5.4",
     "ora": "^9.0.0",
@@ -40,5 +40,6 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "gitHead": "7993a90491771e8e2b726519c3e0e471e9eb2af5"
 }

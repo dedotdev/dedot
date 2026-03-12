@@ -1,6 +1,6 @@
 {
   "name": "@dedot/providers",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "JSON-RPC Providers",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -18,7 +18,7 @@
     "test": "npx vitest --watch=false"
   },
   "dependencies": {
-    "@dedot/utils": "workspace:*",
+    "@dedot/utils": "^1.1.1",
     "@polkadot/x-ws": "^14.0.1"
   },
   "publishConfig": {
@@ -32,5 +32,6 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "gitHead": "7993a90491771e8e2b726519c3e0e471e9eb2af5"
 }
