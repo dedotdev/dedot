@@ -15,6 +15,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  ISubmittableExtrinsic,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -572,6 +573,12 @@ export abstract class BaseSubstrateClient<
     tx: HexString | Extrinsic,
     callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>,
   ): TxUnsub {
+    throw new Error('Unimplemented!');
+  }
+
+  toTx(
+    tx: HexString | Extrinsic,
+  ): Extrinsic & ISubmittableExtrinsic<ISubmittableResult<ChainApi['types']['EventRecord']>> {
     throw new Error('Unimplemented!');
   }
 

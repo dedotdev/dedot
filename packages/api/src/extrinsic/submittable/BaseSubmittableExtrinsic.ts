@@ -54,7 +54,9 @@ export abstract class BaseSubmittableExtrinsic extends Extrinsic implements ISub
   }
 
   async paymentInfo(account: AddressOrPair, options?: Partial<PayloadOptions>): Promise<TxPaymentInfo> {
-    await this.sign(account, { ...options, signer: fakeSigner });
+    if (!this.signed) {
+      await this.sign(account, { ...options, signer: fakeSigner });
+    }
 
     const txU8a = this.toU8a();
 
