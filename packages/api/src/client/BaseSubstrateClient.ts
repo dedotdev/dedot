@@ -16,6 +16,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  IRuntimeTxCall,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -576,7 +577,7 @@ export abstract class BaseSubstrateClient<
     throw new Error('Unimplemented!');
   }
 
-  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi> {
+  toTx(tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall): ChainSubmittableExtrinsic<ChainApi> {
     throw new Error('Unimplemented!');
   }
 
