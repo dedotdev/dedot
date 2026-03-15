@@ -20,9 +20,18 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
   #signingHeader!: SigningHeader;
 
   async init() {
-    this.#signingHeader = await this.#getSigningHeader();
-    this.data = { period: this.#calculateMortalLength(), current: BigInt(this.#signingHeader.number) };
-    this.additionalSigned = this.#signingHeader.hash;
+    const mortality = this.payloadOptions.mortality;
+
+    if (mortality?.type === 'Immortal') {
+      this.data = { type: 'Immortal' };
+      this.additionalSigned = this.client.genesisHash;
+    } else {
+      this.#signingHeader = await this.#getSigningHeader();
+      const period =
+        mortality?.type === 'Mortal' ? BigInt(mortality.period) : this.#calculateMortalLength();
+      this.data = { period, current: BigInt(this.#signingHeader.number) };
+      this.additionalSigned = this.#signingHeader.hash;
+    }
   }
 
   async fromPayload(payload: SignerPayloadJSON): Promise<void> {
@@ -116,7 +125,7 @@ export class CheckMortality extends SignedExtension<EraLike, Hash> {
     return {
       era: u8aToHex(this.$Data.tryEncode(this.data)),
       blockHash: this.additionalSigned,
-      blockNumber: numberToHex(this.#signingHeader.number),
+      blockNumber: numberToHex(this.#signingHeader?.number ?? 0),
     };
   }
 }
