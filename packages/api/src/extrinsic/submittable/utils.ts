@@ -1,7 +1,46 @@
-import { Hash, TransactionStatus } from '@dedot/codecs';
-import { AddressOrPair, IKeyringPair, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
+import { Extrinsic, Hash, Preamble, PortableRegistry, TransactionStatus } from '@dedot/codecs';
+import { AddressOrPair, IKeyringPair, IRuntimeTxCall, ISubmittableResult, TxStatus, Unsub } from '@dedot/types';
 import { assert, blake2AsU8a, Deferred, deferred, HexString, hexToU8a, isFunction } from '@dedot/utils';
 import { RejectedTxError } from './errors.js';
+
+/**
+ * Check if a value is an IRuntimeTxCall object (has a 'pallet' property).
+ */
+function isRuntimeTxCall(tx: unknown): tx is IRuntimeTxCall {
+  return typeof tx === 'object' && tx !== null && 'pallet' in tx;
+}
+
+/**
+ * Resolve a transaction input into a call and optional preamble.
+ *
+ * Supports:
+ * - `Extrinsic` instance: extract call + preamble
+ * - `IRuntimeTxCall` object: use directly as call, no preamble
+ * - `HexString` or `Uint8Array`: try decode as extrinsic first, fallback to runtime call
+ */
+export function resolveCallAndPreamble(
+  registry: PortableRegistry,
+  tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall,
+): { call: IRuntimeTxCall; preamble?: Preamble } {
+  if (tx instanceof Extrinsic) {
+    return { call: tx.call, preamble: tx.preamble };
+  }
+
+  if (isRuntimeTxCall(tx)) {
+    return { call: tx };
+  }
+
+  // HexString or Uint8Array: try extrinsic decode first, fallback to runtime call
+  try {
+    const extrinsic = registry.$Extrinsic.tryDecode(tx);
+    return { call: extrinsic.call, preamble: extrinsic.preamble };
+  } catch {
+    const { callTypeId } = registry.metadata!.extrinsic;
+    const $RuntimeCall = registry.findCodec(callTypeId);
+    const call = $RuntimeCall.tryDecode(tx) as IRuntimeTxCall;
+    return { call };
+  }
+}
 
 export function isKeyringPair(account: AddressOrPair): account is IKeyringPair {
   return isFunction((account as IKeyringPair).sign);

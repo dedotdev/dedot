@@ -8,6 +8,7 @@ import {
   GenericStorageQuery,
   GenericSubstrateApi,
   InjectedSigner,
+  IRuntimeTxCall,
   ISubmittableResult,
   Query,
   QueryFnResult,
@@ -280,28 +281,36 @@ export interface ISubstrateClient<
   sendTx(tx: HexString | Extrinsic, callback?: Callback<ISubmittableResult<ChainApi['types']['EventRecord']>>): TxUnsub;
 
   /**
-   * Convert a raw hex-encoded transaction or an Extrinsic instance into a submittable extrinsic
+   * Convert a transaction input into a submittable extrinsic
    * with `sign`, `signAndSend`, `send`, and `paymentInfo` methods.
    *
-   * @param tx - A hex-encoded transaction string or an Extrinsic instance
+   * @param tx - A hex-encoded extrinsic or runtime call, a Uint8Array of encoded bytes,
+   *   an Extrinsic instance, or an IRuntimeTxCall object.
+   *   For HexString/Uint8Array, it first tries to decode as a full extrinsic;
+   *   if that fails, it falls back to decoding as a raw runtime call.
    * @returns A submittable extrinsic instance
    *
    * @example
    * ```typescript
-   * // Convert a raw hex transaction to a submittable extrinsic
+   * // From a raw hex extrinsic
    * const submittable = client.toTx(rawTxHex);
+   *
+   * // From a runtime call hex (encoded call data)
+   * const submittable = client.toTx(runtimeCallHex);
+   *
+   * // From a Uint8Array
+   * const submittable = client.toTx(callBytes);
+   *
+   * // From a runtime call object
+   * const submittable = client.toTx({ pallet: 'Balances', palletCall: { name: 'TransferKeepAlive', params: { dest, value } } });
    *
    * // Sign and send
    * const unsub = await submittable.signAndSend(alice, (result) => {
    *   console.log('Status:', result.status);
    * });
-   *
-   * // Or query payment info
-   * const paymentInfo = await submittable.paymentInfo(alice);
-   * console.log('Estimated fee:', paymentInfo.partialFee);
    * ```
    */
-  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi>;
+  toTx(tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall): ChainSubmittableExtrinsic<ChainApi>;
 
   /**
    * Query multiple storage items in a single call or subscribe to multiple storage items

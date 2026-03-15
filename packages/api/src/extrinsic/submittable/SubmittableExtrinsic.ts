@@ -3,6 +3,7 @@ import {
   AddressOrPair,
   Callback,
   DryRunResult,
+  IRuntimeTxCall,
   ISubmittableExtrinsicLegacy,
   ISubmittableResult,
   SignerOptions,
@@ -15,22 +16,16 @@ import { assert, HexString, isHex, noop } from '@dedot/utils';
 import { LegacyClient } from '../../client/LegacyClient.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
-import { toTxStatus, txDefer } from './utils.js';
+import { resolveCallAndPreamble, toTxStatus, txDefer } from './utils.js';
 
 /**
  * @name SubmittableExtrinsic
  * @description A wrapper around an Extrinsic that exposes methods to sign, send, and other utility around Extrinsic.
  */
 export class SubmittableExtrinsic extends BaseSubmittableExtrinsic implements ISubmittableExtrinsicLegacy {
-  static fromTx(client: LegacyClient<any>, tx: HexString | Extrinsic) {
-    let extrinsic: Extrinsic;
-    if (isHex(tx)) {
-      extrinsic = client.registry.$Extrinsic.tryDecode(tx);
-    } else {
-      extrinsic = tx;
-    }
-
-    return new SubmittableExtrinsic(client, extrinsic.call, extrinsic.preamble);
+  static fromTx(client: LegacyClient<any>, tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall) {
+    const { call, preamble } = resolveCallAndPreamble(client.registry, tx);
+    return new SubmittableExtrinsic(client, call, preamble);
   }
 
   async dryRun(account: AddressOrPair, optionsOrHash?: Partial<SignerOptions> | BlockHash): Promise<DryRunResult> {

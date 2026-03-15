@@ -6,7 +6,7 @@ import { PinnedBlock } from '../../json-rpc/index.js';
 import { BaseSubmittableExtrinsic } from './BaseSubmittableExtrinsic.js';
 import { SubmittableResult } from './SubmittableResult.js';
 import { InvalidTxError } from './errors.js';
-import { txDefer } from './utils.js';
+import { resolveCallAndPreamble, txDefer } from './utils.js';
 
 type TxFound = { blockHash: BlockHash; blockNumber: number; index: number; events: IEventRecord[] };
 
@@ -23,15 +23,9 @@ export class SubmittableExtrinsicV2 extends BaseSubmittableExtrinsic {
     super(client, call, preamble);
   }
 
-  static fromTx(client: V2Client<any>, tx: HexString | Extrinsic) {
-    let extrinsic: Extrinsic;
-    if (isHex(tx)) {
-      extrinsic = client.registry.$Extrinsic.tryDecode(tx);
-    } else {
-      extrinsic = tx;
-    }
-
-    return new SubmittableExtrinsicV2(client, extrinsic.call, extrinsic.preamble);
+  static fromTx(client: V2Client<any>, tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall) {
+    const { call, preamble } = resolveCallAndPreamble(client.registry, tx);
+    return new SubmittableExtrinsicV2(client, call, preamble);
   }
 
   async #send(callback: Callback<ISubmittableResult>): Promise<Unsub> {

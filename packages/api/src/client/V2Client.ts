@@ -15,6 +15,7 @@ import {
   ChainSubmittableExtrinsic,
   GenericStorageQuery,
   GenericSubstrateApi,
+  IRuntimeTxCall,
   ISubmittableResult,
   TxUnsub,
 } from '@dedot/types';
@@ -411,7 +412,7 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
       });
   }
 
-  toTx(tx: HexString | Extrinsic): ChainSubmittableExtrinsic<ChainApi> {
+  toTx(tx: HexString | Uint8Array | Extrinsic | IRuntimeTxCall): ChainSubmittableExtrinsic<ChainApi> {
     return SubmittableExtrinsicV2.fromTx(this, tx);
   }
 }

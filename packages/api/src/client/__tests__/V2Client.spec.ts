@@ -14,7 +14,7 @@ import {
   OperationStorageDone,
   OperationStorageItems,
 } from '@dedot/types/json-rpc';
-import { assert, blake2_256, deferred, keccak_256, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
+import { assert, blake2_256, deferred, hexToU8a, keccak_256, stringCamelCase, stringPascalCase, u8aToHex } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import { PinnedBlock } from '../../json-rpc/group/ChainHead/ChainHead.js';
@@ -331,6 +331,75 @@ describe(
           it('should throws error', async () => {
             expect(() => api.tx.system.notFound()).toThrowError(`Tx call spec not found for system.notFound`);
             expect(() => api.tx.notFound.notFound()).toThrowError(`Pallet not found: notFound`);
+          });
+
+          describe('toTx', () => {
+            it('should create submittable from unsigned extrinsic hex', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const hex = tx.toHex();
+
+              const submittable = api.toTx(hex);
+              expect(submittable).toBeDefined();
+              expect(submittable.callHex).toEqual(tx.callHex);
+            });
+
+            it('should create submittable from Extrinsic instance', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+
+              const submittable = api.toTx(tx);
+              expect(submittable).toBeDefined();
+              expect(submittable.call).toEqual(tx.call);
+            });
+
+            it('should create submittable from Uint8Array of encoded extrinsic', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const hex = tx.toHex();
+              const u8a = hexToU8a(hex);
+
+              const submittable = api.toTx(u8a);
+              expect(submittable).toBeDefined();
+              expect(submittable.callHex).toEqual(tx.callHex);
+            });
+
+            it('should create submittable from IRuntimeTxCall object', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const call = tx.call;
+
+              const submittable = api.toTx(call);
+              expect(submittable).toBeDefined();
+              expect(submittable.callHex).toEqual(tx.callHex);
+            });
+
+            it('should create submittable from runtime call hex', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const callHex = tx.callHex;
+
+              const submittable = api.toTx(callHex);
+              expect(submittable).toBeDefined();
+              expect(submittable.callHex).toEqual(tx.callHex);
+            });
+
+            it('should create submittable from runtime call Uint8Array', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const callU8a = tx.callU8a;
+
+              const submittable = api.toTx(callU8a);
+              expect(submittable).toBeDefined();
+              expect(submittable.callHex).toEqual(tx.callHex);
+            });
+
+            it('should preserve preamble from extrinsic hex', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+              const submittable = api.toTx(tx.toHex());
+              expect(submittable.preamble).toEqual(tx.preamble);
+            });
+
+            it('should produce same encoded extrinsic from IRuntimeTxCall as from tx builder', () => {
+              const tx = api.tx.system.remarkWithEvent('hello');
+
+              const submittable = api.toTx(tx.call);
+              expect(submittable.toHex()).toEqual(tx.toHex());
+            });
           });
 
           describe('signer should works', () => {
