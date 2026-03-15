@@ -1,6 +1,6 @@
 {
   "name": "@dedot/runtime-specs",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Known specs runtime apis",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -17,9 +17,9 @@
     "clean": "rm -rf ./dist && rm -rf ./tsconfig.tsbuildinfo ./tsconfig.build.tsbuildinfo"
   },
   "dependencies": {
-    "@dedot/codecs": "^1.1.1",
-    "@dedot/shape": "^1.1.1",
-    "@dedot/types": "^1.1.1"
+    "@dedot/codecs": "^1.2.0",
+    "@dedot/shape": "^1.2.0",
+    "@dedot/types": "^1.2.0"
   },
   "publishConfig": {
     "access": "public",

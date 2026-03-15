@@ -1,6 +1,6 @@
 {
   "name": "@dedot/cli",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
   "repository": {
@@ -22,9 +22,9 @@
     "test": "npx vitest --watch=false"
   },
   "dependencies": {
-    "@dedot/api": "^1.1.1",
-    "@dedot/codecs": "^1.1.1",
-    "@dedot/codegen": "^1.1.1",
+    "@dedot/api": "^1.2.0",
+    "@dedot/codecs": "^1.2.0",
+    "@dedot/codegen": "^1.2.0",
     "@dedot/wasm": "^0.1.0",
     "@polkadot/types-support": "^16.5.4",
     "ora": "^9.0.0",

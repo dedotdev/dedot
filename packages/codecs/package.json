@@ -1,6 +1,6 @@
 {
   "name": "@dedot/codecs",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Known codecs",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -13,8 +13,8 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
-    "@dedot/shape": "^1.1.1",
-    "@dedot/utils": "^1.1.1"
+    "@dedot/shape": "^1.2.0",
+    "@dedot/utils": "^1.2.0"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && tsc --project tsconfig.build.cjs.json",

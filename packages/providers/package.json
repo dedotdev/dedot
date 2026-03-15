@@ -1,6 +1,6 @@
 {
   "name": "@dedot/providers",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "JSON-RPC Providers",
   "author": "Thang X. Vu <thang@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -18,7 +18,7 @@
     "test": "npx vitest --watch=false"
   },
   "dependencies": {
-    "@dedot/utils": "^1.1.1",
+    "@dedot/utils": "^1.2.0",
     "@polkadot/x-ws": "^14.0.1"
   },
   "publishConfig": {
