@@ -13,15 +13,16 @@ import { IKeyringPair, InjectedSigner } from './pjs-types.js';
 
 export type AddressOrPair = IKeyringPair | string; // | AccountId32Like | MultiAddressLike;
 
+export type MortalityOptions =
+  | { type: 'Immortal' } // immortal transaction (never expires)
+  | { type: 'Mortal'; period: number }; // custom mortal period in blocks
+
 export interface PayloadOptions<AssetId extends any = any> {
   nonce?: number;
   tip?: bigint;
   assetId?: AssetId;
   metadataHash?: HexString; // If empty -> disabled, if not empty -> enabled
-
-  // TODO support customize mortality
-  // blockHash?: Uint8Array | HexString;
-  // era?: HexString
+  mortality?: MortalityOptions;
 
   [prop: string]: any;
 }
