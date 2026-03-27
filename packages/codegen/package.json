@@ -27,7 +27,7 @@
     "@dedot/shape": "^1.2.0",
     "@dedot/types": "^1.2.0",
     "@dedot/utils": "^1.2.0",
-    "handlebars": "^4.7.8",
+    "handlebars": "^4.7.9",
     "prettier": "^3.7.4"
   },
   "publishConfig": {
