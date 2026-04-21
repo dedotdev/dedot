@@ -345,16 +345,26 @@ export abstract class BaseSubstrateClient<
     // @ts-ignore
     this.on('disconnected', this.onDisconnected);
 
-    return new Promise<this>((resolve) => {
+    return new Promise<this>((resolve, reject) => {
+      // @ts-ignore
+      const offError = this.on('error', (err: unknown) => {
+        reject(err instanceof Error ? err : new Error(String(err)));
+      });
       // @ts-ignore
       this.once('ready', () => {
+        offError();
         resolve(this);
       });
     });
   }
 
   protected onConnected = async () => {
-    await this.initialize();
+    try {
+      await this.initialize();
+    } catch (e) {
+      // @ts-ignore — surface init failure so the pending connect() promise can reject
+      this.emit('error', e);
+    }
   };
 
   protected onDisconnected = async () => {};
