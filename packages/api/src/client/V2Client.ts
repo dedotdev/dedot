@@ -19,7 +19,17 @@ import {
   ISubmittableResult,
   TxUnsub,
 } from '@dedot/types';
-import { assert, concatU8a, DedotError, HashFn, HexString, twox64Concat, u8aToHex, xxhashAsU8a } from '@dedot/utils';
+import {
+  assert,
+  concatU8a,
+  DedotError,
+  HashFn,
+  HexString,
+  JsonRpcV2NotSupportedError,
+  twox64Concat,
+  u8aToHex,
+  xxhashAsU8a,
+} from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import {
   ConstantExecutor,
@@ -127,6 +137,13 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
 
     if (shouldInitialize) {
       const rpcMethods: string[] = (await this.rpc.rpc_methods()).methods;
+
+      if (!rpcMethods.some((m) => m.startsWith('chainHead_'))) {
+        throw new JsonRpcV2NotSupportedError(
+          'The connected node does not support JSON-RPC v2 (no chainHead_* methods). ' +
+            'Omit `rpcVersion` to auto-detect, or pass `rpcVersion: "legacy"`.',
+        );
+      }
 
       this._chainHead = new ChainHead(this, { rpcMethods });
 

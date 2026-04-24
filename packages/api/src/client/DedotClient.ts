@@ -14,7 +14,7 @@ import {
   TxUnsub,
   Unsub,
 } from '@dedot/types';
-import { HexString } from '@dedot/utils';
+import { HexString, JsonRpcV2NotSupportedError, noop } from '@dedot/utils';
 import { SubstrateApi } from '../chaintypes/index.js';
 import { isJsonRpcProvider } from '../json-rpc/index.js';
 import {
@@ -36,9 +36,14 @@ import { V2Client } from './V2Client.js';
  */
 export type ClientOptions = ApiOptions & {
   /**
-   * The JSON-RPC version to use
-   * - 'v2' (default): Uses the new JSON-RPC v2 specification
-   * - 'legacy': Uses the legacy JSON-RPC specification for older nodes
+   * The JSON-RPC version to use.
+   *
+   * - _unset_ (default): auto-detect. Try JSON-RPC v2 first and transparently fall back
+   *   to legacy if the connected node does not expose v2 methods (no `chainHead_*`).
+   *   After `connect()` resolves, `client.rpcVersion` reflects the version that was picked.
+   * - `'v2'`: force JSON-RPC v2. Throws `JsonRpcV2NotSupportedError` during `connect()`
+   *   if the node does not support v2.
+   * - `'legacy'`: force legacy JSON-RPC.
    */
   rpcVersion?: RpcVersion;
 };
@@ -91,9 +96,14 @@ export type ClientOptions = ApiOptions & {
 export class DedotClient<
   ChainApi extends GenericSubstrateApi = SubstrateApi, // --
 > implements ISubstrateClient<ChainApi, ApiEvent> {
-  #client: ISubstrateClient<ChainApi, ApiEvent>;
-  /** The JSON-RPC version being used ('v2' or 'legacy') */
-  rpcVersion: RpcVersion;
+  #client!: ISubstrateClient<ChainApi, ApiEvent>;
+  #pendingOptions?: ClientOptions | JsonRpcProvider;
+  /**
+   * The JSON-RPC version being used ('v2' or 'legacy').
+   *
+   * In auto-detect mode (no `rpcVersion` option), this is resolved during `connect()`.
+   */
+  rpcVersion!: RpcVersion;
 
   /**
    * Creates a new DedotClient instance.
@@ -103,19 +113,14 @@ export class DedotClient<
    * @param options - Client configuration options or a JsonRpcProvider instance
    */
   constructor(options: ClientOptions | JsonRpcProvider) {
-    let rpcVersion: RpcVersion = 'v2';
-    if (!isJsonRpcProvider(options)) {
-      if (options['rpcVersion'] === 'legacy') {
-        rpcVersion = 'legacy';
-      }
-    }
+    const explicitVersion: RpcVersion | undefined = isJsonRpcProvider(options) ? undefined : options.rpcVersion;
 
-    this.rpcVersion = rpcVersion;
-
-    if (this.rpcVersion === 'legacy') {
-      this.#client = new LegacyClient(options);
+    if (explicitVersion) {
+      this.rpcVersion = explicitVersion;
+      this.#client =
+        explicitVersion === 'legacy' ? new LegacyClient<ChainApi>(options) : new V2Client<ChainApi>(options);
     } else {
-      this.#client = new V2Client(options);
+      this.#pendingOptions = options;
     }
   }
 
@@ -356,10 +361,36 @@ export class DedotClient<
   /**
    * Establishes connection to the blockchain network.
    *
+   * When `rpcVersion` was not specified, this tries JSON-RPC v2 first and
+   * transparently falls back to legacy if the node does not support v2.
+   *
    * @returns This client instance for method chaining
    */
   async connect(): Promise<this> {
-    await this.#client.connect();
+    if (this.#client) {
+      await this.#client.connect();
+      return this;
+    }
+
+    const options = this.#pendingOptions!;
+    this.#pendingOptions = undefined;
+
+    const v2 = new V2Client<ChainApi>(options);
+    try {
+      await v2.connect();
+      this.#client = v2;
+      this.rpcVersion = 'v2';
+    } catch (e) {
+      if (!(e instanceof JsonRpcV2NotSupportedError)) throw e;
+
+      console.warn('JSON-RPC v2 is not supported by the connected node, falling back to legacy JSON-RPC.');
+
+      await v2.disconnect().catch(noop);
+      const legacy = new LegacyClient<ChainApi>(options);
+      await legacy.connect();
+      this.#client = legacy;
+      this.rpcVersion = 'legacy';
+    }
 
     return this;
   }

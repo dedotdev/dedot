@@ -21,3 +21,14 @@ export class UnknownApiError extends DedotError {
 export class ApiCompatibilityError extends DedotError {
   name = 'ApiCompatibilityError';
 }
+
+/**
+ * Thrown by `V2Client` when the connected node does not expose JSON-RPC v2 methods
+ * (no `chainHead_*` methods in `rpc_methods`).
+ *
+ * `DedotClient` catches this error in auto-detect mode (no `rpcVersion` specified)
+ * and transparently falls back to `LegacyClient`.
+ */
+export class JsonRpcV2NotSupportedError extends DedotError {
+  name = 'JsonRpcV2NotSupportedError';
+}
