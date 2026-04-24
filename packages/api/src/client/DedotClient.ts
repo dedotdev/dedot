@@ -383,6 +383,8 @@ export class DedotClient<
     } catch (e) {
       if (!(e instanceof JsonRpcV2NotSupportedError)) throw e;
 
+      console.warn('JSON-RPC v2 is not supported by the connected node, falling back to legacy JSON-RPC.');
+
       await v2.disconnect().catch(noop);
       const legacy = new LegacyClient<ChainApi>(options);
       await legacy.connect();
