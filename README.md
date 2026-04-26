@@ -111,6 +111,8 @@ await client.disconnect();
 - [Polkadot UI](https://dot-ui.com/) ([Github](https://github.com/Polkadot-UI-Initiative/dot-ui))
 - [Create Dot App](https://github.com/preschian/create-dot-app)
 - [LunoKit - Wallet Developer Tools](https://www.lunolab.xyz/) ([Github](https://github.com/Luno-lab/LunoKit))
+- [ParaSpell](https://paraspell.xyz/) ([Github](https://github.com/paraspell/xcm-tools))
+- [Polkadot Cloud Connect](https://polkadot.cloud/connect) ([Github](https://github.com/polkadot-cloud/connect))
 - ... add yours? PRs are more than welcome!
 
 ### Acknowledgment
