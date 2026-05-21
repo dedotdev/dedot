@@ -32,7 +32,7 @@
     "@dedot/smoldot": "^1.3.0",
     "@dedot/types": "^1.3.0",
     "@dedot/utils": "^1.3.0",
-    "smoldot": "^2.0.40"
+    "smoldot": "^3.1.1"
   },
   "exports": {
     ".": {
