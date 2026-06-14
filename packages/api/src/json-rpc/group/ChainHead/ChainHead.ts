@@ -533,6 +533,10 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // So any requests/operations coming to the chainHead should be put on waiting
         // for the #recovering promise to resolve
         this.#recovering = deferred<void>();
+        // Guard against an unhandled rejection: on recovery failure this promise is
+        // rejected, but it only has a consumer when an operation is in flight (#ensureFollowed).
+        // The no-op handler is harmless for real awaiters, who still receive the rejection.
+        this.#recovering.promise.catch(noop);
 
         // 2. Attempt to re-follow the chainHead (with bounded retries)
         this.#reFollow()
