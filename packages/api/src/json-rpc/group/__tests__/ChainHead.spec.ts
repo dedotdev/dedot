@@ -1445,6 +1445,71 @@ describe('ChainHead', () => {
         'storage02',
       ]);
     });
+
+    it('retries re-follow and switches endpoint after exhausting attempts', async () => {
+      const switchSpy = vi.spyOn(chainHead as any, 'switchEndpoint').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Every re-follow attempt fails
+      provider.setRpcRequests({
+        chainHead_v1_follow: () => {
+          throw new Error('follow failed');
+        },
+      });
+
+      // Only count follow calls triggered by the stop recovery (ignore the initial follow)
+      providerSend.mockClear();
+
+      // Trigger a stop event on the current follow subscription
+      notify(simulator.subscriptionId, { event: 'stop' });
+
+      // Wait long enough for all bounded retry attempts to be exhausted
+      await waitFor(3_500);
+
+      const followCalls = providerSend.mock.calls.filter(([method]) => method === 'chainHead_v1_follow');
+      expect(followCalls.length).toBe(3);
+      expect(switchSpy).toHaveBeenCalledTimes(1);
+
+      switchSpy.mockRestore();
+      errorSpy.mockRestore();
+    }, 10_000);
+  });
+
+  describe('switchEndpoint', () => {
+    it('calls provider.disconnect(true) for a WsProvider with retry enabled', async () => {
+      const { WsProvider } = await import('@dedot/providers');
+      const wsProvider = new WsProvider({ endpoint: 'ws://127.0.0.1:1', retryDelayMs: 2_500 });
+      const disconnectSpy = vi.spyOn(wsProvider, 'disconnect').mockResolvedValue(undefined);
+
+      const wsClient = new JsonRpcClient({ provider: wsProvider });
+      const wsChainHead = new ChainHead(wsClient);
+
+      (wsChainHead as any).switchEndpoint();
+
+      expect(disconnectSpy).toHaveBeenCalledTimes(1);
+      expect(disconnectSpy).toHaveBeenCalledWith(true);
+    });
+
+    it('does not switch endpoint for a WsProvider with retry disabled', async () => {
+      const { WsProvider } = await import('@dedot/providers');
+      const wsProvider = new WsProvider({ endpoint: 'ws://127.0.0.1:1', retryDelayMs: -1 });
+      const disconnectSpy = vi.spyOn(wsProvider, 'disconnect').mockResolvedValue(undefined);
+
+      const wsClient = new JsonRpcClient({ provider: wsProvider });
+      const wsChainHead = new ChainHead(wsClient);
+
+      (wsChainHead as any).switchEndpoint();
+
+      expect(disconnectSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not switch endpoint for a non-WsProvider', async () => {
+      const disconnectSpy = vi.spyOn(provider, 'disconnect').mockResolvedValue(undefined);
+
+      (chainHead as any).switchEndpoint();
+
+      expect(disconnectSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('caching', () => {

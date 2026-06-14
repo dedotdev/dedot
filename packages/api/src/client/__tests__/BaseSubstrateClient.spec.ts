@@ -1,12 +1,43 @@
+import { type JsonRpcProvider, MaxRetryAttemptedError, WsProvider } from '@dedot/providers';
 import { type IStorage } from '@dedot/storage';
+import { JsonRpcV2NotSupportedError } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseSubstrateClient } from '../BaseSubstrateClient.js';
 import MockProvider from './MockProvider.js';
 
+// A WsProvider that never opens a real socket - used to test endpoint switching behavior
+class MockWsProvider extends WsProvider {
+  disconnectCalls: boolean[] = [];
+  failOnSwitch: boolean = false;
+
+  constructor() {
+    super('ws://127.0.0.1:1');
+  }
+
+  async connect(): Promise<this> {
+    this._setStatus('connected');
+    return this;
+  }
+
+  async disconnect(switchEndpoint?: boolean): Promise<void> {
+    this.disconnectCalls.push(!!switchEndpoint);
+
+    if (this.failOnSwitch) {
+      this.emit('error', new MaxRetryAttemptedError('Cannot reconnect to network after 3 retry attempts'));
+      this._setStatus('disconnected');
+      return;
+    }
+
+    // Simulate an automatic reconnection to a different endpoint
+    this._setStatus('disconnected');
+    setTimeout(() => this._setStatus('connected'), 10);
+  }
+}
+
 // Create a mock implementation of BaseSubstrateClient for testing
 class MockBaseSubstrateClient extends BaseSubstrateClient {
-  constructor() {
-    super('v2', new MockProvider());
+  constructor(provider: JsonRpcProvider = new MockProvider()) {
+    super('v2', provider);
   }
 
   // Expose protected methods for testing
@@ -372,6 +403,67 @@ describe('BaseSubstrateClient', () => {
 
       // Verify _apiAtCache was cleared
       expect(apiAtCacheClearSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('connect() error semantics', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('does not reject connect() on transient provider errors before connection', async () => {
+      const client = new MockBaseSubstrateClient();
+      const provider = client.provider as MockProvider;
+
+      // Simulate a provider that hits a transient socket error first,
+      // then successfully connects (e.g., retrying a different endpoint)
+      vi.spyOn(provider, 'connect').mockImplementation(async () => {
+        provider.emit('error', new Error('transient socket error'));
+        setTimeout(() => provider.setStatus('connected'), 10);
+        return provider;
+      });
+
+      await expect(client.connect()).resolves.toBe(client);
+    });
+
+    it('rejects connect() when initialization fails', async () => {
+      const client = new MockBaseSubstrateClient();
+      vi.spyOn(client as any, 'initialize').mockRejectedValue(new Error('init failed'));
+
+      await expect(client.connect()).rejects.toThrow('init failed');
+    });
+
+    it('switches endpoint when initialization fails and provider retry is enabled', async () => {
+      const provider = new MockWsProvider();
+      const client = new MockBaseSubstrateClient(provider);
+
+      const doInitSpy = vi
+        .spyOn(client as any, 'doInitialize')
+        .mockRejectedValueOnce(new Error('weird endpoint'));
+
+      await expect(client.connect()).resolves.toBe(client);
+      expect(provider.disconnectCalls).toEqual([true]);
+      expect(doInitSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not switch endpoint when JSON-RPC v2 is not supported', async () => {
+      const provider = new MockWsProvider();
+      const client = new MockBaseSubstrateClient(provider);
+
+      vi.spyOn(client as any, 'doInitialize').mockRejectedValue(new JsonRpcV2NotSupportedError('v2 not supported'));
+
+      await expect(client.connect()).rejects.toThrow(JsonRpcV2NotSupportedError);
+      expect(provider.disconnectCalls).toEqual([]);
+    });
+
+    it('rejects connect() when max retry attempts exhausted while switching endpoints', async () => {
+      const provider = new MockWsProvider();
+      provider.failOnSwitch = true;
+      const client = new MockBaseSubstrateClient(provider);
+
+      vi.spyOn(client as any, 'doInitialize').mockRejectedValue(new Error('weird endpoint'));
+
+      await expect(client.connect()).rejects.toThrow(MaxRetryAttemptedError);
     });
   });
 });
