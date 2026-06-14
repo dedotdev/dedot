@@ -25,3 +25,15 @@ export class JsonRpcError<Data = any> extends Error {
 export class MaxRetryAttemptedError extends DedotError {}
 
 export class NetworkDisconnectedError extends DedotError {}
+
+export class WsConnectionError extends DedotError {
+  /**
+   * The original error event emitted by the websocket, if any
+   */
+  cause?: any;
+
+  constructor(message: string, cause?: any) {
+    super(message);
+    this.cause = cause;
+  }
+}

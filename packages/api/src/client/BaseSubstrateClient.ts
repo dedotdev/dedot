@@ -8,7 +8,7 @@ import {
   RuntimeVersion,
   StorageDataLike,
 } from '@dedot/codecs';
-import { type JsonRpcProvider, WsProvider } from '@dedot/providers';
+import { type JsonRpcProvider, MaxRetryAttemptedError, WsProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
   Callback,
@@ -30,6 +30,7 @@ import {
   Deferred,
   ensurePresence as _ensurePresence,
   HexString,
+  JsonRpcV2NotSupportedError,
   LRUCache,
   noop,
   u8aToHex,
@@ -346,12 +347,26 @@ export abstract class BaseSubstrateClient<
     this.on('disconnected', this.onDisconnected);
 
     return new Promise<this>((resolve, reject) => {
+      // Only reject on initialization errors (via the internal 'initError' event)
+      // or when the provider gives up reconnecting (MaxRetryAttemptedError).
+      // Transient provider errors (e.g., socket errors while the provider is retrying
+      // another endpoint) should not reject the pending connect() promise — terminal
+      // provider errors already reject through provider.connect() in JsonRpcClient.
+      const doReject = (err: unknown) => {
+        offInitError();
+        offError();
+        reject(err instanceof Error ? err : new Error(String(err)));
+      };
+
+      // @ts-ignore
+      const offInitError = this.on('initError', doReject);
       // @ts-ignore
       const offError = this.on('error', (err: unknown) => {
-        reject(err instanceof Error ? err : new Error(String(err)));
+        if (err instanceof MaxRetryAttemptedError) doReject(err);
       });
       // @ts-ignore
       this.once('ready', () => {
+        offInitError();
         offError();
         resolve(this);
       });
@@ -361,11 +376,31 @@ export abstract class BaseSubstrateClient<
   protected onConnected = async () => {
     try {
       await this.initialize();
-    } catch (e) {
-      // @ts-ignore — surface init failure so the pending connect() promise can reject
+    } catch (e: any) {
+      // @ts-ignore — keep emitting 'error' for external observability
       this.emit('error', e);
+
+      // If the endpoint misbehaves during initialization and the provider supports
+      // automatic retry, switch over to a different endpoint and re-initialize there
+      // instead of giving up on the current one
+      if (this.shouldSwitchEndpointOnInitError(e)) {
+        console.warn('Failed to initialize the client, switching to a different endpoint...', e);
+        (this.provider as WsProvider).disconnect(true).catch(noop);
+        return;
+      }
+
+      // @ts-ignore — surface init failure so the pending connect() promise can reject
+      this.emit('initError', e);
     }
   };
+
+  protected shouldSwitchEndpointOnInitError(e: any): boolean {
+    // JSON-RPC v2 not supported is a terminal error, switching endpoint won't help
+    // and DedotClient relies on it to fall back to legacy JSON-RPC
+    if (e instanceof JsonRpcV2NotSupportedError) return false;
+
+    return this.provider instanceof WsProvider && this.provider.retryEnabled;
+  }
 
   protected onDisconnected = async () => {};
 
