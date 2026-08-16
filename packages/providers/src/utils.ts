@@ -22,6 +22,27 @@ export function pickRandomItem<T>(items: T[], excludeItem?: T): T {
 }
 
 /**
+ * Check whether the current runtime is able to send custom headers
+ * along with the websocket opening handshake.
+ *
+ * Both the `ws` package (used on Node.js < 22) and the native `WebSocket`
+ * implementation (Node.js >= 22, Bun) accept an options object as the second
+ * constructor argument. Browsers (and Deno) follow the WHATWG spec where the
+ * second argument is a list of subprotocols, so custom headers cannot be set there.
+ */
+export function canSendRequestHeaders(): boolean {
+  const global = globalThis as any;
+
+  // Deno exposes `process.versions.node` for compatibility reasons,
+  // but its WebSocket implementation follows the WHATWG spec
+  if (global.Deno) return false;
+
+  const versions = global.process?.versions;
+
+  return !!(versions?.node || versions?.bun);
+}
+
+/**
  * Validate that an endpoint is properly formatted
  */
 export function validateEndpoint(endpoint: string): string {

@@ -1,6 +1,6 @@
 import { DedotError } from '@dedot/utils';
-import { describe, expect, it } from 'vitest';
-import { pickRandomItem, validateEndpoint } from '../utils.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { canSendRequestHeaders, pickRandomItem, validateEndpoint } from '../utils.js';
 
 describe('utils', () => {
   describe('validateEndpoint', () => {
@@ -155,6 +155,32 @@ describe('utils', () => {
         expect(typeof result).toBe('number');
         expect(items).toContain(result);
       });
+    });
+  });
+
+  describe('canSendRequestHeaders', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('returns true on Node.js', () => {
+      // Tests are running on Node.js, `process.versions.node` is available
+      expect(canSendRequestHeaders()).toBe(true);
+    });
+
+    it('returns true on Bun', () => {
+      vi.stubGlobal('process', { versions: { bun: '1.2.0' } });
+      expect(canSendRequestHeaders()).toBe(true);
+    });
+
+    it('returns false on Deno', () => {
+      vi.stubGlobal('Deno', {});
+      expect(canSendRequestHeaders()).toBe(false);
+    });
+
+    it('returns false in browsers', () => {
+      vi.stubGlobal('process', undefined);
+      expect(canSendRequestHeaders()).toBe(false);
     });
   });
 });
