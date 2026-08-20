@@ -26,10 +26,8 @@
     "directory": "dist"
   },
   "devDependencies": {
-    "@types/ws": "^8.5.12",
     "mock-socket": "^9.3.1",
-    "smoldot": "^2.0.40",
-    "ws": "^8.18.0"
+    "smoldot": "^2.0.40"
   },
   "engines": {
     "node": ">=18"

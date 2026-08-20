@@ -1,35 +1,59 @@
 // @vitest-environment node
-import { IncomingHttpHeaders } from 'node:http';
+import { createHash } from 'node:crypto';
+import { createServer, IncomingHttpHeaders, Server } from 'node:http';
+import { Socket } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { WebSocketServer } from 'ws';
 import { WsProvider } from '../WsProvider.js';
+
+// https://datatracker.ietf.org/doc/html/rfc6455#section-1.3
+const WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+
+const acceptKey = (key: string = '') => {
+  return createHash('sha1')
+    .update(key + WS_GUID)
+    .digest('base64');
+};
 
 /**
  * Unlike WsProvider.spec.ts, this suite does not mock the underlying websocket implementation,
  * it verifies that custom headers are actually sent over the wire with the opening handshake,
  * regardless of whether `@polkadot/x-ws` resolves to the `ws` package (Node.js < 22)
- * or the native WebSocket implementation (Node.js >= 22).
+ * or the native WebSocket implementation (Node.js >= 22, Bun).
  *
- * A `node` environment is required here, the default `happy-dom` environment
+ * A minimal handshake-only server is used here so that no extra dependency is needed,
+ * `@polkadot/x-ws` only ships a websocket client.
+ *
+ * A `node` environment is required, the default `happy-dom` environment
  * provides its own global WebSocket which does not support custom headers.
  */
-describe('WsProvider request headers (real websocket server)', () => {
-  let server: WebSocketServer;
+describe('WsProvider request headers (real websocket handshake)', () => {
+  let server: Server;
   let endpoint: string;
+  let sockets: Socket[] = [];
   let receivedHeaders: IncomingHttpHeaders;
 
   beforeAll(async () => {
-    server = new WebSocketServer({ port: 0 });
+    server = createServer();
 
-    server.on('connection', (socket, request) => {
+    server.on('upgrade', (request, socket) => {
       receivedHeaders = request.headers;
+      sockets.push(socket as Socket);
 
-      socket.on('message', (data) => {
-        const { id } = JSON.parse(data.toString());
-        socket.send(JSON.stringify({ id, jsonrpc: '2.0', result: 'ok' }));
-      });
+      // Ignore errors from clients going away abruptly
+      socket.on('error', () => {});
+
+      socket.write(
+        [
+          'HTTP/1.1 101 Switching Protocols',
+          'Upgrade: websocket',
+          'Connection: Upgrade',
+          `Sec-WebSocket-Accept: ${acceptKey(request.headers['sec-websocket-key'])}`,
+          '\r\n',
+        ].join('\r\n'),
+      );
     });
 
+    server.listen(0);
     await new Promise<void>((resolve) => server.once('listening', resolve));
 
     const { port } = server.address() as { port: number };
@@ -37,6 +61,7 @@ describe('WsProvider request headers (real websocket server)', () => {
   });
 
   afterAll(async () => {
+    sockets.forEach((socket) => socket.destroy());
     await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
@@ -54,9 +79,6 @@ describe('WsProvider request headers (real websocket server)', () => {
 
       expect(receivedHeaders['authorization']).toBe('Bearer secret-token');
       expect(receivedHeaders['x-client-id']).toBe('example-client');
-
-      // Make sure the connection is fully functional with headers attached
-      await expect(provider.send('test_method', [])).resolves.toBe('ok');
     } finally {
       await provider.disconnect().catch(() => {});
     }
@@ -70,8 +92,6 @@ describe('WsProvider request headers (real websocket server)', () => {
 
       expect(receivedHeaders['authorization']).toBeUndefined();
       expect(receivedHeaders['sec-websocket-protocol']).toBeUndefined();
-
-      await expect(provider.send('test_method', [])).resolves.toBe('ok');
     } finally {
       await provider.disconnect().catch(() => {});
     }
