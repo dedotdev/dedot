@@ -93,8 +93,14 @@ export interface WsProviderOptions {
 }
 
 /**
- * Constructor signature of websocket implementations accepting connection options,
- * e.g: the `ws` package (Node.js < 22) or the native WebSocket implementation (Node.js >= 22, Bun)
+ * Constructor signature of websocket implementations accepting connection options.
+ *
+ * `@polkadot/x-ws` resolves to the global WebSocket when one is available and falls back
+ * to the `ws` package otherwise, so the implementation in use depends on the runtime:
+ * Node.js only defines a global WebSocket from v22 onwards (or from v20.10 when started
+ * with `--experimental-websocket`), while Bun always provides one.
+ *
+ * Both implementations accept an options object as the second constructor argument.
  */
 type WebSocketWithOptions = new (url: string, options: { headers: WsRequestHeaders }) => WebSocket;
 
@@ -313,9 +319,11 @@ export class WsProvider extends SubscriptionProvider {
 
       const headers = await this.#getHeaders();
 
-      // Both the `ws` package and the native WebSocket implementation (Node.js >= 22, Bun)
-      // accept an options object as the second constructor argument,
-      // the type definitions from `@polkadot/x-ws` only expose the WHATWG (browser) signature
+      // The options must be passed as the second constructor argument, which is accepted by
+      // both the `ws` package and the native WebSocket implementation. Passing them as a third
+      // argument only works for the `ws` package, the native implementation ignores it
+      // and the headers would be dropped silently.
+      // The type definitions from `@polkadot/x-ws` only expose the WHATWG (browser) signature
       this.#ws = headers
         ? new (WebSocket as unknown as WebSocketWithOptions)(this.#currentEndpoint, { headers })
         : new WebSocket(this.#currentEndpoint);

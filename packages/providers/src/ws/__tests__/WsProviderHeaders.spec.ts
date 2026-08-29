@@ -17,8 +17,8 @@ const acceptKey = (key: string = '') => {
 /**
  * Unlike WsProvider.spec.ts, this suite does not mock the underlying websocket implementation,
  * it verifies that custom headers are actually sent over the wire with the opening handshake,
- * regardless of whether `@polkadot/x-ws` resolves to the `ws` package (Node.js < 22)
- * or the native WebSocket implementation (Node.js >= 22, Bun).
+ * regardless of whether `@polkadot/x-ws` resolves to the `ws` package or to a global
+ * WebSocket implementation, which depends on the Node.js version running the tests.
  *
  * A minimal handshake-only server is used here so that no extra dependency is needed,
  * `@polkadot/x-ws` only ships a websocket client.
