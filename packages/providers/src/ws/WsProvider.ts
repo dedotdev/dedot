@@ -3,7 +3,7 @@ import { assert, DedotError, deferred, Deferred } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
 import { MaxRetryAttemptedError, NetworkDisconnectedError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
-import { pickRandomItem, validateEndpoint } from '../utils.js';
+import { canSendRequestHeaders, pickRandomItem, validateEndpoint } from '../utils.js';
 
 export interface WsConnectionState {
   /**
@@ -24,6 +24,18 @@ export interface WsConnectionState {
  * @returns A valid websocket endpoint string
  */
 export type WsEndpointSelector = (info: WsConnectionState) => string | Promise<string>;
+
+/**
+ * A map of custom HTTP headers to send along with the websocket opening handshake
+ */
+export type WsRequestHeaders = Record<string, string>;
+
+/**
+ * Function that returns the request headers to use for a connection attempt
+ * @param info Connection attempt information
+ * @returns The headers to send along with the websocket opening handshake
+ */
+export type WsHeadersSelector = (info: WsConnectionState) => WsRequestHeaders | Promise<WsRequestHeaders>;
 
 export interface WsProviderOptions {
   /**
@@ -62,7 +74,35 @@ export interface WsProviderOptions {
    * @default 30000
    */
   timeout?: number;
+  /**
+   * Custom HTTP headers to send along with the websocket opening handshake,
+   * e.g: an auth token for a private RPC endpoint or proxy.
+   *
+   * Can be either a static map of headers or a function returning the headers,
+   * the function is called on every connection attempt (including reconnects),
+   * which is helpful to refresh short-lived tokens or to use different
+   * credentials per endpoint.
+   *
+   * Note: Custom headers are only supported in non-browser environments (Node.js, Bun),
+   * browsers do not allow setting headers for the websocket opening handshake.
+   * A warning will be logged and the headers ignored if the environment does not support this.
+   *
+   * @default undefined
+   */
+  headers?: WsRequestHeaders | WsHeadersSelector;
 }
+
+/**
+ * Constructor signature of websocket implementations accepting connection options.
+ *
+ * `@polkadot/x-ws` resolves to the global WebSocket when one is available and falls back
+ * to the `ws` package otherwise, so the implementation in use depends on the runtime:
+ * Node.js only defines a global WebSocket from v22 onwards (or from v20.10 when started
+ * with `--experimental-websocket`), while Bun always provides one.
+ *
+ * Both implementations accept an options object as the second constructor argument.
+ */
+type WebSocketWithOptions = new (url: string, options: { headers: WsRequestHeaders }) => WebSocket;
 
 const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   retryDelayMs: 2500,
@@ -102,6 +142,21 @@ const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
  *   return info.attempt >= 3 ? 'wss://backup.rpc' : 'wss://primary.rpc';
  * });
  *
+ * // With custom request headers (Node.js/Bun only), e.g: to authenticate with a private RPC
+ * const provider = new WsProvider({
+ *   endpoint: 'wss://private.rpc',
+ *   headers: {
+ *     Authorization: `Bearer ${process.env.API_TOKEN}`,
+ *     'X-Client-ID': 'example-client',
+ *   },
+ * });
+ *
+ * // Headers can also be resolved on each connection attempt (e.g: to refresh short-lived tokens)
+ * const provider = new WsProvider({
+ *   endpoint: 'wss://private.rpc',
+ *   headers: async () => ({ Authorization: `Bearer ${await fetchToken()}` }),
+ * });
+ *
  * await provider.connect();
  *
  * // Fetch the genesis hash
@@ -136,6 +191,9 @@ export class WsProvider extends SubscriptionProvider {
 
   // Recovering promise for request queueing during reconnection
   #recovering?: Deferred<void>;
+
+  // Only warn once per provider instance if custom headers are not supported by the environment
+  #headersUnsupportedWarned: boolean = false;
 
   constructor(options: WsProviderOptions | string | string[] | WsEndpointSelector) {
     super();
@@ -221,13 +279,54 @@ export class WsProvider extends SubscriptionProvider {
     return endpoint;
   }
 
+  /**
+   * Get the custom request headers for the current connection attempt,
+   * either directly or by calling the headers selector function
+   *
+   * @returns The headers to use, or `undefined` if no headers should be sent
+   */
+  async #getHeaders(): Promise<WsRequestHeaders | undefined> {
+    const { headers } = this.#options;
+    if (!headers) return undefined;
+
+    if (!canSendRequestHeaders()) {
+      if (!this.#headersUnsupportedWarned) {
+        this.#headersUnsupportedWarned = true;
+        console.warn(
+          'Custom websocket request headers are not supported in this environment (e.g: browsers), headers will be ignored',
+        );
+      }
+
+      return undefined;
+    }
+
+    const info: WsConnectionState = {
+      attempt: this.#attempt,
+      currentEndpoint: this.#currentEndpoint,
+    };
+
+    const resolved = typeof headers === 'function' ? await headers(info) : headers;
+    if (!resolved || Object.keys(resolved).length === 0) return undefined;
+
+    return resolved;
+  }
+
   async #doConnect() {
     assert(!this.#ws, 'Websocket connection already exists');
 
     try {
       this.#currentEndpoint = await this.#getEndpoint();
 
-      this.#ws = new WebSocket(this.#currentEndpoint);
+      const headers = await this.#getHeaders();
+
+      // The options must be passed as the second constructor argument, which is accepted by
+      // both the `ws` package and the native WebSocket implementation. Passing them as a third
+      // argument only works for the `ws` package, the native implementation ignores it
+      // and the headers would be dropped silently.
+      // The type definitions from `@polkadot/x-ws` only expose the WHATWG (browser) signature
+      this.#ws = headers
+        ? new (WebSocket as unknown as WebSocketWithOptions)(this.#currentEndpoint, { headers })
+        : new WebSocket(this.#currentEndpoint);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;

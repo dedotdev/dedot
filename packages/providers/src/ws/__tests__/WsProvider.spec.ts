@@ -11,14 +11,31 @@ process.on('unhandledRejection', (reason) => {
 
 const FAKE_WS_URL = 'ws://127.0.0.1:9944';
 
+// Records the arguments each websocket is constructed with, so we can verify
+// what is being passed down to the underlying websocket implementation
+const { capturedWsArgs } = vi.hoisted(() => ({ capturedWsArgs: [] as any[][] }));
+
 vi.mock('@polkadot/x-ws', async (importOriginal) => {
-  const { WebSocket } = await import('mock-socket');
+  const { WebSocket: MockWebSocket } = await import('mock-socket');
   const mod = await importOriginal<typeof import('@polkadot/x-ws')>();
+
+  class CapturingWebSocket extends MockWebSocket {
+    constructor(url: string, ...rest: any[]) {
+      capturedWsArgs.push([url, ...rest]);
+
+      // mock-socket only understands the (url, protocols) signature,
+      // so extra arguments are dropped before handing over to it
+      super(url);
+    }
+  }
+
   return {
     ...mod,
-    WebSocket,
+    WebSocket: CapturingWebSocket,
   };
 });
+
+const lastWsArgs = () => capturedWsArgs[capturedWsArgs.length - 1];
 
 describe('WsProvider', () => {
   let mockServer: Server;
@@ -705,6 +722,117 @@ describe('WsProvider', () => {
           await provider.disconnect().catch(() => {});
         }
       });
+    });
+  });
+
+  describe('Request Headers', () => {
+    beforeEach(() => {
+      capturedWsArgs.length = 0;
+    });
+
+    it('does not pass any options when no headers are provided', async () => {
+      const provider = new WsProvider(FAKE_WS_URL);
+
+      try {
+        await provider.connect();
+
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('passes static headers to the websocket implementation', async () => {
+      const headers = { Authorization: 'Bearer token', 'X-Client-ID': 'example-client' };
+      const provider = new WsProvider({ endpoint: FAKE_WS_URL, headers });
+
+      try {
+        await provider.connect();
+
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL, { headers }]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('resolves headers via a selector function receiving the connection state', async () => {
+      const selector = vi.fn().mockResolvedValue({ Authorization: 'Bearer resolved-token' });
+      const provider = new WsProvider({ endpoint: FAKE_WS_URL, headers: selector });
+
+      try {
+        await provider.connect();
+
+        expect(selector).toHaveBeenCalledTimes(1);
+        expect(selector).toHaveBeenCalledWith({ attempt: 1, currentEndpoint: FAKE_WS_URL });
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL, { headers: { Authorization: 'Bearer resolved-token' } }]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('resolves headers again on each reconnection', async () => {
+      let token = 0;
+      const selector = vi.fn().mockImplementation(() => ({ Authorization: `Bearer token-${++token}` }));
+
+      const provider = new WsProvider({
+        endpoint: FAKE_WS_URL,
+        headers: selector,
+        retryDelayMs: 100,
+      });
+
+      provider.on('error', () => {
+        // Intentionally empty
+      });
+
+      try {
+        await provider.connect();
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL, { headers: { Authorization: 'Bearer token-1' } }]);
+
+        // Simulate an abnormal disconnection to trigger a reconnect
+        (provider as any).__unsafeWs().close(3000);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        expect(provider.status).toBe('connected');
+        expect(selector).toHaveBeenCalledTimes(2);
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL, { headers: { Authorization: 'Bearer token-2' } }]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('ignores an empty headers map', async () => {
+      const provider = new WsProvider({ endpoint: FAKE_WS_URL, headers: {} });
+
+      try {
+        await provider.connect();
+
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('ignores headers & warns if the environment does not support them', async () => {
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Deno follows the WHATWG spec where custom headers cannot be set
+      vi.stubGlobal('Deno', {});
+
+      const provider = new WsProvider({
+        endpoint: FAKE_WS_URL,
+        headers: { Authorization: 'Bearer token' },
+      });
+
+      try {
+        await provider.connect();
+
+        expect(lastWsArgs()).toEqual([FAKE_WS_URL]);
+        expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('not supported in this environment'));
+      } finally {
+        vi.unstubAllGlobals();
+        consoleWarn.mockRestore();
+        await provider.disconnect().catch(() => {});
+      }
     });
   });
 });
