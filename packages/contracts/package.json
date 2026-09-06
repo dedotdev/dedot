@@ -1,6 +1,6 @@
 {
   "name": "@dedot/contracts",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Delightful ink! Contract APIs",
   "author": "Tung Vu <tung@dedot.dev>",
   "homepage": "https://dedot.dev",
@@ -18,10 +18,10 @@
     "test": "npx vitest --watch=false"
   },
   "dependencies": {
-    "@dedot/api": "^1.3.0",
-    "@dedot/codecs": "^1.3.0",
-    "@dedot/types": "^1.3.0",
-    "@dedot/utils": "^1.3.0",
+    "@dedot/api": "^1.4.0",
+    "@dedot/codecs": "^1.4.0",
+    "@dedot/types": "^1.4.0",
+    "@dedot/utils": "^1.4.0",
     "viem": "^2.40.3"
   },
   "publishConfig": {
