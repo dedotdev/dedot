@@ -89,6 +89,7 @@ describe('FallbackSignedExtension', () => {
   const mockRegistry = {
     metadata: {
       extrinsic: {
+        signedExtensionsByVersion: new Map([[0, [0, 1, 2]]]),
         signedExtensions: [
           { ident: 'CheckNonZeroSender', typeId: 1, additionalSigned: 2 },
           { ident: 'CheckWeight', typeId: 3, additionalSigned: 4 },
