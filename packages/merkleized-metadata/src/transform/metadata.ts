@@ -195,16 +195,24 @@ export function generateExtrinsicMetadata(metadata: Metadata, accessibleTypes: M
     'Extrinsic Version 4 Not Found',
   );
 
+  // Match the V4 payload codec, including the version-zero extension order.
+  const indexes = extrinsic.signedExtensionsByVersion.get(0);
+  assert(indexes, 'No signed extensions found for extension version 0');
+
   return {
     version: DEFAULT_EXTRINSIC_VERSION,
     addressTypeId: generateTypeRef(extrinsic.addressTypeId, registry, accessibleTypes),
     callTypeId: generateTypeRef(extrinsic.callTypeId, registry, accessibleTypes),
     signatureTypeId: generateTypeRef(extrinsic.signatureTypeId, registry, accessibleTypes),
-    signedExtensions: extrinsic.signedExtensions.map((ext) => ({
-      identifier: ext.ident,
-      includedInExtrinsic: generateTypeRef(ext.typeId, registry, accessibleTypes),
-      includedInSignedData: generateTypeRef(ext.additionalSigned, registry, accessibleTypes),
-    })),
+    signedExtensions: indexes.map((index) => {
+      const ext = extrinsic.signedExtensions[index];
+      assert(ext, `Invalid signed extension index ${index} for extension version 0`);
+      return {
+        identifier: ext.ident,
+        includedInExtrinsic: generateTypeRef(ext.typeId, registry, accessibleTypes),
+        includedInSignedData: generateTypeRef(ext.additionalSigned, registry, accessibleTypes),
+      };
+    }),
   };
 }
 
