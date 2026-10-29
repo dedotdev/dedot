@@ -245,6 +245,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
   async #doFollow(): Promise<void> {
     const defer = deferred<void>();
+    let superseded = false;
 
     try {
       this.#unsub && this.#unsub().catch(noop); // ensure unfollowed
@@ -252,10 +253,19 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
       const SIGNAL_THRESHOLD = this.#__unsafe__isSmoldot() ? 2 : 1;
       let signals = 0;
 
-      this.#unsub = await this.send('follow', true, (event: FollowEvent, subscription: JsonRpcSubscription) => {
+      // Follow has its own recovery path and takes a boolean, not a subscription ID.
+      // Keep it out of the generic request-retry queue, which rewrites the first argument.
+      this.#unsub = await super.send('follow', true, (event: FollowEvent, subscription: JsonRpcSubscription) => {
         this.#followResponseQueue
           .enqueue(async () => {
             await this.#onFollowEvent(event, subscription);
+
+            if (event.event === 'stop') {
+              superseded = true;
+              // A stop before initialized is not a successful follow. Wait for its replacement.
+              this.#recovering!.promise.then(defer.resolve, defer.reject);
+              return;
+            }
 
             if (signals >= SIGNAL_THRESHOLD) return;
             signals += 1;
@@ -276,8 +286,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
     // Wait for follow to complete, then retry pending requests
     await defer.promise;
 
-    // Retry pending requests if any (from previous disconnection)
-    if (this.#pendingRequests.size > 0) {
+    // Only the replacement follow may drain pending requests after an early stop.
+    if (!superseded && this.#pendingRequests.size > 0) {
       this.#retryPendingRequests();
     }
   }
@@ -346,7 +356,8 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
 
         // Handle first initialization or reconnection
         if (!lastFinalizedHash) {
-          this.emit('finalizedBlock', await this.finalizedBlock());
+          // Initialization must not wait on the recovery promise that it is completing.
+          this.emit('finalizedBlock', this.findBlock(this.#finalizedHash!)!);
         } else {
           await this.#handleMissingBlocks(finalizedBlockHashes, lastFinalizedHash, prevPinnedBlocks);
         }
@@ -487,14 +498,15 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // 1. First thing, set up the #recovering promise
         // So any requests/operations coming to the chainHead should be put on waiting
         // for the #recovering promise to resolve
-        this.#recovering = deferred<void>();
+        const recovering = deferred<void>();
+        this.#recovering = recovering;
 
         // 2. Attempt to re-follow the chainHead
         this.#doFollow()
           .then(() => {
             // 3. Resolve the recovering promise
             // This means to continue all pending requests while the chainHead started recovering mode at step 1.
-            this.#recovering?.resolve();
+            recovering.resolve();
 
             // 4. Recover stale operations
             // 4.1. Operations that's going on & waiting to receiving its operationId
@@ -511,7 +523,7 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           .catch((e: any) => {
             console.error(e);
             // TODO we should retry a few attempts
-            this.#recovering?.reject(new ChainHeadError('Cannot recover from stop event!'));
+            recovering.reject(new ChainHeadError('Cannot recover from stop event!'));
 
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
               defer.reject(new ChainHeadError('Cannot recover from stop event!'));
@@ -521,7 +533,9 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           .finally(() => {
             // cleaning up
             waitFor().then(() => {
-              this.#recovering = undefined;
+              if (this.#recovering === recovering) {
+                this.#recovering = undefined;
+              }
             });
           });
         break;

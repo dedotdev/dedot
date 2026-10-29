@@ -1,4 +1,5 @@
 import { $Header, type Header } from '@dedot/codecs';
+import { NetworkDisconnectedError } from '@dedot/providers';
 import {
   ChainHeadRuntimeVersion,
   MethodResponse,
@@ -10,7 +11,7 @@ import {
   OperationStorageItems,
   StorageQuery,
 } from '@dedot/types/json-rpc';
-import { blake2_256, type HashFn, HexString, keccak_256, u8aToHex, waitFor } from '@dedot/utils';
+import { blake2_256, deferred, type HashFn, HexString, keccak_256, u8aToHex, waitFor } from '@dedot/utils';
 import { MockInstance } from '@vitest/spy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MockProvider from '../../../client/__tests__/MockProvider.js';
@@ -59,6 +60,128 @@ describe('ChainHead', () => {
   };
 
   describe('follow', () => {
+    it.each([1, 2])('waits for initialization after %i stop events before initialization', async (stopCount) => {
+      const acknowledgements: ReturnType<typeof deferred<string>>[] = [];
+      provider.setRpcRequest('chainHead_v1_follow', () => {
+        const acknowledgement = deferred<string>();
+        acknowledgements.push(acknowledgement);
+        return acknowledgement.promise;
+      });
+
+      let ready = false;
+      const following = chainHead.follow().then(() => {
+        ready = true;
+      });
+
+      for (let index = 0; index < stopCount; index++) {
+        await vi.waitFor(() => expect(acknowledgements.length).toBeGreaterThan(index));
+        const subscriptionId = `early-stop-${index}`;
+        acknowledgements[index].resolve(subscriptionId);
+        await providerSubscribe.mock.results[index].value;
+        provider.notify(subscriptionId, { event: 'stop' });
+
+        await vi.waitFor(() => expect(acknowledgements.length).toBeGreaterThan(index + 1));
+        // Leave the replacement follow pending while the original stop event finishes processing.
+        await waitFor();
+        const followCalls = providerSend.mock.calls.filter(([method]) => method === 'chainHead_v1_follow');
+        expect(followCalls.map(([, params]) => params)).toEqual(Array(index + 2).fill([true]));
+        expect(ready).toBe(false);
+      }
+
+      const subscriptionId = 'initialized-subscription';
+      acknowledgements[stopCount].resolve(subscriptionId);
+      await providerSubscribe.mock.results[stopCount].value;
+      provider.notify(subscriptionId, simulator.initializedEvent);
+
+      await following;
+      expect(await chainHead.finalizedHash()).toEqual(simulator.initializedEvent.finalizedBlockHashes.at(-1));
+      expect(await chainHead.runtimeVersion()).toEqual(initialRuntime);
+      await chainHead.unfollow();
+    });
+
+    it('retries a disconnected header request with the replacement subscription ID', async () => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const previousSubscriptionId = simulator.subscriptionId;
+      const blockHash = await chainHead.finalizedHash();
+      const sendHeader = provider.rpcRequests.chainHead_v1_header;
+      provider.setRpcRequest(
+        'chainHead_v1_header',
+        vi.fn(sendHeader).mockRejectedValueOnce(new NetworkDisconnectedError()),
+      );
+      const pendingHeader = chainHead.send('header', previousSubscriptionId, blockHash);
+      await waitFor();
+
+      const subscriptionId = 'reconnected-subscription';
+      provider.setRpcRequest('chainHead_v1_follow', () => subscriptionId);
+      const following = chainHead.follow(true);
+      await vi.waitFor(() => expect(providerSubscribe).toHaveBeenCalledTimes(2));
+      await providerSubscribe.mock.results[1].value;
+      provider.notify(subscriptionId, simulator.initializedEvent);
+
+      await following;
+      await expect(pendingHeader).resolves.toEqual(sendHeader([subscriptionId, blockHash]));
+      expect(providerSend).toHaveBeenLastCalledWith('chainHead_v1_header', [subscriptionId, blockHash]);
+      await chainHead.unfollow();
+    });
+
+    it.each([1, 2])('replays a disconnected operation only once after %i early stops', async (stopCount) => {
+      notifyInitializedEvent();
+      await chainHead.follow();
+
+      const replies: ReturnType<typeof deferred<MethodResponse>>[] = [];
+      provider.setRpcRequest(
+        'chainHead_v1_body',
+        vi
+          .fn(() => {
+            const reply = deferred<MethodResponse>();
+            replies.push(reply);
+            return reply.promise;
+          })
+          .mockRejectedValueOnce(new NetworkDisconnectedError()),
+      );
+      const blockHash = await chainHead.finalizedHash();
+      const pendingBody = chainHead.send('body', simulator.subscriptionId, blockHash);
+      await waitFor();
+
+      const acknowledgements: ReturnType<typeof deferred<string>>[] = [];
+      provider.setRpcRequest('chainHead_v1_follow', () => {
+        const acknowledgement = deferred<string>();
+        acknowledgements.push(acknowledgement);
+        return acknowledgement.promise;
+      });
+      const recovering = chainHead.follow(true);
+      for (let index = 0; index < stopCount; index++) {
+        await vi.waitFor(() => expect(acknowledgements.length).toBeGreaterThan(index));
+        const subscriptionId = `superseded-${index}`;
+        acknowledgements[index].resolve(subscriptionId);
+        await providerSubscribe.mock.results[index + 1].value;
+        provider.notify(subscriptionId, { event: 'stop' });
+      }
+
+      await vi.waitFor(() => expect(acknowledgements).toHaveLength(stopCount + 1));
+      const subscriptionId = 'replacement';
+      acknowledgements[stopCount].resolve(subscriptionId);
+      await providerSubscribe.mock.results[stopCount + 1].value;
+      provider.notify(subscriptionId, simulator.initializedEvent);
+      await recovering;
+      // Hold the operation response until all superseded follow waiters have settled.
+      await waitFor();
+
+      try {
+        expect(replies).toHaveLength(1);
+        expect(providerSend.mock.calls.filter(([method]) => method === 'chainHead_v1_body')).toEqual([
+          ['chainHead_v1_body', [simulator.subscriptionId, blockHash]],
+          ['chainHead_v1_body', [subscriptionId, blockHash]],
+        ]);
+      } finally {
+        replies.forEach((reply, index) => reply.resolve({ result: 'started', operationId: `body-${index}` }));
+        await expect(pendingBody).resolves.toEqual({ result: 'started', operationId: 'body-0' });
+        await chainHead.unfollow();
+      }
+    });
+
     it('follows chain head successfully', async () => {
       notifyInitializedEvent();
 
