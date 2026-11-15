@@ -34,6 +34,7 @@ import {
   LRUCache,
   noop,
   u8aToHex,
+  waitFor,
 } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -87,6 +88,11 @@ export abstract class BaseSubstrateClient<
   protected _runtimeUpgrading?: Deferred<void>;
   protected _apiAtCache: LRUCache;
   #stalingWatchdogTimer?: ReturnType<typeof setTimeout>;
+
+  // Whether the client has completed an initialization since it was last cleaned up
+  #initialized: boolean = false;
+  // Consecutive initialization failures that were answered with an endpoint switch
+  #initFailures: number = 0;
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -319,6 +325,7 @@ export abstract class BaseSubstrateClient<
   }
 
   protected cleanUp() {
+    this.#initialized = false;
     this._registry = undefined;
     this._metadata = undefined;
     this._genesisHash = undefined;
@@ -374,8 +381,14 @@ export abstract class BaseSubstrateClient<
   }
 
   protected onConnected = async () => {
+    // Remember what we knew before this attempt, so a failed re-initialization can be rolled back
+    const prevRuntimeVersion = this._runtimeVersion;
+
     try {
       await this.initialize();
+
+      this.#initialized = true;
+      this.#initFailures = 0;
     } catch (e: any) {
       // @ts-ignore — keep emitting 'error' for external observability
       this.emit('error', e);
@@ -384,9 +397,10 @@ export abstract class BaseSubstrateClient<
       // automatic retry, switch over to a different endpoint and re-initialize there
       // instead of giving up on the current one
       if (this.shouldSwitchEndpointOnInitError(e)) {
-        console.warn('Failed to initialize the client, switching to a different endpoint...', e);
-        (this.provider as WsProvider).disconnect(true).catch(noop);
-        return;
+        this.#initFailures += 1;
+        this.resetAfterInitFailure(prevRuntimeVersion);
+
+        if (await this.switchEndpointOnInitError(e)) return;
       }
 
       // @ts-ignore — surface init failure so the pending connect() promise can reject
@@ -400,6 +414,62 @@ export abstract class BaseSubstrateClient<
     if (e instanceof JsonRpcV2NotSupportedError) return false;
 
     return this.provider instanceof WsProvider && this.provider.retryEnabled;
+  }
+
+  /**
+   * Drop whatever a failed initialization left behind, so the next attempt (on a different
+   * endpoint) does not mistake a half-initialized client for an initialized one and skip
+   * setting up metadata & subscriptions.
+   */
+  protected resetAfterInitFailure(prevRuntimeVersion?: SubstrateRuntimeVersion) {
+    if (this.#initialized) {
+      // Re-initialization after a reconnect: the client was fully set up before, only the
+      // runtime version may have moved ahead of the metadata - roll it back so the next
+      // attempt detects the change again
+      this._runtimeVersion = prevRuntimeVersion;
+    } else {
+      // Never been ready: start over from scratch
+      this.cleanUp();
+    }
+  }
+
+  /**
+   * Ask the provider to move on to a different endpoint after an initialization failure.
+   *
+   * Consecutive failures are bounded by the provider's `maxRetryAttempts` (when set), the first
+   * switch is immediate and the following ones wait for the provider's retry delay so a failure
+   * that every endpoint reproduces does not turn into a tight reconnection loop.
+   *
+   * @returns `false` if the client gave up switching, the caller should surface the error
+   */
+  protected async switchEndpointOnInitError(e: any): Promise<boolean> {
+    const provider = this.provider as WsProvider;
+    const { maxRetryAttempts, retryDelayMs } = provider;
+
+    if (maxRetryAttempts !== undefined && this.#initFailures > maxRetryAttempts) {
+      console.error(`Failed to initialize the client after trying ${this.#initFailures} endpoints, giving up.`);
+      return false;
+    }
+
+    console.warn('Failed to initialize the client, switching to a different endpoint...', e);
+
+    if (this.#initFailures > 1) {
+      // The connection might drop on its own while waiting, in that case the provider is
+      // already moving on and the client will initialize again on the next connection
+      let dropped = false;
+      // @ts-ignore
+      const off = this.on('disconnected', () => {
+        dropped = true;
+      });
+
+      await waitFor(retryDelayMs);
+      off();
+
+      if (dropped) return true;
+    }
+
+    provider.disconnect(true).catch(noop);
+    return true;
   }
 
   protected onDisconnected = async () => {};
@@ -460,6 +530,8 @@ export abstract class BaseSubstrateClient<
    * @description Connect to blockchain node
    */
   async connect(): Promise<this> {
+    this.#initFailures = 0;
+
     const [api, _] = await Promise.all([this.doConnect(), super.connect()]);
 
     return api;
