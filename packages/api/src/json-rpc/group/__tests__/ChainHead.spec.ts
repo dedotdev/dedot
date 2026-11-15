@@ -1596,6 +1596,67 @@ describe('ChainHead', () => {
       switchSpy.mockRestore();
       errorSpy.mockRestore();
     }, 10_000);
+
+    it('does not retry or switch twice when a nested recovery already gave up', async () => {
+      const switchSpy = vi.spyOn(chainHead as any, 'switchEndpoint').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // The first re-follow is acknowledged but stopped right away (before `initialized`),
+      // which starts a nested recovery; every follow after that fails
+      const earlyStoppedSubId = '0xearlystopped';
+      let follows = 0;
+      provider.setRpcRequests({
+        chainHead_v1_follow: () => {
+          follows += 1;
+          if (follows === 1) {
+            notify(earlyStoppedSubId, { event: 'stop' }, 5);
+            return earlyStoppedSubId;
+          }
+
+          throw new Error('follow failed');
+        },
+      });
+
+      notify(simulator.subscriptionId, { event: 'stop' });
+
+      // Long enough for the outer recovery to run its remaining attempts, if it wrongly kept going
+      await waitFor(6_500);
+
+      // 1 early-stopped follow + 3 attempts of the nested recovery, the outer recovery must not add more
+      expect(follows).toBe(4);
+      expect(switchSpy).toHaveBeenCalledTimes(1);
+
+      switchSpy.mockRestore();
+      errorSpy.mockRestore();
+    }, 15_000);
+
+    it('abandons the recovery without switching when the connection drops meanwhile', async () => {
+      const switchSpy = vi.spyOn(chainHead as any, 'switchEndpoint').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      let follows = 0;
+      provider.setRpcRequests({
+        chainHead_v1_follow: () => {
+          follows += 1;
+          throw new Error('follow failed');
+        },
+      });
+
+      notify(simulator.subscriptionId, { event: 'stop' });
+
+      // The connection drops while the recovery waits for its second attempt:
+      // the provider reconnects and the client follows again on the new connection by itself
+      await waitFor(300);
+      provider.setStatus('disconnected');
+
+      await waitFor(3_500);
+
+      expect(follows).toBe(1);
+      expect(switchSpy).not.toHaveBeenCalled();
+
+      switchSpy.mockRestore();
+      errorSpy.mockRestore();
+    }, 10_000);
   });
 
   describe('switchEndpoint', () => {
