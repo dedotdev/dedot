@@ -8,7 +8,7 @@ import { canSendRequestHeaders, validateEndpoint } from '../utils.js';
 export interface WsConnectionState {
   /**
    * Connection attempt counter (1 for initial, increments on reconnects)
-   * Resets to 1 after a successful connection
+   * Resets to 1 once a connection has proven healthy (received a message or stayed open long enough)
    */
   attempt: number;
 
@@ -123,9 +123,15 @@ const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
 const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
 
 // How long a connection must stay open before it is considered healthy and the
-// retry/failure-memory state is reset. A connection that drops before this window
+// retry attempt counter is reset. A connection that drops before this window
 // (or before receiving any message) does not reset the attempt counter.
 const HEALTHY_CONNECTION_THRESHOLD_MS = 10_000;
+
+// How long an endpoint that failed is avoided by array failover. The memory is time-based
+// rather than cleared by the next working connection: an endpoint that connects and answers
+// can still be unusable for the client (which then asks for a switch), and it must not
+// make the provider forget the endpoints that failed just before it.
+const FAILED_ENDPOINT_COOLDOWN_MS = 60_000;
 
 /**
  * @name WsProvider
@@ -206,9 +212,9 @@ export class WsProvider extends SubscriptionProvider {
   #currentEndpoint?: string;
   #initialized: boolean = false;
 
-  // Endpoints that have failed since the last healthy connection (for array failover).
-  // Excluded from selection until exhausted or a healthy connection is established.
-  #failedEndpoints: Set<string> = new Set();
+  // Endpoints that failed recently and when (for array failover).
+  // Excluded from selection until they cool down or every endpoint has been excluded.
+  #failedEndpoints: Map<string, number> = new Map();
 
   // Recovering promise for request queueing during reconnection
   #recovering?: Deferred<void>;
@@ -267,6 +273,20 @@ export class WsProvider extends SubscriptionProvider {
     return this.#retryEnabled;
   }
 
+  /**
+   * Maximum number of retry attempts before giving up, `undefined` means retrying indefinitely
+   */
+  get maxRetryAttempts(): number | undefined {
+    return this.#options.maxRetryAttempts;
+  }
+
+  /**
+   * Delay in milliseconds between retry attempts
+   */
+  get retryDelayMs(): number {
+    return this.#options.retryDelayMs;
+  }
+
   get #canRetry() {
     if (!this.#retryEnabled) return false;
 
@@ -306,13 +326,21 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   /**
-   * Pick an endpoint from the array, preferring ones that haven't failed since the
-   * last healthy connection. Excludes the current endpoint and any remembered
-   * failed endpoints. When every endpoint has been excluded, the failure memory is
+   * Pick an endpoint from the array, preferring ones that haven't failed recently.
+   * Excludes the current endpoint and any endpoint that failed within the cooldown
+   * window. When every endpoint has been excluded, the failure memory is
    * reset so the full list becomes available again.
    */
   #pickEndpointFromArray(endpoints: string[]): string {
-    const excluded = new Set(this.#failedEndpoints);
+    const now = Date.now();
+    const excluded = new Set<string>();
+    this.#failedEndpoints.forEach((failedAt, endpoint) => {
+      if (now - failedAt < FAILED_ENDPOINT_COOLDOWN_MS) {
+        excluded.add(endpoint);
+      } else {
+        this.#failedEndpoints.delete(endpoint);
+      }
+    });
     if (this.#currentEndpoint) excluded.add(this.#currentEndpoint);
 
     let candidates = endpoints.filter((e) => !excluded.has(e));
@@ -394,7 +422,7 @@ export class WsProvider extends SubscriptionProvider {
     } catch (e: any) {
       console.error('Error connecting to websocket', e);
       // The endpoint failed to connect - remember it so array failover avoids it
-      if (this.#currentEndpoint) this.#failedEndpoints.add(this.#currentEndpoint);
+      if (this.#currentEndpoint) this.#failedEndpoints.set(this.#currentEndpoint, Date.now());
       this.emit('error', e);
       throw e;
     }
@@ -408,10 +436,12 @@ export class WsProvider extends SubscriptionProvider {
     try {
       await this.#doConnect();
     } catch (e) {
-      if (!this.#canRetry) {
+      if (!this.#retryEnabled) {
         throw e;
       }
 
+      // Either schedules the next attempt, or emits a MaxRetryAttemptedError when the attempts
+      // are exhausted so a pending connect() rejects instead of waiting forever
       this.#retry();
     }
   }
@@ -565,7 +595,7 @@ export class WsProvider extends SubscriptionProvider {
     const normalClosure = event.code === 1000;
     if (!normalClosure) {
       // Remember the endpoint that just dropped so array failover prefers a different one
-      if (this.#currentEndpoint) this.#failedEndpoints.add(this.#currentEndpoint);
+      if (this.#currentEndpoint) this.#failedEndpoints.set(this.#currentEndpoint, Date.now());
 
       // Initialize recovering promise to queue incoming requests during reconnection
       this.#recovering = deferred<void>();
@@ -607,13 +637,12 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   /**
-   * Called once a connection has proven healthy. Resets the retry attempt counter and
-   * clears the failed-endpoint memory so the full endpoint list is available again.
+   * Called once a connection has proven healthy. Resets the retry attempt counter.
+   * The failed-endpoint memory is left alone, it expires on its own.
    */
   #onHealthyConnection() {
     this.#clearHealthyConnectionTimer();
     this.#attempt = 0;
-    this.#failedEndpoints.clear();
   }
 
   #setupConnectTimeoutHandler() {

@@ -350,6 +350,23 @@ describe('WsProvider', () => {
     }, 15_000);
   });
 
+  describe('Connection Setup Failures', () => {
+    it('rejects connect() with MaxRetryAttemptedError when setting up the connection keeps failing', async () => {
+      // The endpoint selector throws before a socket even exists, so no close event drives the retry
+      const selector = vi.fn(() => {
+        throw new Error('cannot resolve endpoint');
+      });
+
+      const provider = new WsProvider({ endpoint: selector, retryDelayMs: 20, maxRetryAttempts: 2 });
+      provider.on('error', () => {});
+
+      await expect(provider.connect()).rejects.toThrow(MaxRetryAttemptedError);
+
+      // Initial attempt + 2 retries
+      expect(selector).toHaveBeenCalledTimes(3);
+    }, 5_000);
+  });
+
   describe('Connect Timeout', () => {
     class FakeSocket {
       onopen: any = null;
