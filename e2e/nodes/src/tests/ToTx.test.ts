@@ -1,4 +1,5 @@
-import { assert, hexToU8a } from 'dedot/utils';
+import * as $ from 'dedot/shape';
+import { assert, concatU8a, hexToU8a, u8aToHex } from 'dedot/utils';
 import { describe, expect, it } from 'vitest';
 import { devPairs } from '../utils.js';
 
@@ -261,6 +262,55 @@ describe('toTx', () => {
 
       expect(paymentInfo).toBeDefined();
       expect(paymentInfo.partialFee).toBeGreaterThan(0n);
+    });
+  });
+
+  describe('truncated input', () => {
+    // A few bytes can declare a `Vec` of millions of elements without providing any of them,
+    // `toTx` should reject such input right away instead of trying to decode elements that are not there
+    const HUGE_LENGTHS = [1024, 2 ** 20, 2 ** 26, 2 ** 30 - 1];
+
+    const testCases = [
+      { label: 'LegacyClient', client: () => contractsClient },
+      { label: 'V2Client', client: () => reviveClient },
+    ];
+
+    describe.each(testCases)('$label', ({ client }) => {
+      it('should reject truncated runtime call hex quickly', () => {
+        // System.set_storage(items: Vec<(Bytes, Bytes)>)
+        const validCall = hexToU8a(client().tx.system.setStorage([['0x01', '0x02']]).callHex);
+        expect(client().toTx(validCall).callHex).toEqual(u8aToHex(validCall));
+
+        // pallet index + call index
+        const prefix = validCall.subarray(0, 2);
+
+        for (const length of HUGE_LENGTHS) {
+          const truncated = concatU8a(prefix, $.compactU32.encode(length));
+          expect(truncated.length).toBeLessThanOrEqual(7);
+
+          const start = performance.now();
+          expect(() => client().toTx(truncated)).toThrowError();
+          expect(() => client().toTx(u8aToHex(truncated))).toThrowError();
+          expect(performance.now() - start).toBeLessThan(1000);
+        }
+      });
+
+      it('should reject truncated extrinsic hex quickly', () => {
+        const validCall = hexToU8a(client().tx.system.setStorage([['0x01', '0x02']]).callHex);
+        const prefix = validCall.subarray(0, 2);
+
+        for (const length of HUGE_LENGTHS) {
+          // version 4, unsigned
+          const body = concatU8a(new Uint8Array([4]), prefix, $.compactU32.encode(length));
+          const truncated = concatU8a($.compactU32.encode(body.length), body);
+          expect(truncated.length).toBeLessThanOrEqual(9);
+
+          const start = performance.now();
+          expect(() => client().toTx(truncated)).toThrowError();
+          expect(() => client().toTx(u8aToHex(truncated))).toThrowError();
+          expect(performance.now() - start).toBeLessThan(1000);
+        }
+      });
     });
   });
 });
