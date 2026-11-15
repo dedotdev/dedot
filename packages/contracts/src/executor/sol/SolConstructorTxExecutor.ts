@@ -9,7 +9,14 @@ import {
   ExecutionOptions,
   GenericConstructorTxCall,
 } from '../../types/index.js';
-import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../../utils/index.js';
+import {
+  CREATE1,
+  CREATE2,
+  ensureContractPresence,
+  ensureParamsLength,
+  pickInstantiatedEvent,
+  toEvmAddress,
+} from '../../utils/index.js';
 import { SolConstructorQueryExecutor } from './SolConstructorQueryExecutor.js';
 import { SolDeployerExecutor } from './abstract/index.js';
 
@@ -76,7 +83,12 @@ export class SolConstructorTxExecutor extends SolDeployerExecutor {
 
         // Try to get address from events first
         try {
-          const event = client.events.revive.Instantiated.find(events);
+          const deployerEvmAddress = toEvmAddress(deployerAddress).toLowerCase();
+          const event = pickInstantiatedEvent(
+            client.events.revive.Instantiated.filter(events), // --
+            // @ts-ignore
+            (e) => e.palletEvent.data.deployer.toLowerCase() === deployerEvmAddress,
+          );
 
           if (event) {
             // @ts-ignore
