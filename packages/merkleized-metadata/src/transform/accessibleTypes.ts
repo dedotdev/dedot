@@ -1,4 +1,5 @@
 import { Metadata, PortableRegistry } from '@dedot/codecs';
+import { assert } from '@dedot/utils';
 
 /**
  * Get accessible types from metadata
@@ -56,7 +57,13 @@ export function getAccessibleTypes(metadata: Metadata): Map<number, number> {
   collectTypesFromId(metadata.latest.extrinsic.addressTypeId);
   collectTypesFromId(metadata.latest.extrinsic.signatureTypeId);
 
-  metadata.latest.extrinsic.signedExtensions.forEach((ext) => {
+  const { signedExtensions, signedExtensionsByVersion } = metadata.latest.extrinsic;
+  // V4 uses extension version 0; V5-only types must not change the V4 digest.
+  const indexes = signedExtensionsByVersion.get(0);
+  assert(indexes, 'No signed extensions found for extension version 0');
+  indexes.forEach((index) => {
+    const ext = signedExtensions[index];
+    assert(ext, `Invalid signed extension index ${index} for extension version 0`);
     collectTypesFromId(ext.typeId);
     collectTypesFromId(ext.additionalSigned);
   });

@@ -72,6 +72,94 @@ describe('MerkleizedMetadata', () => {
     });
   });
 
+  describe('versioned transaction extensions', () => {
+    // Retain the existing Polkadot golden vectors while adding a V5-only type
+    // and storing the V4 extensions in a different order from their selection.
+    const withVersionedExtensions = (reorder = true) => {
+      const metadata = $Metadata.tryDecode(loadMetadata('polkadot_metadata_v15'));
+      const latest = metadata.latest;
+      const active = [...latest.extrinsic.signedExtensions];
+      const v5TypeId = Math.max(...latest.types.map(({ id }) => id)) + 1;
+      latest.types.push({
+        id: v5TypeId,
+        path: ['V5OnlyExtension'],
+        params: [],
+        docs: [],
+        typeDef: { type: 'Tuple', value: { fields: [latest.extrinsic.callTypeId] } },
+      });
+      const indexes = active.map((_, index) => (reorder ? active.length - index : index + 1));
+      latest.extrinsic = {
+        ...latest.extrinsic,
+        versions: [4, 5],
+        signedExtensions: [
+          { ident: 'V5OnlyExtension', typeId: v5TypeId, additionalSigned: v5TypeId },
+          ...(reorder ? active.reverse() : active),
+        ],
+        signedExtensionsByVersion: new Map([
+          [0, indexes],
+          [1, [0, ...indexes]],
+        ]),
+      };
+      return new Metadata(metadata.magicNumber, { type: 'V16', value: latest });
+    };
+
+    it.each([false, true])('preserves the V15 digest with V5-only types (reordered table: %s)', (reorder) => {
+      const metadata = withVersionedExtensions(reorder);
+      const merkleizer = new MerkleizedMetadata($Metadata.tryEncode(metadata), CHAIN_INFO);
+      const expected = DIGEST_FIXTURES.find(({ name }) => name === 'polkadot_metadata_v15')!.expectedHash;
+      expect(u8aToHex(merkleizer.digest())).toEqual(expected);
+    });
+
+    it('preserves the V15 transaction and payload proof vectors', () => {
+      const merkleizer = new MerkleizedMetadata(withVersionedExtensions(), CHAIN_INFO);
+      for (const { txPayload, expectedProof } of TX_PAYLOAD_PROOF_FIXTURES) {
+        expect(u8aToHex(merkleizer.proofForExtrinsicPayload(txPayload as HexString))).toEqual(expectedProof);
+      }
+      for (const { tx, additionalSigned, expectedProof, expectedProofWithAdditionalSigned } of TX_PROOF_FIXTURES) {
+        expect(u8aToHex(merkleizer.proofForExtrinsic(tx as HexString))).toEqual(expectedProof);
+        expect(u8aToHex(merkleizer.proofForExtrinsic(tx as HexString, additionalSigned as HexString))).toEqual(
+          expectedProofWithAdditionalSigned,
+        );
+      }
+    });
+
+    it('supports an empty version-zero set without selecting the other set', () => {
+      const v16 = withVersionedExtensions();
+      v16.latest.extrinsic.signedExtensionsByVersion.set(0, []);
+      const v15 = $Metadata.tryDecode(loadMetadata('polkadot_metadata_v15'));
+      if (v15.metadataVersioned.type !== 'V15') throw new Error('Expected V15 fixture');
+      v15.metadataVersioned.value.extrinsic.signedExtensions = [];
+      expect(new MerkleizedMetadata(v16, CHAIN_INFO).digest()).toEqual(
+        new MerkleizedMetadata(v15, CHAIN_INFO).digest(),
+      );
+    });
+
+    it('includes an extension and its types when selected in version zero', () => {
+      const metadata = withVersionedExtensions();
+      const without = new MerkleizedMetadata(metadata, CHAIN_INFO).digest();
+      const indexes = metadata.latest.extrinsic.signedExtensionsByVersion.get(0)!;
+      metadata.latest.extrinsic.signedExtensionsByVersion.set(0, [0, ...indexes]);
+      expect(new MerkleizedMetadata(metadata, CHAIN_INFO).digest()).not.toEqual(without);
+    });
+
+    it('rejects a missing version-zero set', () => {
+      const metadata = withVersionedExtensions();
+      metadata.latest.extrinsic.signedExtensionsByVersion.delete(0);
+      expect(() => new MerkleizedMetadata(metadata, CHAIN_INFO).digest()).toThrow(
+        'No signed extensions found for extension version 0',
+      );
+    });
+
+    it('rejects an out-of-range extension index with its version', () => {
+      const metadata = withVersionedExtensions();
+      const index = metadata.latest.extrinsic.signedExtensions.length;
+      metadata.latest.extrinsic.signedExtensionsByVersion.set(0, [index]);
+      expect(() => new MerkleizedMetadata(metadata, CHAIN_INFO).digest()).toThrow(
+        `Invalid signed extension index ${index} for extension version 0`,
+      );
+    });
+  });
+
   describe('constructor input types', () => {
     let metadataHex: HexString;
     let metadataU8a: Uint8Array;

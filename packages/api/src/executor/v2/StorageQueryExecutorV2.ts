@@ -28,7 +28,7 @@ export class StorageQueryExecutorV2 extends StorageQueryExecutor {
       const withArgs = !!args && args.length > 0;
       const key = withArgs ? entry.encodeKey(args, true) : entry.prefixKey;
 
-      const results = await this.chainHead.storage([{ type: 'descendantsValues', key }]);
+      const results = await this.chainHead.storage([{ type: 'descendantsValues', key }], undefined, this.atBlockHash);
       return results.map(({ key, value }) => [
         entry.decodeKey(key as HexString),
         entry.decodeValue(value as HexString),

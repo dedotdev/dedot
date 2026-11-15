@@ -49,7 +49,15 @@ export class ExtraSignedExtension extends SignedExtension<any[], any[]> {
   }
 
   get #signedExtensionDefs() {
-    return this.registry.metadata.extrinsic.signedExtensions;
+    const { signedExtensions, signedExtensionsByVersion } = this.registry.metadata.extrinsic;
+    // Match PortableRegistry.$Extra(): version 4 transactions use extension version 0.
+    const indexes = signedExtensionsByVersion.get(0);
+    assert(indexes, 'No signed extensions found for extension version 0');
+    return indexes.map((index) => {
+      const extension = signedExtensions[index];
+      assert(extension, `Invalid signed extension index ${index} for extension version 0`);
+      return extension;
+    });
   }
 
   #getSignedExtensions() {
