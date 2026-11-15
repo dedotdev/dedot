@@ -11,7 +11,8 @@ class MockWsProvider extends WsProvider {
   failOnSwitch: boolean = false;
 
   constructor() {
-    super('ws://127.0.0.1:1');
+    // Two endpoints, so an initialization failure on the first one still has somewhere to go
+    super(['ws://127.0.0.1:1', 'ws://127.0.0.1:2']);
   }
 
   async connect(): Promise<this> {
@@ -437,9 +438,7 @@ describe('BaseSubstrateClient', () => {
       const provider = new MockWsProvider();
       const client = new MockBaseSubstrateClient(provider);
 
-      const doInitSpy = vi
-        .spyOn(client as any, 'doInitialize')
-        .mockRejectedValueOnce(new Error('weird endpoint'));
+      const doInitSpy = vi.spyOn(client as any, 'doInitialize').mockRejectedValueOnce(new Error('weird endpoint'));
 
       await expect(client.connect()).resolves.toBe(client);
       expect(provider.disconnectCalls).toEqual([true]);

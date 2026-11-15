@@ -61,10 +61,16 @@ export interface WsProviderOptions {
   retryDelayMs?: number;
   /**
    * Maximum number of retry attempts before giving up
-   * If not provided or set to undefined, will retry to connect forever (current behavior)
    * If set to 0, no retries will be attempted
    *
-   * @default undefined (retry forever)
+   * If not provided or set to undefined:
+   * - The first connection tries each endpoint once (a single endpoint is tried once,
+   *   an array of endpoints is tried until every one of them has failed), then `connect()`
+   *   rejects with a `MaxRetryAttemptedError`. An endpoint selector function is in charge
+   *   of its own rotation, so it is retried forever.
+   * - Once a connection has been established, reconnection is retried forever.
+   *
+   * @default undefined
    */
   maxRetryAttempts?: number;
   /**
@@ -216,6 +222,9 @@ export class WsProvider extends SubscriptionProvider {
   // Excluded from selection until they cool down or every endpoint has been excluded.
   #failedEndpoints: Map<string, number> = new Map();
 
+  // The last connection error, reported as the cause when the provider gives up
+  #lastError?: Error;
+
   // Recovering promise for request queueing during reconnection
   #recovering?: Deferred<void>;
 
@@ -229,6 +238,11 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   async connect(): Promise<this> {
+    // A new connect() call starts over as a first connection, with a fresh retry budget
+    this.#attempt = 0;
+    this.#initialized = false;
+    this.#lastError = undefined;
+
     this.#connectAndRetry().catch(console.error);
     return this.#untilConnected();
   }
@@ -287,12 +301,33 @@ export class WsProvider extends SubscriptionProvider {
     return this.#options.retryDelayMs;
   }
 
+  /**
+   * How many connection attempts the first connection gets when `maxRetryAttempts` is not set:
+   * one per endpoint, so every endpoint is tried once before giving up.
+   * `undefined` means no limit - an endpoint selector function decides what to try next
+   * on its own, so there is no fixed set of endpoints to go through.
+   */
+  get initialConnectAttempts(): number | undefined {
+    const { endpoint } = this.#options;
+
+    if (typeof endpoint === 'function') return undefined;
+    return Array.isArray(endpoint) ? endpoint.length : 1;
+  }
+
   get #canRetry() {
     if (!this.#retryEnabled) return false;
 
     const { maxRetryAttempts } = this.#options;
 
-    if (maxRetryAttempts === undefined) return true;
+    if (maxRetryAttempts === undefined) {
+      // Once connected, reconnection is retried forever
+      if (this.#initialized) return true;
+
+      // The first connection only gets one pass over the endpoints, so a wrong or dead
+      // endpoint makes connect() fail instead of waiting forever
+      const budget = this.initialConnectAttempts;
+      return budget === undefined || this.#attempt < budget;
+    }
 
     // if the provider is not yet initialized,
     // the first initial connect attempt will not be counted as a retry
@@ -423,6 +458,7 @@ export class WsProvider extends SubscriptionProvider {
       console.error('Error connecting to websocket', e);
       // The endpoint failed to connect - remember it so array failover avoids it
       if (this.#currentEndpoint) this.#failedEndpoints.set(this.#currentEndpoint, Date.now());
+      this.#lastError = e;
       this.emit('error', e);
       throw e;
     }
@@ -458,8 +494,12 @@ export class WsProvider extends SubscriptionProvider {
         immediate ? 0 : this.#options.retryDelayMs,
       );
     } else {
+      const { maxRetryAttempts } = this.#options;
       const error = new MaxRetryAttemptedError(
-        `Cannot reconnect to network after ${this.#options.maxRetryAttempts} retry attempts`,
+        maxRetryAttempts === undefined
+          ? `Cannot connect to network, tried ${this.#attempt} endpoint(s) and none of them is reachable`
+          : `Cannot reconnect to network after ${maxRetryAttempts} retry attempts`,
+        this.#lastError,
       );
 
       // Reject the recovering promise, which will reject all queued requests
@@ -608,7 +648,8 @@ export class WsProvider extends SubscriptionProvider {
   };
 
   #onSocketError = (error: Event) => {
-    this.emit('error', new WsConnectionError(`Websocket connection error from ${this.#currentEndpoint}`, error));
+    this.#lastError = new WsConnectionError(`Websocket connection error from ${this.#currentEndpoint}`, error);
+    this.emit('error', this.#lastError);
   };
 
   #onSocketMessage = (message: MessageEvent<string>) => {

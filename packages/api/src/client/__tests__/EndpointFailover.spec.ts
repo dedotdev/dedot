@@ -186,6 +186,54 @@ describe('Endpoint failover on initialization failures', () => {
     expect(Date.now() - startedAt).toBeGreaterThanOrEqual(retryDelayMs - 10);
   }, 5_000);
 
+  describe('first connection without maxRetryAttempts', () => {
+    it('gives every endpoint one chance, then rejects with the init error', async () => {
+      silenceLogs();
+
+      const provider = new FakeWsProvider({ endpoint: [BAD_1, BAD_2], retryDelayMs: 20 }, respond);
+      client = new TestClient(provider);
+
+      await expect(client.connect()).rejects.toThrow('cannot initialize, endpoint answered: bad');
+      expect([...provider.visited].sort()).toEqual([BAD_1, BAD_2]);
+    }, 5_000);
+
+    it('rejects right away when the only endpoint cannot be initialized', async () => {
+      silenceLogs();
+
+      const provider = new FakeWsProvider({ endpoint: BAD_1, retryDelayMs: 20 }, respond);
+      client = new TestClient(provider);
+
+      await expect(client.connect()).rejects.toThrow('cannot initialize, endpoint answered: bad');
+      expect(provider.visited).toEqual([BAD_1]);
+    }, 5_000);
+
+    it('keeps switching after the client has been ready once', async () => {
+      silenceLogs();
+
+      let healthy = true;
+      const provider = new FakeWsProvider({ endpoint: [BAD_1, GOOD], retryDelayMs: 10 }, (endpoint) =>
+        healthy && endpoint === GOOD ? 'good' : 'bad',
+      );
+      client = new TestClient(provider);
+      await client.connect();
+
+      // Every endpoint turns unusable and the connection drops: the client is past its first
+      // connection, so it must keep looking instead of giving up after one pass
+      const visitedWhenReady = provider.sockets.length;
+      healthy = false;
+      provider.sockets[provider.sockets.length - 1].close(1006);
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(provider.sockets.length).toBeGreaterThan(visitedWhenReady + 4);
+
+      // And it recovers once an endpoint works again
+      healthy = true;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(await client.rpc.system_chain()).toBe('good');
+      expect(client.status).toBe('connected');
+    }, 5_000);
+  });
+
   it('still rejects with MaxRetryAttemptedError when the endpoints cannot even be reached', async () => {
     silenceLogs();
 

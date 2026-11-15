@@ -1,4 +1,4 @@
-import { JsonRpcRequest, JsonRpcResponse, MaxRetryAttemptedError } from '@dedot/providers';
+import { JsonRpcRequest, JsonRpcResponse, MaxRetryAttemptedError, WsConnectionError } from '@dedot/providers';
 import { Client, Server } from 'mock-socket';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WsEndpointSelector, WsProvider, WsProviderOptions } from '../WsProvider.js';
@@ -348,6 +348,169 @@ describe('WsProvider', () => {
     it('counts delayed retries (close code 1006) toward maxRetryAttempts without resetting on open', async () => {
       await expectMaxRetryEmitted('ws://127.0.0.1:9954', 1006);
     }, 15_000);
+  });
+
+  describe('First Connection Budget', () => {
+    const DEAD_1 = 'ws://dead-1';
+    const DEAD_2 = 'ws://dead-2';
+    const DEAD_3 = 'ws://dead-3';
+    const ALIVE = 'ws://alive';
+
+    // mock-socket reports a refused connection as a clean close (1000), which a real socket
+    // never does. These sockets fail the handshake the way real ones do: error, then close 1006.
+    class FakeSocket {
+      onopen: any = null;
+      onclose: any = null;
+      onmessage: any = null;
+      onerror: any = null;
+      readyState = 0;
+
+      constructor(
+        public url: string,
+        reachable: boolean,
+      ) {
+        setTimeout(() => {
+          if (reachable) {
+            this.readyState = 1;
+            this.onopen?.({});
+          } else {
+            this.readyState = 3;
+            this.onerror?.({ type: 'error' });
+            this.onclose?.({ code: 1006, reason: '' });
+          }
+        }, 0);
+      }
+
+      send() {}
+
+      // Drop the connection from the remote side
+      drop() {
+        this.readyState = 3;
+        this.onclose?.({ code: 1006, reason: '' });
+      }
+
+      close(code?: number) {
+        if (this.readyState === 3) return;
+        this.readyState = 3;
+        setTimeout(() => this.onclose?.({ code: code ?? 1005, reason: '' }), 0);
+      }
+    }
+
+    class FakeNetworkProvider extends WsProvider {
+      reachable = new Set<string>([ALIVE]);
+      sockets: FakeSocket[] = [];
+
+      protected override createWebSocket(endpoint: string): any {
+        const socket = new FakeSocket(endpoint, this.reachable.has(endpoint));
+        this.sockets.push(socket);
+        return socket;
+      }
+
+      get attempted(): string[] {
+        return this.sockets.map((s) => s.url);
+      }
+    }
+
+    const newProvider = (options: WsProviderOptions) => {
+      const provider = new FakeNetworkProvider(options);
+      provider.on('error', () => {});
+      return provider;
+    };
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    it('rejects after one attempt when the only endpoint is unreachable', async () => {
+      const provider = newProvider({ endpoint: DEAD_1, retryDelayMs: 20 });
+
+      const error = await provider.connect().catch((e) => e);
+
+      expect(error).toBeInstanceOf(MaxRetryAttemptedError);
+      // The reason for giving up is reported along with it
+      expect(error.cause).toBeInstanceOf(WsConnectionError);
+      expect(error.cause.message).toContain(DEAD_1);
+      expect(provider.attempted).toEqual([DEAD_1]);
+      expect(provider.status).toBe('disconnected');
+    });
+
+    it('tries every endpoint of an array once before rejecting', async () => {
+      const provider = newProvider({ endpoint: [DEAD_1, DEAD_2, DEAD_3], retryDelayMs: 20 });
+
+      await expect(provider.connect()).rejects.toThrow(MaxRetryAttemptedError);
+      expect([...provider.attempted].sort()).toEqual([DEAD_1, DEAD_2, DEAD_3]);
+
+      // And it really stopped
+      await wait(150);
+      expect(provider.attempted.length).toBe(3);
+    });
+
+    it('connects when a later endpoint of the array works', async () => {
+      const mockRandom = vi.spyOn(Math, 'random').mockReturnValue(0);
+      const provider = newProvider({ endpoint: [DEAD_1, DEAD_2, ALIVE], retryDelayMs: 20 });
+
+      try {
+        await provider.connect();
+        expect(provider.attempted).toEqual([DEAD_1, DEAD_2, ALIVE]);
+      } finally {
+        mockRandom.mockRestore();
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('keeps retrying forever once a connection has been established', async () => {
+      const provider = newProvider({ endpoint: ALIVE, retryDelayMs: 20 });
+
+      try {
+        await provider.connect();
+
+        // The endpoint goes away for a while, well past a single retry
+        provider.reachable.delete(ALIVE);
+        provider.sockets[0].drop();
+        await wait(300);
+        expect(provider.attempted.length).toBeGreaterThan(5);
+        expect(provider.status).not.toBe('connected');
+
+        // ...and the provider is back as soon as it returns
+        provider.reachable.add(ALIVE);
+        await wait(100);
+        expect(provider.status).toBe('connected');
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('leaves the rotation to an endpoint selector function', async () => {
+      // The selector fails over on its own after a few attempts, so it must not be cut short
+      const selector = vi.fn((info: { attempt: number }) => (info.attempt >= 4 ? ALIVE : DEAD_1));
+      const provider = newProvider({ endpoint: selector, retryDelayMs: 20 });
+
+      try {
+        await provider.connect();
+        expect(provider.attempted).toEqual([DEAD_1, DEAD_1, DEAD_1, ALIVE]);
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('gives a new connect() call a fresh budget', async () => {
+      const provider = newProvider({ endpoint: DEAD_1, retryDelayMs: 20 });
+
+      await expect(provider.connect()).rejects.toThrow(MaxRetryAttemptedError);
+
+      provider.reachable.add(DEAD_1);
+      try {
+        await provider.connect();
+        expect(provider.status).toBe('connected');
+      } finally {
+        await provider.disconnect().catch(() => {});
+      }
+    });
+
+    it('still honors an explicit maxRetryAttempts', async () => {
+      const provider = newProvider({ endpoint: DEAD_1, retryDelayMs: 20, maxRetryAttempts: 2 });
+
+      await expect(provider.connect()).rejects.toThrow('Cannot reconnect to network after 2 retry attempts');
+      expect(provider.attempted.length).toBe(3);
+    });
   });
 
   describe('Connection Setup Failures', () => {

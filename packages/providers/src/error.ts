@@ -22,7 +22,17 @@ export class JsonRpcError<Data = any> extends Error {
   }
 }
 
-export class MaxRetryAttemptedError extends DedotError {}
+export class MaxRetryAttemptedError extends DedotError {
+  /**
+   * The last error that happened before giving up, if any
+   */
+  cause?: any;
+
+  constructor(message?: string, cause?: any) {
+    super(message);
+    this.cause = cause;
+  }
+}
 
 export class NetworkDisconnectedError extends DedotError {}
 

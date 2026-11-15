@@ -436,7 +436,8 @@ export abstract class BaseSubstrateClient<
   /**
    * Ask the provider to move on to a different endpoint after an initialization failure.
    *
-   * Consecutive failures are bounded by the provider's `maxRetryAttempts` (when set), the first
+   * Consecutive failures are bounded by the provider's `maxRetryAttempts`, or when that is not
+   * set, by one pass over the endpoints until the client has been ready once. The first
    * switch is immediate and the following ones wait for the provider's retry delay so a failure
    * that every endpoint reproduces does not turn into a tight reconnection loop.
    *
@@ -444,9 +445,15 @@ export abstract class BaseSubstrateClient<
    */
   protected async switchEndpointOnInitError(e: any): Promise<boolean> {
     const provider = this.provider as WsProvider;
-    const { maxRetryAttempts, retryDelayMs } = provider;
+    const { maxRetryAttempts, retryDelayMs, initialConnectAttempts } = provider;
 
-    if (maxRetryAttempts !== undefined && this.#initFailures > maxRetryAttempts) {
+    // Without an explicit limit, a client that has never been ready follows the provider's rule
+    // for a first connection: every endpoint gets one chance. After that it keeps switching.
+    const firstConnectionLimit =
+      this.#initialized || initialConnectAttempts === undefined ? undefined : initialConnectAttempts - 1;
+    const maxSwitches = maxRetryAttempts ?? firstConnectionLimit;
+
+    if (maxSwitches !== undefined && this.#initFailures > maxSwitches) {
       console.error(`Failed to initialize the client after trying ${this.#initFailures} endpoints, giving up.`);
       return false;
     }
