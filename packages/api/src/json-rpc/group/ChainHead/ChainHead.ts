@@ -1,5 +1,5 @@
 import { $Header, BlockHash, Header, Option } from '@dedot/codecs';
-import { type JsonRpcSubscription, NetworkDisconnectedError } from '@dedot/providers';
+import { type JsonRpcSubscription, NetworkDisconnectedError, WsProvider } from '@dedot/providers';
 import type { AsyncMethod, Unsub } from '@dedot/types';
 import type {
   ArchiveStorageResult,
@@ -71,6 +71,15 @@ export type ChainHeadEvent =
 const MIN_FINALIZED_QUEUE_SIZE = 10; // finalized queue size
 const CHAINHEAD_CACHE_CAPACITY = 256;
 const CHAINHEAD_CACHE_TTL = 30_000; // 30 seconds
+
+// Number of times to attempt re-following the chain head after a `stop` event
+// before giving up and switching to a different endpoint (if possible)
+const STOP_RECOVERY_MAX_ATTEMPTS = 3;
+// Delay between re-follow attempts after a `stop` event
+const STOP_RECOVERY_RETRY_DELAY_MS = 1_000;
+
+// Internal signal: a stop recovery gave up because it is no longer in charge of the follow
+class StopRecoveryAbortedError extends ChainHeadError {}
 
 export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   #unsub?: Unsub;
@@ -293,6 +302,68 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
   }
 
   /**
+   * Attempt to re-follow the chain head with a bounded number of retries.
+   * Used to recover from a `stop` event - transient failures get a few chances
+   * before we give up and let the caller escalate (e.g. switch endpoint).
+   *
+   * The recovery is abandoned (throwing a `StopRecoveryAbortedError`) as soon as it is no longer
+   * the one in charge: either the connection dropped (the provider is reconnecting and the client
+   * re-follows on the new connection itself), or a newer `stop` event started its own recovery.
+   * Retrying past that point would race with the other follow, and escalating would kick a
+   * connection that this recovery knows nothing about.
+   */
+  async #reFollow(recovering: Deferred<void>, maxAttempts: number = STOP_RECOVERY_MAX_ATTEMPTS): Promise<void> {
+    let lastError: any;
+
+    let disconnected = false;
+    const off = this.client.provider.on('disconnected', () => {
+      disconnected = true;
+    });
+    const abandoned = () => disconnected || this.#recovering !== recovering;
+
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        try {
+          await this.#doFollow();
+          return;
+        } catch (e: any) {
+          lastError = e;
+          if (abandoned()) break;
+
+          console.error(`ChainHead re-follow attempt ${attempt}/${maxAttempts} failed`, e);
+
+          if (attempt < maxAttempts) {
+            await waitFor(STOP_RECOVERY_RETRY_DELAY_MS);
+            if (abandoned()) break;
+          }
+        }
+      }
+    } finally {
+      off();
+    }
+
+    if (abandoned()) {
+      throw new StopRecoveryAbortedError('ChainHead stop recovery was abandoned');
+    }
+
+    throw lastError ?? new ChainHeadError('Cannot recover from stop event!');
+  }
+
+  /**
+   * Escalate an unrecoverable `stop` event by switching to a different endpoint.
+   * Only effective when backed by a WsProvider with retry enabled - the provider
+   * will reconnect to a different endpoint and the client will re-initialize there.
+   */
+  protected switchEndpoint(): void {
+    const provider = this.client.provider;
+
+    if (provider instanceof WsProvider && provider.retryEnabled) {
+      console.warn('Cannot recover ChainHead after a stop event, switching to a different endpoint...');
+      provider.disconnect(true).catch(noop);
+    }
+  }
+
+  /**
    * Retry pending requests that were queued during network disconnection
    */
   #retryPendingRequests() {
@@ -500,9 +571,13 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
         // for the #recovering promise to resolve
         const recovering = deferred<void>();
         this.#recovering = recovering;
+        // Guard against an unhandled rejection: on recovery failure this promise is
+        // rejected, but it only has a consumer when an operation is in flight (#ensureFollowed).
+        // The no-op handler is harmless for real awaiters, who still receive the rejection.
+        recovering.promise.catch(noop);
 
-        // 2. Attempt to re-follow the chainHead
-        this.#doFollow()
+        // 2. Attempt to re-follow the chainHead (with bounded retries)
+        this.#reFollow(recovering)
           .then(() => {
             // 3. Resolve the recovering promise
             // This means to continue all pending requests while the chainHead started recovering mode at step 1.
@@ -522,13 +597,20 @@ export class ChainHead extends JsonRpcGroup<ChainHeadEvent> {
           })
           .catch((e: any) => {
             console.error(e);
-            // TODO we should retry a few attempts
             recovering.reject(new ChainHeadError('Cannot recover from stop event!'));
 
             Object.values(this.#handlers).forEach(({ defer, operationId }) => {
               defer.reject(new ChainHeadError('Cannot recover from stop event!'));
               delete this.#handlers[operationId];
             });
+
+            // Re-follow exhausted all attempts on the current endpoint;
+            // escalate by switching to a different endpoint (if supported).
+            // An abandoned recovery must not escalate: the connection it was working on is
+            // already gone, or a newer recovery owns the decision.
+            if (!(e instanceof StopRecoveryAbortedError)) {
+              this.switchEndpoint();
+            }
           })
           .finally(() => {
             // cleaning up

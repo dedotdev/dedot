@@ -260,6 +260,10 @@ export class V2Client<ChainApi extends GenericSubstrateApi = SubstrateApi> // pr
     if (!stalingDetectionFn) return;
 
     this.chainHead.on('bestBlock', stalingDetectionFn);
+
+    // Arm the watchdog immediately after initialization so an endpoint that stops
+    // producing blocks right after connecting is still detected (don't wait for the next block)
+    stalingDetectionFn();
   }
 
   protected override async beforeDisconnect(): Promise<void> {

@@ -1,14 +1,14 @@
 import { WebSocket } from '@polkadot/x-ws';
 import { assert, DedotError, deferred, Deferred } from '@dedot/utils';
 import { SubscriptionProvider } from '../base/index.js';
-import { MaxRetryAttemptedError, NetworkDisconnectedError } from '../error.js';
+import { MaxRetryAttemptedError, NetworkDisconnectedError, WsConnectionError } from '../error.js';
 import { JsonRpcRequest } from '../types.js';
-import { canSendRequestHeaders, pickRandomItem, validateEndpoint } from '../utils.js';
+import { canSendRequestHeaders, validateEndpoint } from '../utils.js';
 
 export interface WsConnectionState {
   /**
    * Connection attempt counter (1 for initial, increments on reconnects)
-   * Resets to 1 after a successful connection
+   * Resets to 1 once a connection has proven healthy (received a message or stayed open long enough)
    */
   attempt: number;
 
@@ -61,10 +61,16 @@ export interface WsProviderOptions {
   retryDelayMs?: number;
   /**
    * Maximum number of retry attempts before giving up
-   * If not provided or set to undefined, will retry to connect forever (current behavior)
    * If set to 0, no retries will be attempted
    *
-   * @default undefined (retry forever)
+   * If not provided or set to undefined:
+   * - The first connection tries each endpoint once (a single endpoint is tried once,
+   *   an array of endpoints is tried until every one of them has failed), then `connect()`
+   *   rejects with a `MaxRetryAttemptedError`. An endpoint selector function is in charge
+   *   of its own rotation, so it is retried forever.
+   * - Once a connection has been established, reconnection is retried forever.
+   *
+   * @default undefined
    */
   maxRetryAttempts?: number;
   /**
@@ -74,6 +80,15 @@ export interface WsProviderOptions {
    * @default 30000
    */
   timeout?: number;
+  /**
+   * Timeout in milliseconds for establishing the websocket connection (handshake).
+   * If the socket does not open within this time, it is force-closed so the next
+   * reconnection attempt can rotate to a different endpoint.
+   * If the value is <= 0, the connect timeout is disabled.
+   *
+   * @default 30000
+   */
+  connectTimeoutMs?: number;
   /**
    * Custom HTTP headers to send along with the websocket opening handshake,
    * e.g: an auth token for a private RPC endpoint or proxy.
@@ -107,10 +122,22 @@ type WebSocketWithOptions = new (url: string, options: { headers: WsRequestHeade
 const DEFAULT_OPTIONS: Partial<WsProviderOptions> = {
   retryDelayMs: 2500,
   timeout: 30_000,
+  connectTimeoutMs: 30_000,
 };
 
 // No resubscribe subscriptions these prefixes on reconnect
 const NO_RESUBSCRIBE_PREFIXES = ['author_', 'chainHead_', 'transactionWatch_'];
+
+// How long a connection must stay open before it is considered healthy and the
+// retry attempt counter is reset. A connection that drops before this window
+// (or before receiving any message) does not reset the attempt counter.
+const HEALTHY_CONNECTION_THRESHOLD_MS = 10_000;
+
+// How long an endpoint that failed is avoided by array failover. The memory is time-based
+// rather than cleared by the next working connection: an endpoint that connects and answers
+// can still be unusable for the client (which then asks for a switch), and it must not
+// make the provider forget the endpoints that failed just before it.
+const FAILED_ENDPOINT_COOLDOWN_MS = 60_000;
 
 /**
  * @name WsProvider
@@ -183,11 +210,20 @@ export class WsProvider extends SubscriptionProvider {
   #options: Required<WsProviderOptions>;
   #ws?: WebSocket;
   #timeoutTimer?: ReturnType<typeof setInterval>;
+  #connectTimer?: ReturnType<typeof setTimeout>;
+  #healthyTimer?: ReturnType<typeof setTimeout>;
 
   // Connection state tracking
   #attempt: number = 0;
   #currentEndpoint?: string;
   #initialized: boolean = false;
+
+  // Endpoints that failed recently and when (for array failover).
+  // Excluded from selection until they cool down or every endpoint has been excluded.
+  #failedEndpoints: Map<string, number> = new Map();
+
+  // The last connection error, reported as the cause when the provider gives up
+  #lastError?: Error;
 
   // Recovering promise for request queueing during reconnection
   #recovering?: Deferred<void>;
@@ -202,6 +238,11 @@ export class WsProvider extends SubscriptionProvider {
   }
 
   async connect(): Promise<this> {
+    // A new connect() call starts over as a first connection, with a fresh retry budget
+    this.#attempt = 0;
+    this.#initialized = false;
+    this.#lastError = undefined;
+
     this.#connectAndRetry().catch(console.error);
     return this.#untilConnected();
   }
@@ -239,12 +280,54 @@ export class WsProvider extends SubscriptionProvider {
     return this.#options.retryDelayMs > 0;
   }
 
+  /**
+   * Whether automatic reconnection/retry is enabled (retryDelayMs > 0)
+   */
+  get retryEnabled(): boolean {
+    return this.#retryEnabled;
+  }
+
+  /**
+   * Maximum number of retry attempts before giving up, `undefined` means retrying indefinitely
+   */
+  get maxRetryAttempts(): number | undefined {
+    return this.#options.maxRetryAttempts;
+  }
+
+  /**
+   * Delay in milliseconds between retry attempts
+   */
+  get retryDelayMs(): number {
+    return this.#options.retryDelayMs;
+  }
+
+  /**
+   * How many connection attempts the first connection gets when `maxRetryAttempts` is not set:
+   * one per endpoint, so every endpoint is tried once before giving up.
+   * `undefined` means no limit - an endpoint selector function decides what to try next
+   * on its own, so there is no fixed set of endpoints to go through.
+   */
+  get #initialConnectAttempts(): number | undefined {
+    const { endpoint } = this.#options;
+
+    if (typeof endpoint === 'function') return undefined;
+    return Array.isArray(endpoint) ? endpoint.length : 1;
+  }
+
   get #canRetry() {
     if (!this.#retryEnabled) return false;
 
     const { maxRetryAttempts } = this.#options;
 
-    if (maxRetryAttempts === undefined) return true;
+    if (maxRetryAttempts === undefined) {
+      // Once connected, reconnection is retried forever
+      if (this.#initialized) return true;
+
+      // The first connection only gets one pass over the endpoints, so a wrong or dead
+      // endpoint makes connect() fail instead of waiting forever
+      const budget = this.#initialConnectAttempts;
+      return budget === undefined || this.#attempt < budget;
+    }
 
     // if the provider is not yet initialized,
     // the first initial connect attempt will not be counted as a retry
@@ -270,13 +353,57 @@ export class WsProvider extends SubscriptionProvider {
       );
     }
 
-    // If endpoint is an array, this should not happen as arrays are converted to functions in #normalizeOptions
-    // But we add this check for type safety
     if (Array.isArray(endpoint)) {
-      throw new DedotError('Endpoint array should have been converted to a selector function');
+      return this.#pickEndpointFromArray(endpoint);
     }
 
     return endpoint;
+  }
+
+  /**
+   * Pick an endpoint from the array, preferring ones that haven't failed recently.
+   * Excludes the current endpoint and any endpoint that failed within the cooldown
+   * window. When every endpoint has been excluded, the failure memory is
+   * reset so the full list becomes available again.
+   */
+  #pickEndpointFromArray(endpoints: string[]): string {
+    const now = Date.now();
+    const excluded = new Set<string>();
+    this.#failedEndpoints.forEach((failedAt, endpoint) => {
+      if (now - failedAt < FAILED_ENDPOINT_COOLDOWN_MS) {
+        excluded.add(endpoint);
+      } else {
+        this.#failedEndpoints.delete(endpoint);
+      }
+    });
+    if (this.#currentEndpoint) excluded.add(this.#currentEndpoint);
+
+    let candidates = endpoints.filter((e) => !excluded.has(e));
+
+    // Everything has been excluded - reset failure memory and retry the whole list,
+    // still preferring an endpoint different from the current one when possible.
+    if (candidates.length === 0) {
+      this.#failedEndpoints.clear();
+
+      candidates = this.#currentEndpoint ? endpoints.filter((e) => e !== this.#currentEndpoint) : endpoints;
+      if (candidates.length === 0) candidates = endpoints;
+    }
+
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  /**
+   * Create the underlying WebSocket instance. Extracted so it can be overridden in tests.
+   */
+  protected createWebSocket(endpoint: string, headers?: WsRequestHeaders): WebSocket {
+    // The options must be passed as the second constructor argument, which is accepted by
+    // both the `ws` package and the native WebSocket implementation. Passing them as a third
+    // argument only works for the `ws` package, the native implementation ignores it
+    // and the headers would be dropped silently.
+    // The type definitions from `@polkadot/x-ws` only expose the WHATWG (browser) signature
+    return headers
+      ? new (WebSocket as unknown as WebSocketWithOptions)(endpoint, { headers })
+      : new WebSocket(endpoint);
   }
 
   /**
@@ -319,41 +446,38 @@ export class WsProvider extends SubscriptionProvider {
 
       const headers = await this.#getHeaders();
 
-      // The options must be passed as the second constructor argument, which is accepted by
-      // both the `ws` package and the native WebSocket implementation. Passing them as a third
-      // argument only works for the `ws` package, the native implementation ignores it
-      // and the headers would be dropped silently.
-      // The type definitions from `@polkadot/x-ws` only expose the WHATWG (browser) signature
-      this.#ws = headers
-        ? new (WebSocket as unknown as WebSocketWithOptions)(this.#currentEndpoint, { headers })
-        : new WebSocket(this.#currentEndpoint);
+      this.#ws = this.createWebSocket(this.#currentEndpoint, headers);
       this.#ws.onopen = this.#onSocketOpen;
       this.#ws.onclose = this.#onSocketClose;
       this.#ws.onmessage = this.#onSocketMessage;
       this.#ws.onerror = this.#onSocketError;
 
+      this.#setupConnectTimeoutHandler();
       this.#setupRequestTimeoutHandler();
     } catch (e: any) {
       console.error('Error connecting to websocket', e);
+      // The endpoint failed to connect - remember it so array failover avoids it
+      if (this.#currentEndpoint) this.#failedEndpoints.set(this.#currentEndpoint, Date.now());
+      this.#lastError = e;
       this.emit('error', e);
       throw e;
     }
   }
 
-  async #connectAndRetry(skipTrackAttempts?: boolean) {
+  async #connectAndRetry() {
     assert(!this.#ws, 'Websocket connection already exists');
 
-    if (!skipTrackAttempts) {
-      this.#attempt += 1;
-    }
+    this.#attempt += 1;
 
     try {
       await this.#doConnect();
     } catch (e) {
-      if (!this.#canRetry) {
+      if (!this.#retryEnabled) {
         throw e;
       }
 
+      // Either schedules the next attempt, or emits a MaxRetryAttemptedError when the attempts
+      // are exhausted so a pending connect() rejects instead of waiting forever
       this.#retry();
     }
   }
@@ -365,13 +489,17 @@ export class WsProvider extends SubscriptionProvider {
       setTimeout(
         () => {
           this._setStatus('reconnecting');
-          this.#connectAndRetry(immediate).catch(console.error);
+          this.#connectAndRetry().catch(console.error);
         },
         immediate ? 0 : this.#options.retryDelayMs,
       );
     } else {
+      const { maxRetryAttempts } = this.#options;
       const error = new MaxRetryAttemptedError(
-        `Cannot reconnect to network after ${this.#options.maxRetryAttempts} retry attempts`,
+        maxRetryAttempts === undefined
+          ? `Cannot connect to network, tried ${this.#attempt} endpoint(s) and none of them is reachable`
+          : `Cannot reconnect to network after ${maxRetryAttempts} retry attempts`,
+        this.#lastError,
       );
 
       // Reject the recovering promise, which will reject all queued requests
@@ -385,9 +513,15 @@ export class WsProvider extends SubscriptionProvider {
     }
   }
 
-  #onSocketOpen = async (event: Event) => {
-    // Connection successful - reset attempt counter
-    this.#attempt = 0;
+  #onSocketOpen = async () => {
+    // The handshake completed - cancel the connect timeout
+    this.#clearConnectTimeoutHandler();
+
+    // Arm the healthy-connection timer. The attempt counter / failure memory are only
+    // reset once the connection has proven healthy (stayed open long enough or received
+    // a message), not merely because the socket opened - an endpoint that opens then
+    // immediately drops must keep accumulating attempts.
+    this.#armHealthyConnectionTimer();
 
     this._setStatus('connected', this.#currentEndpoint);
 
@@ -482,11 +616,15 @@ export class WsProvider extends SubscriptionProvider {
     super._cleanUp();
     this.#clearWs();
     this.#clearTimeoutHandler();
+    this.#clearConnectTimeoutHandler();
+    this.#clearHealthyConnectionTimer();
   }
 
   #onSocketClose = (event: CloseEvent) => {
     this.#clearWs();
     this.#clearTimeoutHandler();
+    this.#clearConnectTimeoutHandler();
+    this.#clearHealthyConnectionTimer();
 
     // Keep _handlers intact for retry on reconnect, they will be processed in #onSocketOpen
     this._pendingNotifications = {};
@@ -496,6 +634,9 @@ export class WsProvider extends SubscriptionProvider {
     // attempt to reconnect if the connection was not closed manually (via .disconnect())
     const normalClosure = event.code === 1000;
     if (!normalClosure) {
+      // Remember the endpoint that just dropped so array failover prefers a different one
+      if (this.#currentEndpoint) this.#failedEndpoints.set(this.#currentEndpoint, Date.now());
+
       // Initialize recovering promise to queue incoming requests during reconnection
       this.#recovering = deferred<void>();
 
@@ -507,12 +648,64 @@ export class WsProvider extends SubscriptionProvider {
   };
 
   #onSocketError = (error: Event) => {
-    this.emit('error', error);
+    this.#lastError = new WsConnectionError(`Websocket connection error from ${this.#currentEndpoint}`, error);
+    this.emit('error', this.#lastError);
   };
 
   #onSocketMessage = (message: MessageEvent<string>) => {
+    // Receiving a message proves the endpoint is responsive - mark the connection healthy
+    this.#onHealthyConnection();
     this._onReceiveResponse(message.data);
   };
+
+  #armHealthyConnectionTimer() {
+    this.#clearHealthyConnectionTimer();
+
+    const threshold = HEALTHY_CONNECTION_THRESHOLD_MS;
+    if (threshold <= 0) {
+      this.#onHealthyConnection();
+      return;
+    }
+
+    this.#healthyTimer = setTimeout(() => this.#onHealthyConnection(), threshold);
+  }
+
+  #clearHealthyConnectionTimer() {
+    if (!this.#healthyTimer) return;
+
+    clearTimeout(this.#healthyTimer);
+    this.#healthyTimer = undefined;
+  }
+
+  /**
+   * Called once a connection has proven healthy. Resets the retry attempt counter.
+   * The failed-endpoint memory is left alone, it expires on its own.
+   */
+  #onHealthyConnection() {
+    this.#clearHealthyConnectionTimer();
+    this.#attempt = 0;
+  }
+
+  #setupConnectTimeoutHandler() {
+    const connectTimeout = this.#options.connectTimeoutMs;
+    if (connectTimeout <= 0) return;
+
+    this.#clearConnectTimeoutHandler();
+
+    this.#connectTimer = setTimeout(() => {
+      console.warn(`Connection to ${this.#currentEndpoint} timed out after ${connectTimeout}ms, reconnecting...`);
+      // Force-close the half-open socket; the close handler will trigger a retry
+      // that rotates to a different endpoint.
+      this.#ws?.close();
+    }, connectTimeout);
+  }
+
+  #clearConnectTimeoutHandler() {
+    if (!this.#connectTimer) return;
+
+    clearTimeout(this.#connectTimer);
+    this.#connectTimer = undefined;
+  }
 
   #normalizeOptions(options: WsProviderOptions | string | string[] | WsEndpointSelector): Required<WsProviderOptions> {
     const normalizedOptions =
@@ -537,10 +730,7 @@ export class WsProvider extends SubscriptionProvider {
       }
 
       endpoint.forEach(validateEndpoint);
-
-      normalizedOptions.endpoint = (info: WsConnectionState) => {
-        return pickRandomItem(endpoint, info.currentEndpoint);
-      };
+      // Kept as an array - endpoint selection (with failure memory) happens in #getEndpoint
     }
 
     return normalizedOptions as Required<WsProviderOptions>;

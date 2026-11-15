@@ -8,7 +8,7 @@ import {
   RuntimeVersion,
   StorageDataLike,
 } from '@dedot/codecs';
-import { type JsonRpcProvider, WsProvider } from '@dedot/providers';
+import { type JsonRpcProvider, MaxRetryAttemptedError, WsProvider } from '@dedot/providers';
 import { type IStorage, LocalStorage } from '@dedot/storage';
 import {
   Callback,
@@ -30,9 +30,11 @@ import {
   Deferred,
   ensurePresence as _ensurePresence,
   HexString,
+  JsonRpcV2NotSupportedError,
   LRUCache,
   noop,
   u8aToHex,
+  waitFor,
 } from '@dedot/utils';
 import type { SubstrateApi } from '../chaintypes/index.js';
 import { ConstantExecutor, ErrorExecutor, EventExecutor } from '../executor/index.js';
@@ -86,6 +88,13 @@ export abstract class BaseSubstrateClient<
   protected _runtimeUpgrading?: Deferred<void>;
   protected _apiAtCache: LRUCache;
   #stalingWatchdogTimer?: ReturnType<typeof setTimeout>;
+
+  // Whether the client has completed an initialization since it was last cleaned up
+  #initialized: boolean = false;
+  // Consecutive initialization failures that were answered with an endpoint switch
+  #initFailures: number = 0;
+  // The endpoints those failures happened on
+  #initFailedEndpoints: Set<string | undefined> = new Set();
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -318,6 +327,7 @@ export abstract class BaseSubstrateClient<
   }
 
   protected cleanUp() {
+    this.#initialized = false;
     this._registry = undefined;
     this._metadata = undefined;
     this._genesisHash = undefined;
@@ -346,26 +356,134 @@ export abstract class BaseSubstrateClient<
     this.on('disconnected', this.onDisconnected);
 
     return new Promise<this>((resolve, reject) => {
+      // Only reject on initialization errors (via the internal 'initError' event)
+      // or when the provider gives up reconnecting (MaxRetryAttemptedError).
+      // Transient provider errors (e.g., socket errors while the provider is retrying
+      // another endpoint) should not reject the pending connect() promise — terminal
+      // provider errors already reject through provider.connect() in JsonRpcClient.
+      const doReject = (err: unknown) => {
+        offInitError();
+        offError();
+        reject(err instanceof Error ? err : new Error(String(err)));
+      };
+
+      // @ts-ignore
+      const offInitError = this.on('initError', doReject);
       // @ts-ignore
       const offError = this.on('error', (err: unknown) => {
-        reject(err instanceof Error ? err : new Error(String(err)));
+        if (err instanceof MaxRetryAttemptedError) doReject(err);
       });
       // @ts-ignore
       this.once('ready', () => {
+        offInitError();
         offError();
         resolve(this);
       });
     });
   }
 
-  protected onConnected = async () => {
+  protected onConnected = async (endpoint?: string) => {
+    // Remember what we knew before this attempt, so a failed re-initialization can be rolled back
+    const prevRuntimeVersion = this._runtimeVersion;
+
     try {
       await this.initialize();
-    } catch (e) {
-      // @ts-ignore — surface init failure so the pending connect() promise can reject
+
+      this.#initialized = true;
+      this.#initFailures = 0;
+      this.#initFailedEndpoints.clear();
+    } catch (e: any) {
+      // @ts-ignore — keep emitting 'error' for external observability
       this.emit('error', e);
+
+      // If the endpoint misbehaves during initialization and the provider supports
+      // automatic retry, switch over to a different endpoint and re-initialize there
+      // instead of giving up on the current one
+      if (this.shouldSwitchEndpointOnInitError(e)) {
+        this.#initFailures += 1;
+        this.resetAfterInitFailure(prevRuntimeVersion);
+
+        if (await this.switchEndpointOnInitError(e, endpoint)) return;
+      }
+
+      // @ts-ignore — surface init failure so the pending connect() promise can reject
+      this.emit('initError', e);
     }
   };
+
+  protected shouldSwitchEndpointOnInitError(e: any): boolean {
+    // JSON-RPC v2 not supported is a terminal error, switching endpoint won't help
+    // and DedotClient relies on it to fall back to legacy JSON-RPC
+    if (e instanceof JsonRpcV2NotSupportedError) return false;
+
+    return this.provider instanceof WsProvider && this.provider.retryEnabled;
+  }
+
+  /**
+   * Drop whatever a failed initialization left behind, so the next attempt (on a different
+   * endpoint) does not mistake a half-initialized client for an initialized one and skip
+   * setting up metadata & subscriptions.
+   */
+  protected resetAfterInitFailure(prevRuntimeVersion?: SubstrateRuntimeVersion) {
+    if (this.#initialized) {
+      // Re-initialization after a reconnect: the client was fully set up before, only the
+      // runtime version may have moved ahead of the metadata - roll it back so the next
+      // attempt detects the change again
+      this._runtimeVersion = prevRuntimeVersion;
+    } else {
+      // Never been ready: start over from scratch
+      this.cleanUp();
+    }
+  }
+
+  /**
+   * Ask the provider to move on to a different endpoint after an initialization failure.
+   *
+   * With `maxRetryAttempts` set on the provider, that many consecutive failures are tolerated.
+   * Without it, a client that has never been ready gives up once an endpoint fails for the
+   * second time - by then the provider has been through every other endpoint. A client that
+   * was ready before keeps switching, like the provider keeps reconnecting.
+   *
+   * The first switch is immediate and the following ones wait for the provider's retry delay,
+   * so a failure that every endpoint reproduces does not turn into a tight reconnection loop.
+   *
+   * @returns `false` if the client gave up switching, the caller should surface the error
+   */
+  protected async switchEndpointOnInitError(e: any, endpoint?: string): Promise<boolean> {
+    const provider = this.provider as WsProvider;
+    const { maxRetryAttempts, retryDelayMs } = provider;
+
+    const failedBefore = this.#initFailedEndpoints.has(endpoint);
+    this.#initFailedEndpoints.add(endpoint);
+
+    const giveUp =
+      maxRetryAttempts !== undefined ? this.#initFailures > maxRetryAttempts : !this.#initialized && failedBefore;
+
+    if (giveUp) {
+      console.error(`Failed to initialize the client after ${this.#initFailures} attempts, giving up.`);
+      return false;
+    }
+
+    console.warn('Failed to initialize the client, switching to a different endpoint...', e);
+
+    if (this.#initFailures > 1) {
+      // The connection might drop on its own while waiting, in that case the provider is
+      // already moving on and the client will initialize again on the next connection
+      let dropped = false;
+      // @ts-ignore
+      const off = this.on('disconnected', () => {
+        dropped = true;
+      });
+
+      await waitFor(retryDelayMs);
+      off();
+
+      if (dropped) return true;
+    }
+
+    provider.disconnect(true).catch(noop);
+    return true;
+  }
 
   protected onDisconnected = async () => {};
 
@@ -425,6 +543,9 @@ export abstract class BaseSubstrateClient<
    * @description Connect to blockchain node
    */
   async connect(): Promise<this> {
+    this.#initFailures = 0;
+    this.#initFailedEndpoints.clear();
+
     const [api, _] = await Promise.all([this.doConnect(), super.connect()]);
 
     return api;

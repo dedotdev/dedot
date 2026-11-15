@@ -244,6 +244,10 @@ export class LegacyClient<ChainApi extends GenericSubstrateApi = SubstrateApi> /
     if (!stalingDetectionFn) return;
 
     this.block.best(stalingDetectionFn);
+
+    // Arm the watchdog immediately after initialization so an endpoint that stops
+    // producing blocks right after connecting is still detected (don't wait for the next block)
+    stalingDetectionFn();
   }
 
   #subscribeUpdates() {

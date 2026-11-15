@@ -82,6 +82,19 @@ describe(
         simulator && (await simulator.cleanup());
       });
 
+      it('arms staling detection immediately after initialization', async () => {
+        const api = new V2Client({ provider });
+        const armFn = vi.fn();
+        vi.spyOn(api as any, 'getStalingDetectionFn').mockReturnValue(armFn);
+
+        await api.connect();
+
+        // The watchdog must be armed right after init, not only when the next block arrives
+        expect(armFn).toHaveBeenCalled();
+
+        await api.disconnect();
+      });
+
       describe('cache disabled', () => {
         let api: V2Client;
         beforeEach(async () => {
