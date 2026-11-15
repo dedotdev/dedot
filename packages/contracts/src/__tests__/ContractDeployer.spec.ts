@@ -1,6 +1,7 @@
 import { LegacyClient } from '@dedot/api';
 // @ts-ignore
 import MockProvider from '@dedot/api/client/__tests__/MockProvider';
+import { AccountId32 } from '@dedot/codecs';
 import { generateRandomHex } from '@dedot/utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContractDeployer } from '../ContractDeployer.js';
@@ -177,7 +178,7 @@ describe('ContractDeployer', () => {
           accountNonceApi: { accountNonce: accountNonceSpy },
         },
         events: {
-          revive: { Instantiated: { find: eventFinder } },
+          revive: { Instantiated: { filter: eventFinder } },
         },
       };
 
@@ -216,10 +217,12 @@ describe('ContractDeployer', () => {
       it('should prefers revive.Instantiated event address when available', async () => {
         const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
         const eventAddress = '0xbeef000000000000000000000000000000000000';
-        eventFinder.mockReturnValue({
-          pallet: 'Revive',
-          palletEvent: { data: { contract: eventAddress } },
-        } as any);
+        eventFinder.mockReturnValue([
+          {
+            pallet: 'Revive',
+            palletEvent: { data: { deployer: toEvmAddress(signer), contract: eventAddress } },
+          },
+        ] as any);
 
         const deployer = createDeployer(client);
         const tx = execute(deployer);
@@ -244,12 +247,66 @@ describe('ContractDeployer', () => {
         expect(address).toBe(eventAddress);
       });
 
+      const resolveAddress = async (instantiatedEvents: any[]) => {
+        const { client, extrinsic, eventFinder } = createMockClient();
+        eventFinder.mockReturnValue(instantiatedEvents);
+
+        const tx = execute(createDeployer(client));
+        await extrinsic.hooks.beforeSign(tx, signer);
+
+        const result = { status: { type: 'Finalized' }, dispatchError: undefined, events: [] } as any;
+        return extrinsic.hooks.transformResult(result).contractAddress();
+      };
+
+      const reviveEvent = (deployer: string, contract: string) => ({
+        pallet: 'Revive',
+        palletEvent: { name: 'Instantiated', data: { deployer, contract } },
+      });
+
+      it('should return the parent address when the constructor instantiates a child contract', async () => {
+        const parent = '0xaaaa000000000000000000000000000000000000';
+        const child = '0xcccc000000000000000000000000000000000000';
+
+        // The child is instantiated by the parent's constructor, so its event is emitted first
+        const address = await resolveAddress([
+          reviveEvent(parent, child), // --
+          reviveEvent(toEvmAddress(signer), parent),
+        ]);
+
+        expect(address).toBe(parent);
+      });
+
+      it('should match the deployer regardless of the events order & address casing', async () => {
+        const parent = '0xaaaa000000000000000000000000000000000000';
+        const child = '0xcccc000000000000000000000000000000000000';
+
+        const address = await resolveAddress([
+          reviveEvent(toEvmAddress(signer).toUpperCase().replace('0X', '0x'), parent), // --
+          reviveEvent(parent, child),
+        ]);
+
+        expect(address).toBe(parent);
+      });
+
+      it('should fall back to the last Instantiated event when no deployer matches the signer', async () => {
+        const parent = '0xaaaa000000000000000000000000000000000000';
+        const child = '0xcccc000000000000000000000000000000000000';
+        const someoneElse = '0xdddd000000000000000000000000000000000000';
+
+        const address = await resolveAddress([
+          reviveEvent(parent, child), // --
+          reviveEvent(someoneElse, parent),
+        ]);
+
+        expect(address).toBe(parent);
+      });
+
       it('should falls back to calculated address when revive.Instantiated event missing', async () => {
         const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
 
         const deployerNonce = 7;
         accountNonceSpy.mockResolvedValue(deployerNonce);
-        eventFinder.mockReturnValue(undefined);
+        eventFinder.mockReturnValue([]);
 
         const deployer = createDeployer(client);
         const tx = execute(deployer);
@@ -278,7 +335,7 @@ describe('ContractDeployer', () => {
         const { client, extrinsic, instantiateMock, accountNonceSpy, eventFinder } = createMockClient();
         const salt = generateRandomHex(32);
 
-        eventFinder.mockReturnValue(undefined);
+        eventFinder.mockReturnValue([]);
 
         const deployer = createDeployer(client);
         // @ts-ignore
@@ -306,6 +363,92 @@ describe('ContractDeployer', () => {
         const expected = CREATE2(toEvmAddress(signer), codeArg, bytesArg, salt);
         expect(address).toBe(expected);
       });
+    });
+  });
+
+  describe('contracts pallet address resolution', () => {
+    const signer = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'; // alice
+    const parent = '5DMM7EfBsEezzFrSbVBNz8gr4v83c8qXBK8DqBuBkTPsKEA2';
+    const child = '5FpuGwoj1nt2Lb4Fg8bU1aHTeTn3DkDagrJaduFsmf7kZa22';
+
+    const contractsEvent = (deployer: string, contract: string) => ({
+      pallet: 'Contracts',
+      palletEvent: {
+        name: 'Instantiated',
+        data: { deployer: new AccountId32(deployer), contract: new AccountId32(contract) },
+      },
+    });
+
+    const resolveAddress = async (instantiatedEvents: any[]) => {
+      const extrinsic: any = {
+        call: { palletCall: { params: { gasLimit: 1n } } },
+        hooks: undefined,
+      };
+
+      extrinsic.withHooks = vi.fn((hooks) => {
+        extrinsic.hooks = hooks;
+        return extrinsic;
+      });
+
+      const client: any = {
+        tx: { contracts: { call: { meta: {} }, instantiateWithCode: vi.fn(() => extrinsic) } },
+        call: { contractsApi: { call: { meta: {} } } },
+        events: { contracts: { Instantiated: { filter: vi.fn(() => instantiatedEvents) } } },
+      };
+
+      const deployer = new ContractDeployer(
+        client, // --
+        FLIPPER_CONTRACT_METADATA_V5,
+        FLIPPER_CONTRACT_METADATA_V5.source.wasm!,
+        { defaultCaller: signer },
+      );
+
+      const tx = deployer.tx.new(true, { gasLimit: 1n } as any);
+      await extrinsic.hooks.beforeSign(tx, signer);
+
+      const result = { status: { type: 'Finalized' }, dispatchError: undefined, events: [] } as any;
+      return extrinsic.hooks.transformResult(result).contractAddress();
+    };
+
+    it('should return the address of a single instantiated contract', async () => {
+      expect(await resolveAddress([contractsEvent(signer, parent)])).toBe(parent);
+    });
+
+    it('should return the parent address when the constructor instantiates a child contract', async () => {
+      // The child is instantiated by the parent's constructor, so its event is emitted first
+      const address = await resolveAddress([
+        contractsEvent(parent, child), // --
+        contractsEvent(signer, parent),
+      ]);
+
+      expect(address).toBe(parent);
+    });
+
+    it('should return the parent address when the constructor instantiates multiple contracts', async () => {
+      const grandChild = '5GzWBRd6BJihRDaKbwGzs1yEXbv4EGCdSbWwgySvAyHmTQAo';
+
+      const address = await resolveAddress([
+        contractsEvent(child, grandChild), // --
+        contractsEvent(parent, child),
+        contractsEvent(signer, parent),
+      ]);
+
+      expect(address).toBe(parent);
+    });
+
+    it('should fall back to the last Instantiated event when no deployer matches the signer', async () => {
+      const someoneElse = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty'; // bob
+
+      const address = await resolveAddress([
+        contractsEvent(parent, child), // --
+        contractsEvent(someoneElse, parent),
+      ]);
+
+      expect(address).toBe(parent);
+    });
+
+    it('should throw if there is no Instantiated event', async () => {
+      await expect(resolveAddress([])).rejects.toThrowError('Contracts.Instantiated event not found');
     });
   });
 

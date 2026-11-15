@@ -1,4 +1,5 @@
 import { BaseSubmittableExtrinsic, ISubstrateClient } from '@dedot/api';
+import { AccountId32 } from '@dedot/codecs';
 import { ISubmittableResult } from '@dedot/types';
 import { assert, concatU8a, hexToU8a, isPvm, isUndefined, isWasm, toHex, toU8a, u8aToHex } from '@dedot/utils';
 import { Contract } from '../../Contract.js';
@@ -8,7 +9,14 @@ import {
   ExecutionOptions,
   GenericConstructorTxCall,
 } from '../../types/index.js';
-import { CREATE1, CREATE2, ensureContractPresence, ensureParamsLength, toEvmAddress } from '../../utils/index.js';
+import {
+  CREATE1,
+  CREATE2,
+  ensureContractPresence,
+  ensureParamsLength,
+  pickInstantiatedEvent,
+  toEvmAddress,
+} from '../../utils/index.js';
 import { ConstructorQueryExecutor } from './ConstructorQueryExecutor.js';
 import { DeployerExecutor } from './abstract/index.js';
 
@@ -96,7 +104,12 @@ export class ConstructorTxExecutor extends DeployerExecutor {
         if (this.registry.isRevive()) {
           // Try to get address from events first
           try {
-            const event = client.events.revive.Instantiated.find(events);
+            const deployerEvmAddress = toEvmAddress(deployerAddress).toLowerCase();
+            const event = pickInstantiatedEvent(
+              client.events.revive.Instantiated.filter(events), // --
+              // @ts-ignore
+              (e) => e.palletEvent.data.deployer.toLowerCase() === deployerEvmAddress,
+            );
 
             if (event) {
               // @ts-ignore
@@ -129,7 +142,11 @@ export class ConstructorTxExecutor extends DeployerExecutor {
             );
           }
         } else {
-          const event = client.events.contracts.Instantiated.find(events);
+          const deployerAccountId = new AccountId32(deployerAddress).raw;
+          const event = pickInstantiatedEvent(
+            client.events.contracts.Instantiated.filter(events), // --
+            (e) => e.palletEvent.data.deployer.raw === deployerAccountId,
+          );
           assert(event, 'Contracts.Instantiated event not found');
 
           return event.palletEvent.data.contract.address();
