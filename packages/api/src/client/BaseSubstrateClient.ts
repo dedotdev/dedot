@@ -93,6 +93,8 @@ export abstract class BaseSubstrateClient<
   #initialized: boolean = false;
   // Consecutive initialization failures that were answered with an endpoint switch
   #initFailures: number = 0;
+  // The endpoints those failures happened on
+  #initFailedEndpoints: Set<string | undefined> = new Set();
 
   protected constructor(
     public rpcVersion: RpcVersion,
@@ -380,7 +382,7 @@ export abstract class BaseSubstrateClient<
     });
   }
 
-  protected onConnected = async () => {
+  protected onConnected = async (endpoint?: string) => {
     // Remember what we knew before this attempt, so a failed re-initialization can be rolled back
     const prevRuntimeVersion = this._runtimeVersion;
 
@@ -389,6 +391,7 @@ export abstract class BaseSubstrateClient<
 
       this.#initialized = true;
       this.#initFailures = 0;
+      this.#initFailedEndpoints.clear();
     } catch (e: any) {
       // @ts-ignore — keep emitting 'error' for external observability
       this.emit('error', e);
@@ -400,7 +403,7 @@ export abstract class BaseSubstrateClient<
         this.#initFailures += 1;
         this.resetAfterInitFailure(prevRuntimeVersion);
 
-        if (await this.switchEndpointOnInitError(e)) return;
+        if (await this.switchEndpointOnInitError(e, endpoint)) return;
       }
 
       // @ts-ignore — surface init failure so the pending connect() promise can reject
@@ -436,25 +439,28 @@ export abstract class BaseSubstrateClient<
   /**
    * Ask the provider to move on to a different endpoint after an initialization failure.
    *
-   * Consecutive failures are bounded by the provider's `maxRetryAttempts`, or when that is not
-   * set, by one pass over the endpoints until the client has been ready once. The first
-   * switch is immediate and the following ones wait for the provider's retry delay so a failure
-   * that every endpoint reproduces does not turn into a tight reconnection loop.
+   * With `maxRetryAttempts` set on the provider, that many consecutive failures are tolerated.
+   * Without it, a client that has never been ready gives up once an endpoint fails for the
+   * second time - by then the provider has been through every other endpoint. A client that
+   * was ready before keeps switching, like the provider keeps reconnecting.
+   *
+   * The first switch is immediate and the following ones wait for the provider's retry delay,
+   * so a failure that every endpoint reproduces does not turn into a tight reconnection loop.
    *
    * @returns `false` if the client gave up switching, the caller should surface the error
    */
-  protected async switchEndpointOnInitError(e: any): Promise<boolean> {
+  protected async switchEndpointOnInitError(e: any, endpoint?: string): Promise<boolean> {
     const provider = this.provider as WsProvider;
-    const { maxRetryAttempts, retryDelayMs, initialConnectAttempts } = provider;
+    const { maxRetryAttempts, retryDelayMs } = provider;
 
-    // Without an explicit limit, a client that has never been ready follows the provider's rule
-    // for a first connection: every endpoint gets one chance. After that it keeps switching.
-    const firstConnectionLimit =
-      this.#initialized || initialConnectAttempts === undefined ? undefined : initialConnectAttempts - 1;
-    const maxSwitches = maxRetryAttempts ?? firstConnectionLimit;
+    const failedBefore = this.#initFailedEndpoints.has(endpoint);
+    this.#initFailedEndpoints.add(endpoint);
 
-    if (maxSwitches !== undefined && this.#initFailures > maxSwitches) {
-      console.error(`Failed to initialize the client after trying ${this.#initFailures} endpoints, giving up.`);
+    const giveUp =
+      maxRetryAttempts !== undefined ? this.#initFailures > maxRetryAttempts : !this.#initialized && failedBefore;
+
+    if (giveUp) {
+      console.error(`Failed to initialize the client after ${this.#initFailures} attempts, giving up.`);
       return false;
     }
 
@@ -538,6 +544,7 @@ export abstract class BaseSubstrateClient<
    */
   async connect(): Promise<this> {
     this.#initFailures = 0;
+    this.#initFailedEndpoints.clear();
 
     const [api, _] = await Promise.all([this.doConnect(), super.connect()]);
 

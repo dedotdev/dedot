@@ -187,24 +187,26 @@ describe('Endpoint failover on initialization failures', () => {
   }, 5_000);
 
   describe('first connection without maxRetryAttempts', () => {
-    it('gives every endpoint one chance, then rejects with the init error', async () => {
+    it('goes through every endpoint, then rejects with the init error', async () => {
       silenceLogs();
 
       const provider = new FakeWsProvider({ endpoint: [BAD_1, BAD_2], retryDelayMs: 20 }, respond);
       client = new TestClient(provider);
 
       await expect(client.connect()).rejects.toThrow('cannot initialize, endpoint answered: bad');
-      expect([...provider.visited].sort()).toEqual([BAD_1, BAD_2]);
+      // Both endpoints were tried, and it stopped when one of them failed for the second time
+      expect(new Set(provider.visited)).toEqual(new Set([BAD_1, BAD_2]));
+      expect(provider.visited.length).toBe(3);
     }, 5_000);
 
-    it('rejects right away when the only endpoint cannot be initialized', async () => {
+    it('rejects when the only endpoint fails to initialize a second time', async () => {
       silenceLogs();
 
       const provider = new FakeWsProvider({ endpoint: BAD_1, retryDelayMs: 20 }, respond);
       client = new TestClient(provider);
 
       await expect(client.connect()).rejects.toThrow('cannot initialize, endpoint answered: bad');
-      expect(provider.visited).toEqual([BAD_1]);
+      expect(provider.visited).toEqual([BAD_1, BAD_1]);
     }, 5_000);
 
     it('keeps switching after the client has been ready once', async () => {

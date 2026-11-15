@@ -307,7 +307,7 @@ export class WsProvider extends SubscriptionProvider {
    * `undefined` means no limit - an endpoint selector function decides what to try next
    * on its own, so there is no fixed set of endpoints to go through.
    */
-  get initialConnectAttempts(): number | undefined {
+  get #initialConnectAttempts(): number | undefined {
     const { endpoint } = this.#options;
 
     if (typeof endpoint === 'function') return undefined;
@@ -325,7 +325,7 @@ export class WsProvider extends SubscriptionProvider {
 
       // The first connection only gets one pass over the endpoints, so a wrong or dead
       // endpoint makes connect() fail instead of waiting forever
-      const budget = this.initialConnectAttempts;
+      const budget = this.#initialConnectAttempts;
       return budget === undefined || this.#attempt < budget;
     }
 
